@@ -18,8 +18,9 @@ class Verse:
 
 
 class Runo:
-    def __init__(self, so_id, verses):
+    def __init__(self, so_id, meta, verses):
         self.so_id = so_id
+        self.meta = meta
         self.verses = verses
 
     def text_verses(self):
@@ -35,7 +36,11 @@ class Runo:
         cursor.execute(query, (so_id,))
         verses = [Verse(v_id, type, text) \
                   for v_id, type, text in cursor.fetchall()]
-        return Runo(so_id, verses)
+        query = _format_query(
+            'SELECT field, value FROM so_meta WHERE so_id = %s', fmt)
+        cursor.execute(query, (so_id,))
+        meta = { field : value for field, value in cursor.fetchall() }
+        return Runo(so_id, meta, verses)
 
     @staticmethod
     def from_db_by_nro(cursor, nro, fmt='mysql'):

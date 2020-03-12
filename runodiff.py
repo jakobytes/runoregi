@@ -47,6 +47,9 @@ def build_similarity_matrix(runo_1, runo_2, sims_list):
 
 
 def render(nro_1, nro_2):
+    # TODO
+    # - some refactoring
+    # - bold for captions
     runo_1, runo_2, sims_list = \
         get_data_from_db(nro_1, nro_2, config.MYSQL_PARAMS)
     sims = build_similarity_matrix(runo_1, runo_2, sims_list)
@@ -58,23 +61,39 @@ def render(nro_1, nro_2):
         dist_fun=lambda i, j: sims[i,j],
         opt_fun=max,
         empty=None)
+    for key in sorted(list(set(runo_1.meta.keys()) | set(runo_2.meta.keys()))):
+        result.append('<tr><td><small><b>{}:</b> {}</small></td>'.format(
+                      key, runo_1.meta[key] if key in runo_1.meta else ''))
+        result.append('<td><small><b>{}: </b>{}</small></td></tr>'.format(
+                      key, runo_2.meta[key] if key in runo_1.meta else ''))
+    result.append('<tr><td>&nbsp;</td><td></td></tr>')
     for row in al:
         if row[2] > 0:
             v_al = align(row[0].text, row[1].text)
             verse_1, verse_2 = [], []
+            different = False
             for x, y, c in v_al:
                 if x != y:
-                    if x:
-                        if x == ' ': x = '_'
-                        verse_1.append('<font color="{}">{}</font>'.format(
-                            COLOR_CHARDIFF, x))
-                    if y:
-                        if y == ' ': y = '_'
-                        verse_2.append('<font color="{}">{}</font>'.format(
-                            COLOR_CHARDIFF, y))
+                    if not different:
+                        verse_1.append(
+                            '<font color="{}">'.format(COLOR_CHARDIFF))
+                        verse_2.append(
+                            '<font color="{}">'.format(COLOR_CHARDIFF))
+                        different = True
+                    if x == ' ': x = '_'
+                    verse_1.append(x)
+                    if y == ' ': y = '_'
+                    verse_2.append(y)
                 else:
+                    if different:
+                        different = False
+                        verse_1.append('</font>')
+                        verse_2.append('</font>')
                     verse_1.append(x)
                     verse_2.append(y)
+            if different:
+                verse_1.append('</font>')
+                verse_2.append('</font>')
             result.append('<tr><td>{}</td><td>{}</td></tr>'.format(
                 ''.join(verse_1), ''.join(verse_2)))
         else:
