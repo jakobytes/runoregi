@@ -28,12 +28,12 @@ def show_runo():
             ' WHERE s.so1_id = %s AND s.sim_al > 0.01'
             ' ORDER BY s.sim_al DESC;',
             (runo.so_id,))
-        simrunos_text = []
+        result.append('<ul>')
         for nro_2, sim in db.fetchall():
-            simrunos_text.append(
-                '<a href="/runodiff?nro1={}&nro2={}">{}</a> ({} %)'\
+            result.append(
+                '<li><a href="/runodiff?nro1={}&nro2={}">{}</a> ({} %)'\
                 .format(nro, nro_2, nro_2, round(sim*100)))
-        result.append(',\n'.join(simrunos_text))
+        result.append('</ul>')
         result.append('</p>')
         result.append('<table>')
         for key in sorted(runo.meta.keys()):
