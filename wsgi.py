@@ -2,6 +2,7 @@ from flask import Flask, request
 import pymysql
 
 import config
+from data import Runo
 import runodiff
 
 application = Flask(__name__)
@@ -12,6 +13,41 @@ def show_diff():
     nro_1 = request.args.get('nro1', 1, type=str)
     nro_2 = request.args.get('nro2', 1, type=str)
     return runodiff.render(nro_1, nro_2)
+
+@application.route('/runo')
+def show_runo():
+    nro = request.args.get('nro', 1, type=str)
+    result = ['<h1>{}</h1>'.format(nro)]
+    result.append('<table>')
+    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+        runo = Runo.from_db_by_nro(db, nro, fmt='mysql')
+        for key in sorted(runo.meta.keys()):
+            result.append(
+                '<tr><td colspan="2"><small><b>{}:</b> {}</small></td></tr>'\
+                    .format(key, runo.meta[key]))
+        result.append('<tr><td colspan="2">&nbsp;</td></tr>')
+        for i, v in enumerate(runo.verses, 1):
+            if v.type == 'V':
+                result.append(
+                    '<tr><td><sup><small>{}</small></sup></td><td>{}</td></tr>'\
+                    .format(i, v.text))
+    result.append('</table>')
+    result.append('<h2>Similar runos</h2>')
+    result.append('<table>')
+    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+        db.execute(
+            'SELECT so.nro, s.sim_al FROM so_sim_al s'
+            ' JOIN sources so ON so.so_id = s.so2_id'
+            ' WHERE s.so1_id = %s AND s.sim_al > 0.01'
+            ' ORDER BY s.sim_al DESC;',
+            (runo.so_id,))
+        for nro_2, sim in db.fetchall():
+            result.append(
+                '<tr><td><a href="/runodiff?nro1={}&nro2={}">{}</a></td>'
+                '<td align="right">&emsp;{} %</td>'
+                '</tr>'.format(nro, nro_2, nro_2, round(sim*100)))
+    result.append('</table>')
+    return '\n'.join(result)
 
 @application.route('/')
 def hello_world():

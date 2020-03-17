@@ -54,6 +54,12 @@ def render(nro_1, nro_2):
         get_data_from_db(nro_1, nro_2, config.MYSQL_PARAMS)
     sims = build_similarity_matrix(runo_1, runo_2, sims_list)
     result = ['<table>']
+    result.append(
+        '<tr><td><h2>{}</h2><small>[<a href="/runo?nro={}">to runo</a>]</td>'\
+        .format(nro_1, nro_1))
+    result.append(
+        '<td><h2>{}</h2><small>[<a href="/runo?nro={}">to runo</a>]</td></tr>'\
+        .format(nro_2, nro_2))
     al = align(
         list(runo_1.text_verses()),
         list(runo_2.text_verses()),
@@ -65,7 +71,7 @@ def render(nro_1, nro_2):
         result.append('<tr><td><small><b>{}:</b> {}</small></td>'.format(
                       key, runo_1.meta[key] if key in runo_1.meta else ''))
         result.append('<td><small><b>{}: </b>{}</small></td></tr>'.format(
-                      key, runo_2.meta[key] if key in runo_1.meta else ''))
+                      key, runo_2.meta[key] if key in runo_2.meta else ''))
     result.append('<tr><td>&nbsp;</td><td></td></tr>')
     for row in al:
         if row[2] > 0:
