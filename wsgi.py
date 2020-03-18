@@ -20,6 +20,7 @@ def show_diff():
 def show_runo():
     nro = request.args.get('nro', 1, type=str)
     result = ['<h1>{}</h1>'.format(nro)]
+    result.append('<small>[<a href="/">to index</a>]</small>')
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         runo = Runo.from_db_by_nro(db, nro, fmt='mysql')
         result.append('<p>')
@@ -46,9 +47,49 @@ def show_runo():
         for i, v in enumerate(runo.verses, 1):
             if v.type == 'V':
                 result.append(
-                    '<tr><td><sup><small>{}</small></sup></td><td>{}</td></tr>'\
-                    .format(i, v.text))
+                    '<tr><td><sup><small><a href="/verse?id={}">{}</a>'
+                    '</small></sup></td><td>{}</td></tr>'\
+                    .format(v.v_id, i, v.text))
     result.append('</table>')
+    return '\n'.join(result)
+
+@application.route('/verse')
+def show_verse():
+    result = []
+    v_id = request.args.get('id', 1, type=str)
+    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+        db.execute(
+            'SELECT v_id, text, nro FROM verses'
+            ' NATURAL JOIN v_so'
+            ' NATURAL JOIN sources'
+            ' WHERE v_id = %s;', v_id)
+        v_id, text, nro = db.fetchall()[0]
+        result.append('<h1>{}</h1>'.format(text))
+        result.append(
+            '<small>[<a href="/runo?nro={}">back to runo</a>]</small>'\
+            .format(nro))
+        db.execute(
+            'SELECT so.nro, v_so.pos, v_so.v_id, v.text'
+            ' FROM v_clust vc1'
+            '   JOIN v_clust vc2 ON vc1.clust_id = vc2.clust_id'
+            '   JOIN verses v ON vc2.v_id = v.v_id'
+            '   JOIN v_so ON v.v_id = v_so.v_id'
+            '   JOIN sources so ON v_so.so_id = so.so_id'
+            ' WHERE vc1.v_id = %s',
+            (v_id,))
+        result.append('<h2>Cluster</h2>')
+        result.append('<table>')
+        for nro, pos, v_id_2, text in db.fetchall():
+            nro_text = nro
+            if v_id_2 == v_id:
+                nro_text = '<b>{}</b>'.format(nro)
+                text = '<b>{}</b>'.format(text)
+                pos = '<b>{}</b>'.format(pos)
+            result.append(
+                '<tr><td><a href="/runo?nro={}">{}</td>'
+                '<td><sup><small>{}</small></sup></td><td>{}</td></tr>'\
+                .format(nro, nro_text, pos, text))
+        result.append('</table>')
     return '\n'.join(result)
 
 @application.route('/')
