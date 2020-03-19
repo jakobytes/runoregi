@@ -28,6 +28,7 @@ def show_runo():
         return '#'+c+c+'FF'
 
     nro = request.args.get('nro', 1, type=str)
+    hl = request.args.get('hl', None, type=int)
     result = ['<h1>{}</h1>'.format(nro)]
     result.append('<small>[<a href="/">to index</a>]</small>')
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
@@ -61,6 +62,9 @@ def show_runo():
         result.append('<tr><td colspan="3">&nbsp;</td></tr>')
         for i, v in enumerate(runo.verses, 1):
             if v.type == 'V':
+                text = v.text
+                if hl is not None and hl == i:
+                    text = '<b>{}</b>'.format(v.text)
                 result.append(
                     '<tr>'
                     '<td bgcolor="{}" align="right">'
@@ -70,7 +74,7 @@ def show_runo():
                     '<td align="right">&ensp;<sup><small>{}</a>'
                     '</small></sup></td><td>{}</td>'
                     '</tr>'\
-                    .format(_makecol(v.clustfreq), i, v.v_id, v.clustfreq, v.clustfreq, i, v.text))
+                    .format(_makecol(v.clustfreq), i, v.v_id, v.clustfreq, v.clustfreq, i, text))
     result.append('</table>')
     return '\n'.join(result)
 
@@ -107,19 +111,15 @@ def show_verse():
                 text = '<b>{}</b>'.format(text)
                 pos = '<b>{}</b>'.format(pos)
             result.append(
-                '<tr><td><a href="/runo?nro={}#{}">{}</td>'
+                '<tr><td><a href="/runo?nro={}&hl={}#{}">{}</td>'
                 '<td><sup><small>{}</small></sup></td><td>{}</td></tr>'\
-                .format(nro, pos, nro_text, pos, text))
+                .format(nro, pos, pos, nro_text, pos, text))
         result.append('</table>')
     return '\n'.join(result)
 
 @application.route('/')
 def index():
-    q = 'a'
-    try:
-        q = request.args.get('q', 1, type=str).lower()
-    except Exception:
-        pass
+    q = request.args.get('q', 'a', type=str).lower()
     result = []
     result.append('<center><h2>')
     index_letters = []
