@@ -64,13 +64,13 @@ def show_runo():
                 result.append(
                     '<tr>'
                     '<td bgcolor="{}" align="right">'
-                    '<a href="/verse?id={}">'
+                    '<a name="{}" href="/verse?id={}">'
                     '<img src="/static/img/transparent.png" width="15" height="15"'
                     ' title="{} similar" alt="{} similar"></a></td>'
                     '<td align="right">&ensp;<sup><small>{}</a>'
                     '</small></sup></td><td>{}</td>'
                     '</tr>'\
-                    .format(_makecol(v.clustfreq), v.v_id, v.clustfreq, v.clustfreq, i, v.text))
+                    .format(_makecol(v.clustfreq), i, v.v_id, v.clustfreq, v.clustfreq, i, v.text))
     result.append('</table>')
     return '\n'.join(result)
 
@@ -107,9 +107,9 @@ def show_verse():
                 text = '<b>{}</b>'.format(text)
                 pos = '<b>{}</b>'.format(pos)
             result.append(
-                '<tr><td><a href="/runo?nro={}">{}</td>'
+                '<tr><td><a href="/runo?nro={}#{}">{}</td>'
                 '<td><sup><small>{}</small></sup></td><td>{}</td></tr>'\
-                .format(nro, nro_text, pos, text))
+                .format(nro, pos, nro_text, pos, text))
         result.append('</table>')
     return '\n'.join(result)
 
