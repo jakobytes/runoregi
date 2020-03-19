@@ -1,4 +1,5 @@
 from flask import Flask, request
+import math
 import os
 import pymysql
 import re
@@ -18,38 +19,58 @@ def show_diff():
 
 @application.route('/runo')
 def show_runo():
+
+    def _makecol(value):
+        val_norm = min(math.log(value), 10)
+        c = hex(255-int(val_norm*25.5))[2:]
+        if len(c) == 1:
+            c = '0'+c
+        return '#'+c+c+'FF'
+
     nro = request.args.get('nro', 1, type=str)
     result = ['<h1>{}</h1>'.format(nro)]
     result.append('<small>[<a href="/">to index</a>]</small>')
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         runo = Runo.from_db_by_nro(db, nro, fmt='mysql')
         result.append('<p>')
-        result.append('<b>Similar runos:</b>')
+        result.append('<h2>Similar runos</h2>')
         db.execute(
             'SELECT so.nro, s.sim_al FROM so_sim_al s'
             ' JOIN sources so ON so.so_id = s.so2_id'
             ' WHERE s.so1_id = %s AND s.sim_al > 0.01'
             ' ORDER BY s.sim_al DESC;',
             (runo.so_id,))
-        result.append('<ul>')
+        result.append('<table>')
         for nro_2, sim in db.fetchall():
+            simperc = round(sim*100)
+            bw = simperc*3
             result.append(
-                '<li><a href="/runodiff?nro1={}&nro2={}">{}</a> ({} %)'\
-                .format(nro, nro_2, nro_2, round(sim*100)))
+                '<tr><td><a href="/runodiff?nro1={}&nro2={}">{}</a></td>'
+                '<td>&emsp;<img src="/static/img/blue.png" title="{} %" alt="{} %"'
+                ' width="{}" height="10">&ensp;<small>{} %</small></td>'\
+                .format(nro, nro_2, nro_2, simperc, simperc, bw, simperc))
         result.append('</ul>')
         result.append('</p>')
-        result.append('<table>')
+        result.append('</table>')
+        result.append('<table cellspacing="0" cellpadding="2">')
+        result.append('<h2>Text</h2>')
         for key in sorted(runo.meta.keys()):
             result.append(
-                '<tr><td colspan="2"><small><b>{}:</b> {}</small></td></tr>'\
+                '<tr><td colspan="3"><small><b>{}:</b> {}</small></td></tr>'\
                     .format(key, runo.meta[key]))
-        result.append('<tr><td colspan="2">&nbsp;</td></tr>')
+        result.append('<tr><td colspan="3">&nbsp;</td></tr>')
         for i, v in enumerate(runo.verses, 1):
             if v.type == 'V':
                 result.append(
-                    '<tr><td><sup><small><a href="/verse?id={}">{}</a>'
-                    '</small></sup></td><td>{}</td></tr>'\
-                    .format(v.v_id, i, v.text))
+                    '<tr>'
+                    '<td bgcolor="{}" align="right">'
+                    '<a href="/verse?id={}">'
+                    '<img src="/static/img/transparent.png" width="15" height="15"'
+                    ' title="{} similar" alt="{} similar"></a></td>'
+                    '<td align="right">&ensp;<sup><small>{}</a>'
+                    '</small></sup></td><td>{}</td>'
+                    '</tr>'\
+                    .format(_makecol(v.clustfreq), v.v_id, v.clustfreq, v.clustfreq, i, v.text))
     result.append('</table>')
     return '\n'.join(result)
 

@@ -7,10 +7,11 @@ def _format_query(query, fmt):
         raise Exception('Unknown query format: {}'.format(fmt))
 
 class Verse:
-    def __init__(self, v_id, type, text):
+    def __init__(self, v_id, type, text, clustfreq):
         self.v_id = v_id
         self.type = type
         self.text = text
+        self.clustfreq = clustfreq
 
     @staticmethod
     def from_db(cursor, v_id):
@@ -29,13 +30,15 @@ class Runo:
     @staticmethod
     def from_db(cursor, so_id, fmt='mysql'):
         query = _format_query(
-            'SELECT v.v_id, v.type, v.text FROM verses v'\
+            'SELECT v.v_id, v.type, v.text, cf.freq FROM verses v'\
             ' JOIN v_so ON v_so.v_id = v.v_id'\
+            ' JOIN v_clust vc ON v_so.v_id = vc.v_id'\
+            ' JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id'\
             ' WHERE v_so.so_id=%s;',
             fmt)
         cursor.execute(query, (so_id,))
-        verses = [Verse(v_id, type, text) \
-                  for v_id, type, text in cursor.fetchall()]
+        verses = [Verse(v_id, type, text, cf) \
+                  for v_id, type, text, cf in cursor.fetchall()]
         query = _format_query(
             'SELECT field, value FROM so_meta WHERE so_id = %s', fmt)
         cursor.execute(query, (so_id,))
