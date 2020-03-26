@@ -5,20 +5,22 @@ import pymysql
 import re
 
 import config
-from data import Runo
-import runodiff
+from data import Poem
+import poemdiff
 
 application = Flask(__name__)
 
 
+@application.route('/poemdiff')
 @application.route('/runodiff')
 def show_diff():
     nro_1 = request.args.get('nro1', 1, type=str)
     nro_2 = request.args.get('nro2', 1, type=str)
-    return runodiff.render(nro_1, nro_2)
+    return poemdiff.render(nro_1, nro_2)
 
+@application.route('/poem')
 @application.route('/runo')
-def show_runo():
+def show_poem():
 
     def _makecol(value):
         val_norm = min(math.log(value), 10)
@@ -32,21 +34,21 @@ def show_runo():
     result = ['<h1>{}</h1>'.format(nro)]
     result.append('<small>[<a href="/">to index</a>]</small>')
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        runo = Runo.from_db_by_nro(db, nro, fmt='mysql')
+        poem = Poem.from_db_by_nro(db, nro, fmt='mysql')
         result.append('<p>')
-        result.append('<h2>Similar runos</h2>')
+        result.append('<h2>Similar poems</h2>')
         db.execute(
             'SELECT so.nro, s.sim_al FROM so_sim_al s'
             ' JOIN sources so ON so.so_id = s.so2_id'
             ' WHERE s.so1_id = %s AND s.sim_al > 0.01'
             ' ORDER BY s.sim_al DESC;',
-            (runo.so_id,))
+            (poem.so_id,))
         result.append('<table>')
         for nro_2, sim in db.fetchall():
             simperc = round(sim*100)
             bw = simperc*3
             result.append(
-                '<tr><td><a href="/runodiff?nro1={}&nro2={}">{}</a></td>'
+                '<tr><td><a href="/poemdiff?nro1={}&nro2={}">{}</a></td>'
                 '<td>&emsp;<img src="/static/img/blue.png" title="{} %" alt="{} %"'
                 ' width="{}" height="10">&ensp;<small>{} %</small></td>'\
                 .format(nro, nro_2, nro_2, simperc, simperc, bw, simperc))
@@ -55,12 +57,12 @@ def show_runo():
         result.append('</table>')
         result.append('<table cellspacing="0" cellpadding="2">')
         result.append('<h2>Text</h2>')
-        for key in sorted(runo.meta.keys()):
+        for key in sorted(poem.meta.keys()):
             result.append(
                 '<tr><td colspan="3"><small><b>{}:</b> {}</small></td></tr>'\
-                    .format(key, runo.meta[key]))
+                    .format(key, poem.meta[key]))
         result.append('<tr><td colspan="3">&nbsp;</td></tr>')
-        for i, v in enumerate(runo.verses, 1):
+        for i, v in enumerate(poem.verses, 1):
             if v.type == 'V':
                 text = v.text
                 if hl is not None and hl == i:
@@ -91,7 +93,7 @@ def show_verse():
         v_id, text, nro = db.fetchall()[0]
         result.append('<h1>{}</h1>'.format(text))
         result.append(
-            '<small>[<a href="/runo?nro={}">back to runo</a>]</small>'\
+            '<small>[<a href="/poem?nro={}">back to poem</a>]</small>'\
             .format(nro))
         db.execute(
             'SELECT so.nro, v_so.pos, v_so.v_id, v.text'
@@ -111,7 +113,7 @@ def show_verse():
                 text = '<b>{}</b>'.format(text)
                 pos = '<b>{}</b>'.format(pos)
             result.append(
-                '<tr><td><a href="/runo?nro={}&hl={}#{}">{}</td>'
+                '<tr><td><a href="/poem?nro={}&hl={}#{}">{}</td>'
                 '<td><sup><small>{}</small></sup></td><td>{}</td></tr>'\
                 .format(nro, pos, pos, nro_text, pos, text))
         result.append('</table>')
@@ -133,15 +135,15 @@ def index():
         for x in index_letters))
     result.append('</h2></center>')
     result.append('<table border="1">')
-    result.append('<tr><td><b>code</b></td><td><b>title</b></td><td><b>runos</b></td></tr>')
+    result.append('<tr><td><b>code</b></td><td><b>title</b></td><td><b>poems</b></td></tr>')
     with open('data/index/index-{}.txt'.format(q)) as fp:
         for line in fp:
-            code, title, runos = line.rstrip().split('\t')
+            code, title, poems = line.rstrip().split('\t')
             result.append('<tr><td>{}</td><td>{}</td><td>{}</td></tr>'.format(
                 code,
                 title,
-                ',\n'.join('<a href="/runo?nro={}">{}</a>'.format(x, x) \
-                           for x in runos.split(','))))
+                ',\n'.join('<a href="/poem?nro={}">{}</a>'.format(x, x) \
+                           for x in poems.split(','))))
     result.append('</table>')
     return '\n'.join(result)
 

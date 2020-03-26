@@ -18,7 +18,7 @@ class Verse:
         raise NotImplementedError()
 
 
-class Runo:
+class Poem:
     def __init__(self, so_id, meta, verses):
         self.so_id = so_id
         self.meta = meta
@@ -43,11 +43,11 @@ class Runo:
             'SELECT field, value FROM so_meta WHERE so_id = %s', fmt)
         cursor.execute(query, (so_id,))
         meta = { field : value for field, value in cursor.fetchall() }
-        return Runo(so_id, meta, verses)
+        return Poem(so_id, meta, verses)
 
     @staticmethod
     def from_db_by_nro(cursor, nro, fmt='mysql'):
         query = _format_query('SELECT so_id FROM sources WHERE nro=%s;', fmt)
         cursor.execute(query, (nro,))
         so_id = cursor.fetchall()[0]
-        return Runo.from_db(cursor, so_id, fmt)
+        return Poem.from_db(cursor, so_id, fmt)
