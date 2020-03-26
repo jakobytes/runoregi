@@ -22,12 +22,17 @@ def show_diff():
 @application.route('/runo')
 def show_poem():
 
+    def _makecolcomp(value):
+        result = hex(255-int(value*51))[2:]
+        if len(result) == 1:
+            result = '0'+result
+        return result
+
     def _makecol(value):
         val_norm = min(math.log(value), 10)
-        c = hex(255-int(val_norm*25.5))[2:]
-        if len(c) == 1:
-            c = '0'+c
-        return '#'+c+c+'FF'
+        rg = _makecolcomp(min(val_norm, 5))
+        b = _makecolcomp(max(val_norm-5, 0))
+        return '#'+rg+rg+b
 
     nro = request.args.get('nro', 1, type=str)
     hl = request.args.get('hl', None, type=int)
@@ -72,7 +77,7 @@ def show_poem():
                     '<td bgcolor="{}" align="right">'
                     '<a name="{}" href="/verse?id={}">'
                     '<img src="/static/img/transparent.png" width="15" height="15"'
-                    ' title="{} similar" alt="{} similar"></a></td>'
+                    ' title="{} similar" alt="{}"></a></td>'
                     '<td align="right">&ensp;<sup><small>{}</a>'
                     '</small></sup></td><td>{}</td>'
                     '</tr>'\
