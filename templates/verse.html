@@ -3,11 +3,27 @@
 
 <h2>Cluster</h2>
 <table>
+  <tr><td><hr/></td></tr>
   {% for v in verses %}
-  <tr>
-    <td><a href="/poem?nro={{ v[0] }}&hl={{ v[1] }}#{{ v[1] }}">{{ v[0] }}</a></td>
-    <td><sup><small>{{ v[1] }}</small></sup></td>
-    <td>{% if v[2] == v_id %}<b>{{ v[3] }}</b>{% else %}{{ v[3] }}{% endif %}</td>
-  </tr>
+  <tr><td{% if v[2] == v_id %} bgcolor="FFEEAA"{% endif %}>
+    <b><a href="/poem?nro={{ v[0] }}&hl={{ v[1] }}#{{ v[1] }}">{{ v[4] }}</a>
+    <sup><small>{{ v[1] }}</small></sup>
+    {% if v[2] == v_id %}<b>{{ v[3] }}</b>{% else %}{{ v[3] }}{% endif %}</b></br>
+    <table>
+    <tr>
+    <td valign="top" width="400">
+      &emsp;{{ v[5] }}<br/>
+      &emsp;{{ v[6] }}
+    </td>
+    <td valign="top" width="400">
+      <small><ul>
+      {% for theme in v[7] %}
+        <li>{{ theme }}
+      {% endfor %}
+      </ul></small>
+    </td>
+    </table>
+  </td></tr>
+  <tr><td><hr/></td></tr>
   {% endfor %}
 </table>
