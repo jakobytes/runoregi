@@ -1,0 +1,19 @@
+<table>
+<tr>
+  <td><h2>{{ nro_1 }}</h2><small>[<a href="/poem?nro={{ nro_1 }}">to poem</a>]</small></td>
+  <td><h2>{{ nro_2 }}</h2><small>[<a href="/poem?nro={{ nro_2 }}">to poem</a>]</small></td>
+</tr>
+{% for key in meta_keys %}
+<tr>
+  <td><small><b>{{ key }}:</b> {{ meta_1[key] }}</small></td>
+  <td><small><b>{{ key }}:</b> {{ meta_2[key] }}</small></td>
+</tr>
+{% endfor %}
+<tr><td>&nbsp;</td><td></td></tr>
+{% for x, y in alignment %}
+<tr>
+  <td>{% for c, t in x %}{% if t %}{% if c %}<font color="{{ c }}">{% endif %}{{ t }}{% if c %}</font>{% endif %}{% endif %}{% endfor %}</td>
+  <td>{% for c, t in y %}{% if t %}{% if c %}<font color="{{ c }}">{% endif %}{{ t }}{% if c %}</font>{% endif %}{% endif %}{% endfor %}</td>
+</tr>
+{% endfor %}
+</table>

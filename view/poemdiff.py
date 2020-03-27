@@ -1,3 +1,4 @@
+from flask import render_template
 import numpy as np
 import pymysql
 from subprocess import Popen, PIPE
@@ -7,6 +8,7 @@ import config
 from data import Poem
 
 
+COLOR_NORMAL = None
 COLOR_CHARDIFF = 'blue'
 COLOR_LINEDIFF = 'grey'
 
@@ -53,13 +55,6 @@ def render(nro_1, nro_2):
     poem_1, poem_2, sims_list = \
         get_data_from_db(nro_1, nro_2, config.MYSQL_PARAMS)
     sims = build_similarity_matrix(poem_1, poem_2, sims_list)
-    result = ['<table>']
-    result.append(
-        '<tr><td><h2>{}</h2><small>[<a href="/poem?nro={}">to poem</a>]</td>'\
-        .format(nro_1, nro_1))
-    result.append(
-        '<td><h2>{}</h2><small>[<a href="/poem?nro={}">to poem</a>]</td></tr>'\
-        .format(nro_2, nro_2))
     al = align(
         list(poem_1.text_verses()),
         list(poem_2.text_verses()),
@@ -67,49 +62,41 @@ def render(nro_1, nro_2):
         dist_fun=lambda i, j: sims[i,j],
         opt_fun=max,
         empty=None)
-    for key in sorted(list(set(poem_1.meta.keys()) | set(poem_2.meta.keys()))):
-        result.append('<tr><td><small><b>{}:</b> {}</small></td>'.format(
-                      key, poem_1.meta[key] if key in poem_1.meta else ''))
-        result.append('<td><small><b>{}: </b>{}</small></td></tr>'.format(
-                      key, poem_2.meta[key] if key in poem_2.meta else ''))
-    result.append('<tr><td>&nbsp;</td><td></td></tr>')
+    meta_keys = sorted(list(set(poem_1.meta.keys()) | set(poem_2.meta.keys())))
+    meta_1, meta_2 = {}, {}
+    for key in meta_keys:
+        meta_1[key] = poem_1.meta[key] if key in poem_1.meta else ''
+        meta_2[key] = poem_2.meta[key] if key in poem_2.meta else ''
+    alignment = []
     for row in al:
+        verse_1, verse_2 = [], []
         if row[2] > 0:
             v_al = align(row[0].text, row[1].text)
-            verse_1, verse_2 = [], []
-            different = False
+            chunk_1, chunk_2, different, col = [], [], False, COLOR_NORMAL
             for x, y, c in v_al:
-                if x != y:
-                    if not different:
-                        verse_1.append(
-                            '<font color="{}">'.format(COLOR_CHARDIFF))
-                        verse_2.append(
-                            '<font color="{}">'.format(COLOR_CHARDIFF))
-                        different = True
-                    if x == ' ': x = '_'
-                    verse_1.append(x)
-                    if y == ' ': y = '_'
-                    verse_2.append(y)
-                else:
-                    if different:
-                        different = False
-                        verse_1.append('</font>')
-                        verse_2.append('</font>')
-                    verse_1.append(x)
-                    verse_2.append(y)
-            if different:
-                verse_1.append('</font>')
-                verse_2.append('</font>')
-            result.append('<tr><td>{}</td><td>{}</td></tr>'.format(
-                ''.join(verse_1), ''.join(verse_2)))
+                if (x != y) != different:
+                    if chunk_1:
+                        verse_1.append((col, ''.join(chunk_1)))
+                    if chunk_2:
+                        verse_2.append((col, ''.join(chunk_2)))
+                    chunk_1, chunk_2 = [], []
+                    different = (x != y)
+                    col = COLOR_CHARDIFF if different else COLOR_NORMAL
+                if x == ' ': x = '_'
+                if y == ' ': y = '_'
+                chunk_1.append(x)
+                chunk_2.append(y)
+            if chunk_1:
+                verse_1.append((col, ''.join(chunk_1)))
+            if chunk_2:
+                verse_2.append((col, ''.join(chunk_2)))
         else:
-            result.append('<tr><td>{}</td><td>{}</td></tr>'.format(
-                    '<font color="{}">{}</font>'.format(\
-                        COLOR_LINEDIFF, row[0].text) \
-                      if row[0] is not None else '',
-                    '<font color="{}">{}</font>'.format(\
-                        COLOR_LINEDIFF, row[1].text) \
-                      if row[1] is not None else ''))
-    result.append('</table>')
-    return '\n'.join(result)
+            if row[0] is not None:
+                verse_1.append((COLOR_LINEDIFF, row[0].text))
+            if row[1] is not None:
+                verse_2.append((COLOR_LINEDIFF, row[1].text))
+        alignment.append((verse_1, verse_2))
+    return render_template('poemdiff.html', nro_1=nro_1, nro_2=nro_2,
+                           meta_keys=meta_keys, meta_1=meta_1, meta_2=meta_2,
+                           alignment=alignment)
 

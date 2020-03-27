@@ -1,0 +1,35 @@
+<h1>{{ nro }}</h1>
+<small>[<a href="/">to index</a>]</small>
+<h2>Similar poems</h2>
+<table>
+{% for sp in sim_poems %}
+  <tr>
+    <td><a href="/poemdiff?nro1={{ nro }}&nro2={{ sp[0] }}">{{ sp[0] }}</a></td>
+    <td>
+      &emsp;
+      <img src="/static/img/blue.png" width="{{ sp[2] }}" height="10">
+      &ensp;<small>{{ sp[1] }} %</small>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Text</h2>
+<table cellspacing="0" cellpadding="2">
+  {% for key, val in meta %}
+  <tr><td colspan="3"><small><b>{{ key }}:</b> {{ val }}</small></td></tr>
+  {% endfor %}
+  <tr><td colspan="3">&nbsp;</td></tr>
+  {% for v in verses %}
+  <tr>
+    <td bgcolor="{{ v[3] }}" align="right">
+      <a name="{{ v[0] }}" href="/verse?id={{ v[1] }}">
+        <img src="/static/img/transparent.png" width="15" height="15" title="{{ v[2] }} similar" alt="{{ v[2] }}">
+      </a>
+    </td>
+    <td align="right">&ensp;<sup><small>{{ v[0] }}</a></small></sup></td>
+    <td>{% if hl == v[0] %}<b>{{ v[4] }}</b>{% else %} {{ v[4] }}{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+

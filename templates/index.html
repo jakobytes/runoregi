@@ -1,0 +1,15 @@
+<center><h2>
+{% for x in index_letters %}
+  {% if x != q %}<a href="/?q={{ x }}">{{ x.upper() }}</a>{% else %}<b>{{ x.upper() }}</b>{% endif %}
+{% endfor %}
+</h2></center>
+<table border="1">
+<tr>
+  <td><b>code</b></td><td><b>title</b></td><td><b>poems</b></td></tr>
+{% for t in themes %}
+<tr>
+  <td>{{ t[0] }}</td><td>{{ t[1] }}</td>
+  <td>{% for p in t[2] %}<a href="/poem?nro={{ p }}">{{ p }}</a>, {% endfor %}</td>
+</tr>
+{% endfor %}
+</table>

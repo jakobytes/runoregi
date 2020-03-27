@@ -1,0 +1,13 @@
+<h1>{{ text }}</h1>
+<small>[<a href="/poem?nro={{ nro }}">back to poem</a>]</small>
+
+<h2>Cluster</h2>
+<table>
+  {% for v in verses %}
+  <tr>
+    <td><a href="/poem?nro={{ v[0] }}&hl={{ v[1] }}#{{ v[1] }}">{{ v[0] }}</a></td>
+    <td><sup><small>{{ v[1] }}</small></sup></td>
+    <td>{% if v[2] == v_id %}<b>{{ v[3] }}</b>{% else %}{{ v[3] }}{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
