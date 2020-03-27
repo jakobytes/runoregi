@@ -1,6 +1,7 @@
 from flask import render_template
 import numpy as np
 import pymysql
+import re
 from subprocess import Popen, PIPE
 
 from align import align

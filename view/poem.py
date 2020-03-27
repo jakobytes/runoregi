@@ -1,6 +1,7 @@
 from flask import render_template
 import math
 import pymysql
+import re
 
 import config
 from data import Poem
@@ -19,9 +20,11 @@ def render(nro, hl):
         b = _makecolcomp(max(val_norm-5, 0))
         return '#'+rg+rg+b
 
-    sim_poems, meta, verses = [], None, []
+    sim_poems, meta, verses, refs = [], None, [], []
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         poem = Poem.from_db_by_nro(db, nro, fmt='mysql')
+        if poem.refs is not None:
+            refs = re.sub('\n+', ' ', poem.refs).replace('#', '\n#').split('\n')
         db.execute(
             'SELECT so.nro, s.sim_al FROM so_sim_al s'
             ' JOIN sources so ON so.so_id = s.so2_id'
@@ -34,8 +37,8 @@ def render(nro, hl):
             sim_poems.append((nro_2, simperc, bw))
         meta = [(key, poem.meta[key]) for key in sorted(poem.meta)]
         for i, v in enumerate(poem.verses, 1):
-            if v.type == 'V':
-                verses.append((i, v.v_id, v.clustfreq, _makecol(v.clustfreq), v.text))
+            verses.append((i, v.v_id, v.clustfreq, _makecol(v.clustfreq),
+                           v.type, v.text))
     return render_template('poem.html', nro=nro, hl=hl, sim_poems=sim_poems,
-                           meta=meta, verses=verses)
+                           meta=meta, verses=verses, refs=refs)
 

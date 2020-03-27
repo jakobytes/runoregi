@@ -19,10 +19,11 @@ class Verse:
 
 
 class Poem:
-    def __init__(self, so_id, meta, verses):
+    def __init__(self, so_id, meta, verses, refs=None):
         self.so_id = so_id
         self.meta = meta
         self.verses = verses
+        self.refs = refs
 
     def text_verses(self):
         return (v for v in self.verses if v.type == 'V')
@@ -32,7 +33,7 @@ class Poem:
         query = _format_query(
             'SELECT v.v_id, v.type, v.text, cf.freq FROM verses v'\
             ' JOIN v_so ON v_so.v_id = v.v_id'\
-            ' JOIN v_clust vc ON v_so.v_id = vc.v_id'\
+            ' LEFT OUTER JOIN v_clust vc ON v_so.v_id = vc.v_id'\
             ' JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id'\
             ' WHERE v_so.so_id=%s;',
             fmt)
@@ -43,7 +44,12 @@ class Poem:
             'SELECT field, value FROM so_meta WHERE so_id = %s', fmt)
         cursor.execute(query, (so_id,))
         meta = { field : value for field, value in cursor.fetchall() }
-        return Poem(so_id, meta, verses)
+        query = _format_query(
+            'SELECT refs FROM so_refs WHERE so_id = %s', fmt)
+        cursor.execute(query, (so_id,))
+        result = cursor.fetchall()
+        refs = result[0][0] if result else None
+        return Poem(so_id, meta, verses, refs)
 
     @staticmethod
     def from_db_by_nro(cursor, nro, fmt='mysql'):

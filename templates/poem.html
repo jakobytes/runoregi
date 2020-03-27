@@ -22,14 +22,37 @@
   <tr><td colspan="3">&nbsp;</td></tr>
   {% for v in verses %}
   <tr>
-    <td bgcolor="{{ v[3] }}" align="right">
-      <a name="{{ v[0] }}" href="/verse?id={{ v[1] }}">
-        <img src="/static/img/transparent.png" width="15" height="15" title="{{ v[2] }} similar" alt="{{ v[2] }}">
-      </a>
-    </td>
-    <td align="right">&ensp;<sup><small>{{ v[0] }}</a></small></sup></td>
-    <td>{% if hl == v[0] %}<b>{{ v[4] }}</b>{% else %} {{ v[4] }}{% endif %}</td>
+    {% if v[4] == "V" %}
+      <td bgcolor="{{ v[3] }}" align="right" width="19">
+        <a name="{{ v[0] }}" href="/verse?id={{ v[1] }}">
+          <img src="/static/img/transparent.png" width="15" height="15" title="{{ v[2] }} similar" alt="{{ v[2] }}">
+        </a>
+      </td>
+      <td align="right" width="30">&ensp;<sup><small>{{ v[0] }}</a></small></sup></td>
+      <td width="350">
+      {% if hl == v[0] %}
+        <b>{{ v[5] }}</b>
+      {% else %}
+        {{ v[5] }}
+      {% endif %}</td>
+    {% else %}
+      {% if v[4] == "L" %}
+      <td></td><td></td><td><small><i>{{ v[5] }}</i></small></td>
+      {% elif v[4] == "K" %}
+      <td></td><td></td><td><small>{{ v[5] }}</small></td>
+      {% elif v[4] == "CPT" %}
+      <td colspan="3" align="center"><h4>{{ v[5] }}</h4></td>
+      {% endif %}
+    {% endif %}
   </tr>
   {% endfor %}
+  <tr><td colspan="3"><hr/></td></tr>
+  <tr><td colspan="3">
+    <small>
+    {% for r in refs %}
+    {{ r }}<br/>
+    {% endfor %}
+    </small>
+  </td></tr>
 </table>
 
