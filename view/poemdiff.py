@@ -83,8 +83,8 @@ def render(nro_1, nro_2):
                     chunk_1, chunk_2 = [], []
                     different = (x != y)
                     col = COLOR_CHARDIFF if different else COLOR_NORMAL
-                if x == ' ': x = '_'
-                if y == ' ': y = '_'
+                if x == ' ' and different: x = '_'
+                if y == ' ' and different: y = '_'
                 chunk_1.append(x)
                 chunk_2.append(y)
             if chunk_1:
