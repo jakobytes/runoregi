@@ -19,9 +19,13 @@ class Verse:
 
 
 class Poem:
-    def __init__(self, so_id, meta, verses, refs=None):
+    def __init__(self, so_id, nro, loc, col, meta, topics, verses, refs=None):
         self.so_id = so_id
+        self.nro = nro
+        self.loc = loc
+        self.col = col
         self.meta = meta
+        self.topics = topics
         self.verses = verses
         self.refs = refs
 
@@ -30,6 +34,13 @@ class Poem:
 
     @staticmethod
     def from_db(cursor, so_id, fmt='mysql'):
+        cursor.execute(
+            'SELECT nro, region, name, collector FROM sources'
+            ' NATURAL JOIN locations'
+            ' NATURAL JOIN collectors'
+            ' WHERE so_id = %s;',
+            (so_id,))
+        nro, loc_reg, loc_name, col = cursor.fetchall()[0]
         query = _format_query(
             'SELECT v.v_id, v.type, v.text, cf.freq FROM verses v'\
             ' JOIN v_so ON v_so.v_id = v.v_id'\
@@ -44,12 +55,20 @@ class Poem:
             'SELECT field, value FROM so_meta WHERE so_id = %s', fmt)
         cursor.execute(query, (so_id,))
         meta = { field : value for field, value in cursor.fetchall() }
+        cursor.execute(
+            'SELECT f.title, t.title_1 FROM so_type st'
+            ' JOIN types t ON st.t_id = t.t_id'
+            ' JOIN files f ON t.f_id = f.f_id'
+            ' WHERE st.so_id = %s;',
+            (so_id,))
+        topics = cursor.fetchall()
         query = _format_query(
             'SELECT refs FROM so_refs WHERE so_id = %s', fmt)
         cursor.execute(query, (so_id,))
         result = cursor.fetchall()
         refs = result[0][0] if result else None
-        return Poem(so_id, meta, verses, refs)
+        return Poem(so_id, nro, (loc_reg, loc_name), col,
+                    meta, topics, verses, refs)
 
     @staticmethod
     def from_db_by_nro(cursor, nro, fmt='mysql'):

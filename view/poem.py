@@ -20,11 +20,14 @@ def render(nro, hl):
         b = _makecolcomp(max(val_norm-5, 0))
         return '#'+rg+rg+b
 
-    sim_poems, meta, verses, refs = [], None, [], []
+    topics, sim_poems, meta, verses, refs = [], [], [], [], []
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         poem = Poem.from_db_by_nro(db, nro, fmt='mysql')
+        title = 'SKVR {OSA} {ID}'.format(**poem.meta)
+        loc, col = poem.loc, poem.col
         if poem.refs is not None:
             refs = re.sub('\n+', ' ', poem.refs).replace('#', '\n#').split('\n')
+        topics = poem.topics
         db.execute(
             'SELECT so.nro, s.sim_al FROM so_sim_al s'
             ' JOIN sources so ON so.so_id = s.so2_id'
@@ -35,10 +38,11 @@ def render(nro, hl):
             simperc = round(sim*100)
             bw = simperc*3
             sim_poems.append((nro_2, simperc, bw))
-        meta = [(key, poem.meta[key]) for key in sorted(poem.meta)]
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.v_id, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text))
-    return render_template('poem.html', nro=nro, hl=hl, sim_poems=sim_poems,
-                           meta=meta, verses=verses, refs=refs)
+    return render_template('poem.html', nro=nro, hl=hl, title=title,
+                           loc=loc, col=col,
+                           topics=topics, sim_poems=sim_poems, meta=poem.meta,
+                           verses=verses, refs=refs)
 

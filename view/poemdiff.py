@@ -98,6 +98,8 @@ def render(nro_1, nro_2):
                 verse_2.append((COLOR_LINEDIFF, row[1].text))
         alignment.append((verse_1, verse_2))
     return render_template('poemdiff.html', nro_1=nro_1, nro_2=nro_2,
+                           loc_1=poem_1.loc, loc_2=poem_2.loc,
                            meta_keys=meta_keys, meta_1=meta_1, meta_2=meta_2,
+                           topics_1=poem_1.topics, topics_2=poem_2.topics,
                            alignment=alignment)
 

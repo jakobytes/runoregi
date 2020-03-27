@@ -1,5 +1,24 @@
-<h1>{{ nro }}</h1>
+<!-- <h1>{{ nro }}</h1> -->
 <small>[<a href="/">to index</a>]</small>
+<h1>{{ title }}</h1>
+
+{{ loc[0] }} &mdash; {{ loc[1] }}<br/>
+{{ col }} 
+
+<h2>Metadata</h2>
+<table>
+  {% for key, val in meta.items() %}
+  <tr><td align="right"><b>{{ key }}&ensp;</b></td><td>{{ val }}</td></tr>
+  {% endfor %}
+</table>
+
+<h2>Themes</h2>
+<ul>
+{% for f, t in topics %}
+<li>{{ f }} &mdash; {{ t }}
+{% endfor %}
+</ul>
+
 <h2>Similar poems</h2>
 <table>
 {% for sp in sim_poems %}
@@ -16,10 +35,6 @@
 
 <h2>Text</h2>
 <table cellspacing="0" cellpadding="2">
-  {% for key, val in meta %}
-  <tr><td colspan="3"><small><b>{{ key }}:</b> {{ val }}</small></td></tr>
-  {% endfor %}
-  <tr><td colspan="3">&nbsp;</td></tr>
   {% for v in verses %}
   <tr>
     {% if v[4] == "V" %}
