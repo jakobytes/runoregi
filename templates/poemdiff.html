@@ -25,19 +25,19 @@
 {% endfor %}
 <tr>
   <td valign="top">
-    <small><br/>
+    <small><ul>
     {% for f, t in topics_1 %}
-    {{ f }} &mdash; {{ t }}<br/>
+    <li>{{ f }} &mdash; {{ t }}
     {% endfor %}
-    </small>
+    </ul></small>
   </td>
   <td></td>
-  <td valign="top"><br/>
-    <small>
+  <td valign="top">
+    <small><ul>
     {% for f, t in topics_2 %}
-    {{ f }} &mdash; {{ t }}<br/>
+    <li>{{ f }} &mdash; {{ t }}
     {% endfor %}
-    </small>
+    </ul></small>
   </td>
 </tr>
 <tr><td colspan="3">&nbsp;</td>
