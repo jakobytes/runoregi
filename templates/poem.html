@@ -22,11 +22,22 @@
 <table>
 {% for sp in sim_poems %}
   <tr>
-    <td><a href="/poemdiff?nro1={{ nro }}&nro2={{ sp[0] }}">{{ sp[0] }}</a></td>
+    <td align="right">
+    <a href="/poemdiff?nro1={{ nro }}&nro2={{ sp[0] }}">{{ sp[1] }}</a>
+      &ensp;
+    </td>
     <td>
-      &emsp;
-      <img src="/static/img/blue.png" width="{{ sp[2] }}" height="10">
-      &ensp;<small>{{ sp[1] }} %</small>
+      <img src="/static/img/blue.png" width="{{ (sp[5]*300) | int }}" height="10">
+      &ensp;<small>{{ (sp[5]*100) | int }} %&emsp;</small>
+    </td>
+    <td>
+      <small>{{ sp[3] }}</small>
+    </td>
+    <td>
+      <small>{{ sp[2] }}</small>
+    </td>
+    <td>
+      <small>{{ sp[4] }}</small>
     </td>
   </tr>
   {% endfor %}

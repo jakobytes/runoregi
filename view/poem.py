@@ -29,15 +29,20 @@ def render(nro, hl):
             refs = re.sub('\n+', ' ', poem.refs).replace('#', '\n#').split('\n')
         topics = poem.topics
         db.execute(
-            'SELECT so.nro, s.sim_al FROM so_sim_al s'
+            'SELECT so.nro,'
+            '       CONCAT(sm1.value, " ", sm2.value),'
+            '       CONCAT(loc.region, " — ", loc.name),'
+            '       so.year, col.collector, s.sim_al'
+            ' FROM so_sim_al s'
             ' JOIN sources so ON so.so_id = s.so2_id'
+            ' JOIN collectors col ON so.col_id = col.col_id'
+            ' JOIN locations loc ON so.loc_id = loc.loc_id'
+            ' LEFT OUTER JOIN so_meta sm1 ON so.so_id = sm1.so_id AND sm1.field = "OSA"'
+            ' LEFT OUTER JOIN so_meta sm2 ON so.so_id = sm2.so_id AND sm2.field = "ID"'
             ' WHERE s.so1_id = %s AND s.sim_al > 0.01'
             ' ORDER BY s.sim_al DESC;',
             (poem.so_id,))
-        for nro_2, sim in db.fetchall():
-            simperc = round(sim*100)
-            bw = simperc*3
-            sim_poems.append((nro_2, simperc, bw))
+        sim_poems = db.fetchall()
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.v_id, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text))
