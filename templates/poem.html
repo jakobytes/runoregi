@@ -1,9 +1,8 @@
-<!-- <h1>{{ nro }}</h1> -->
 <small>[<a href="/">to index</a>]</small>
 <h1>{{ title }}</h1>
 
 {{ loc[0] }} &mdash; {{ loc[1] }}<br/>
-{{ col }} 
+{{ year }}&ensp;{{ col }} 
 
 <h2>Metadata</h2>
 <table>
@@ -45,7 +44,7 @@
       </td>
       <td align="right" width="30">&ensp;<sup><small>{{ v[0] }}</a></small></sup></td>
       <td width="350">
-      {% if hl == v[0] %}
+      {% if v[0] in hl %}
         <b>{{ v[5] }}</b>
       {% else %}
         {{ v[5] }}

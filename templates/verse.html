@@ -5,19 +5,35 @@
 <table>
   <tr><td><hr/></td></tr>
   {% for v in verses %}
-  <tr><td{% if v[2] == v_id %} bgcolor="FFEEAA"{% endif %}>
-    <b><a href="/poem?nro={{ v[0] }}&hl={{ v[1] }}#{{ v[1] }}">{{ v[4] }}</a>
-    <sup><small>{{ v[1] }}</small></sup>
-    {% if v[2] == v_id %}<b>{{ v[3] }}</b>{% else %}{{ v[3] }}{% endif %}</b></br>
+  <tr><td{% if v_id in v[2] %} bgcolor="FFEEAA"{% endif %}>
+    <table>
+    <tr>
+      <td valign="top">
+        <b><a href="/poem?nro={{ v[0] }}&hl={{ ','.join(map(str, v[1])) }}#{{ min(v[1]) }}">
+	  {{ v[4] }}
+	</a></b>
+      </td>
+      <td>
+        <table border="0" cellpadding="0" cellspacing="0">
+	{% for pos, v_id, text in zip(v[1], v[2], v[3]) %}
+	<tr>
+          <td align="right"><sup><small>{{ pos }}</small></sup>&thinsp;</td>
+	  <td><b>{{ text }}</b></td>
+	</tr>
+	{% endfor %}
+	</table>
+      </td>
+    </tr>
+    </table>
     <table>
     <tr>
     <td valign="top" width="400">
       &emsp;{{ v[5] }}<br/>
-      &emsp;{{ v[6] }}
+      &emsp;{{ v[6] }}&ensp;{{ v[7] }}
     </td>
     <td valign="top" width="400">
       <small><ul>
-      {% for theme in v[7] %}
+      {% for theme in v[8] %}
         <li>{{ theme }}
       {% endfor %}
       </ul></small>

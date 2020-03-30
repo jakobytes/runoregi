@@ -24,7 +24,7 @@ def render(nro, hl):
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         poem = Poem.from_db_by_nro(db, nro, fmt='mysql')
         title = 'SKVR {OSA} {ID}'.format(**poem.meta)
-        loc, col = poem.loc, poem.col
+        loc, col, year = poem.loc, poem.col, poem.year
         if poem.refs is not None:
             refs = re.sub('\n+', ' ', poem.refs).replace('#', '\n#').split('\n')
         topics = poem.topics
@@ -42,7 +42,7 @@ def render(nro, hl):
             verses.append((i, v.v_id, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text))
     return render_template('poem.html', nro=nro, hl=hl, title=title,
-                           loc=loc, col=col,
+                           loc=loc, col=col, year=year,
                            topics=topics, sim_poems=sim_poems, meta=poem.meta,
                            verses=verses, refs=refs)
 

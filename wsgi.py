@@ -25,7 +25,8 @@ def show_diff():
 @application.route('/runo')
 def show_poem():
     nro = request.args.get('nro', 1, type=str)
-    hl = request.args.get('hl', None, type=int)
+    hl_str = request.args.get('hl', None, type=str)
+    hl = list(map(int, hl_str.split(','))) if hl_str is not None else []
     return _compact(view.poem.render(nro, hl))
 
 @application.route('/verse')
@@ -39,5 +40,6 @@ def index():
     return view.index.render(q)
 
 if __name__ == '__main__':
+    application.jinja_env.globals.update(zip=zip, min=min, map=map, str=str)
     application.run()
 
