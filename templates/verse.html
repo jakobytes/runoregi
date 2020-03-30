@@ -10,12 +10,12 @@
     <tr>
       <td valign="top">
         <b><a href="/poem?nro={{ v[0] }}&hl={{ v[1] | join(',')  }}#{{ v[1] | min }}">
-	  {{ v[4] }}
+	  {{ v[3] }}
 	</a></b>
       </td>
       <td>
         <table border="0" cellpadding="0" cellspacing="0">
-	{% for pos, v_id, text in zip(v[1], v[2], v[3]) %}
+	{% for pos, v_id, text in v[2] %}
 	<tr>
           <td align="right"><sup><small>{{ pos }}</small></sup>&thinsp;</td>
 	  <td><b>{{ text }}</b></td>
@@ -28,12 +28,12 @@
     <table>
     <tr>
     <td valign="top" width="400">
-      &emsp;{{ v[5] }}<br/>
-      &emsp;{{ v[6] }}&ensp;{{ v[7] }}
+      &emsp;{{ v[4] }}<br/>
+      &emsp;{{ v[5] }}&ensp;{{ v[6] }}
     </td>
     <td valign="top" width="400">
       <small><ul>
-      {% for theme in v[8] %}
+      {% for theme in v[7] %}
         <li>{{ theme }}
       {% endfor %}
       </ul></small>

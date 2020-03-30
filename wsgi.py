@@ -40,6 +40,5 @@ def index():
     return view.index.render(q)
 
 if __name__ == '__main__':
-    application.jinja_env.globals.update(zip=zip)
     application.run()
 
