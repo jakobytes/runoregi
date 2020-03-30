@@ -9,7 +9,7 @@
     <table>
     <tr>
       <td valign="top">
-        <b><a href="/poem?nro={{ v[0] }}&hl={{ ','.join(map(str, v[1])) }}#{{ min(v[1]) }}">
+        <b><a href="/poem?nro={{ v[0] }}&hl={{ v[1] | join(',')  }}#{{ v[1] | min }}">
 	  {{ v[4] }}
 	</a></b>
       </td>
