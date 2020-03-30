@@ -41,12 +41,11 @@ def render(v_id):
         for r in db.fetchall():
             # TODO clean!
             if r[0] == nro and results:
-                results[-1][1].append(r[1])
-                results[-1][2].append((r[1], r[2], r[3]))
+                results[-1][1].append((r[1], r[2], r[3]))
             else:
                 nro = r[0]
                 results.append(
-                    (r[0], [r[1]], [(r[1], r[2], r[3])],
+                    (r[0], [(r[1], r[2], r[3])],
                      r[4], r[5], r[6], r[7],
                      r[8].split(';;;') if r[8] else []))
     return render_template('verse.html', v_id=v_id, text=text,
