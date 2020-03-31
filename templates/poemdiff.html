@@ -1,51 +1,64 @@
 <table>
-<tr>
-  <td>
-    <small>[<a href="/poem?nro={{ nro_1 }}">to poem</a>]</small>
-    <h2>{{ nro_1 }}</h2>
-    <small>
-    {{ loc_1[0] }} &mdash; {{ loc_1[1] }}<br/>
-    </small>
-  </td>
-  <td width="30"></td>
-  <td>
-    <small>[<a href="/poem?nro={{ nro_2 }}">to poem</a>]</small>
-    <h2>{{ nro_2 }}</h2>
-    <small>
-    {{ loc_2[0] }} &mdash; {{ loc_2[1] }}<br/>
-    </small>
-  </td>
-</tr>
-{% for key in meta_keys %}
-<tr>
-  <td><small><b>{{ key }}:</b> {{ meta_1[key] }}</small></td>
-  <td></td>
-  <td><small><b>{{ key }}:</b> {{ meta_2[key] }}</small></td>
-</tr>
-{% endfor %}
-<tr>
-  <td valign="top">
-    <small><ul>
-    {% for f, t in topics_1 %}
-    <li>{{ f }} &mdash; {{ t }}
-    {% endfor %}
-    </ul></small>
-  </td>
-  <td></td>
-  <td valign="top">
-    <small><ul>
-    {% for f, t in topics_2 %}
-    <li>{{ f }} &mdash; {{ t }}
-    {% endfor %}
-    </ul></small>
-  </td>
-</tr>
-<tr><td colspan="3">&nbsp;</td>
-{% for x, y in alignment %}
-<tr>
-  <td>{% for c, t in x %}{% if t %}{% if c %}<font color="{{ c }}">{% endif %}{{ t }}{% if c %}</font>{% endif %}{% endif %}{% endfor %}</td>
-  <td></td>
-  <td>{% for c, t in y %}{% if t %}{% if c %}<font color="{{ c }}">{% endif %}{{ t }}{% if c %}</font>{% endif %}{% endif %}{% endfor %}</td>
-</tr>
-{% endfor %}
+  <tr>
+    <td>
+      <small>[<a href="/poem?nro={{ nro_1 }}">to poem</a>]</small>
+      <h2>{{ nro_1 }}</h2>
+      <small> {{ loc_1[0] }} &mdash; {{ loc_1[1] }}<br /> </small>
+    </td>
+    <td width="30"></td>
+    <td>
+      <small>[<a href="/poem?nro={{ nro_2 }}">to poem</a>]</small>
+      <h2>{{ nro_2 }}</h2>
+      <small> {{ loc_2[0] }} &mdash; {{ loc_2[1] }}<br /> </small>
+    </td>
+  </tr>
+  {% for key in meta_keys %}
+  <tr>
+    <td>
+      <small><b>{{ key }}:</b> {{ meta_1[key] }}</small>
+    </td>
+    <td></td>
+    <td>
+      <small><b>{{ key }}:</b> {{ meta_2[key] }}</small>
+    </td>
+  </tr>
+  {% endfor %}
+  <tr>
+    <td valign="top">
+      <small
+        ><ul>
+          {% for f_id, t_id, f, t in topics_1 %}
+          <li>{{ f }} &mdash; {{ t }} {% endfor %}</li>
+        </ul></small
+      >
+    </td>
+    <td></td>
+    <td valign="top">
+      <small
+        ><ul>
+          {% for f_id, t_id, f, t in topics_2 %}
+          <li>{{ f }} &mdash; {{ t }} {% endfor %}</li>
+        </ul></small
+      >
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3">&nbsp;</td>
+    {% for x, y in alignment %}
+  </tr>
+
+  <tr>
+    <td>
+      {% for c, t in x %}{% if t %}{% if c %}<font color="{{ c }}"
+        >{% endif %}{{ t }}{% if c %}</font
+      >{% endif %}{% endif %}{% endfor %}
+    </td>
+    <td></td>
+    <td>
+      {% for c, t in y %}{% if t %}{% if c %}<font color="{{ c }}"
+        >{% endif %}{{ t }}{% if c %}</font
+      >{% endif %}{% endif %}{% endfor %}
+    </td>
+  </tr>
+  {% endfor %}
 </table>

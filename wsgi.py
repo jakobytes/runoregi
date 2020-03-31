@@ -36,8 +36,9 @@ def show_verse():
 
 @application.route('/')
 def index():
-    q = request.args.get('q', 'a', type=str).lower()
-    return view.index.render(q)
+    return application.send_static_file('skvr-themes.html')
+#    q = request.args.get('q', 'a', type=str).lower()
+#    return view.index.render(q)
 
 if __name__ == '__main__':
     application.run()

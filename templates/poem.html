@@ -1,4 +1,4 @@
-<small>[<a href="/">to index</a>]</small>
+<small>[<a target="_parent" href="/#paahakemisto">to index</a>]</small>
 <h1>{{ title }}</h1>
 
 {{ loc[0] }} &mdash; {{ loc[1] }}<br/>
@@ -13,8 +13,8 @@
 
 <h2>Themes</h2>
 <ul>
-{% for f, t in topics %}
-<li>{{ f }} &mdash; {{ t }}
+{% for f_id, t_id, f, t in topics %}
+<li><a target="_parent" href="/#{{f_id}}">{{ f }}</a> &mdash; <a target="_parent" href="/#{{t_id}}">{{ t }}</a></li>
 {% endfor %}
 </ul>
 

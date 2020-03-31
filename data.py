@@ -57,7 +57,7 @@ class Poem:
         cursor.execute(query, (so_id,))
         meta = { field : value for field, value in cursor.fetchall() }
         cursor.execute(
-            'SELECT f.title, t.title_1 FROM so_type st'
+            'SELECT f.code, t.code, f.title, t.title_1 FROM so_type st'
             ' JOIN types t ON st.t_id = t.t_id'
             ' JOIN files f ON t.f_id = f.f_id'
             ' WHERE st.so_id = %s;',
