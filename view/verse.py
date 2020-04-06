@@ -5,6 +5,29 @@ import config
 
 
 def render(v_id):
+
+    def _group_by_source(verses):
+        '''
+        Group the results of the verses query by source, i.e. convert
+        per-verse tuples:
+          (nro, pos, v_id, text, so_name, location, year, collector,
+           types)
+        to per-source tuples:
+          (nro, verses, so_name, location, year, collector, types)
+        where `verses` is a list of (pos, v_id, text).
+        '''
+        cur_nro, results = None, []
+        for nro, pos, v_id, text, so_name, loc, year, col, types in verses:
+            if nro == cur_nro and results:
+                results[-1][1].append((pos, v_id, text))
+            else:
+                cur_nro = nro
+                results.append(
+                    (cur_nro, [(pos, v_id, text)],
+                     so_name, loc, year, col,
+                     types.split(';;;') if types else []))
+        return results
+
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         db.execute(
             'SELECT v_id, text, nro FROM verses'
@@ -37,17 +60,7 @@ def render(v_id):
             '     tt ON so.so_id = tt.so_id'
             ' WHERE vc1.v_id = %s',
             (v_id,))
-        nro, results = None, []
-        for r in db.fetchall():
-            # TODO clean!
-            if r[0] == nro and results:
-                results[-1][1].append((r[1], r[2], r[3]))
-            else:
-                nro = r[0]
-                results.append(
-                    (r[0], [(r[1], r[2], r[3])],
-                     r[4], r[5], r[6], r[7],
-                     r[8].split(';;;') if r[8] else []))
+        verses = _group_by_source(db.fetchall())
     return render_template('verse.html', v_id=v_id, text=text,
-                           nro=nro, verses=results)
+                           nro=nro, verses=verses)
 
