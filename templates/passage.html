@@ -1,0 +1,44 @@
+<h1>Similar passages</h1>
+
+<table>
+  <tr><td><hr/></td></tr>
+  {% for h in hits %}
+  <tr><td{% if h['hl'] %} bgcolor="FFEEAA"{% endif %}>
+    <table>
+    <tr>
+      <td valign="top">
+        <b><a href="/poem?nro={{ sources[h['so_id']]['nro'] }}">
+	  {{ sources[h['so_id']]['name'] }}
+	</a></b>
+      </td>
+      <td>
+        <table border="0" cellpadding="0" cellspacing="0">
+	{% for v_id, hl in h['verses'] %}
+	<tr>
+          <td align="right"><sup><small>{{ verses[v_id]['pos'] }}</small></sup>&thinsp;</td>
+	  <td>{% if hl %}<b>{% endif %}{{ verses[v_id]['text'] }}{% if hl %}</b>{% endif %}</td>
+	</tr>
+	{% endfor %}
+	</table>
+      </td>
+    </tr>
+    </table>
+    <table>
+    <tr>
+    <td valign="top" width="400">
+      &emsp;{{ sources[h['so_id']]['loc'] }}<br/>
+      &emsp;{{ sources[h['so_id']]['year'] }}&ensp;{{ sources[h['so_id']]['col'] }}
+    </td>
+    <td valign="top" width="400">
+      <small><ul>
+      {% for theme in sources[h['so_id']]['types'] %}
+        <li>{{ theme }}
+      {% endfor %}
+      </ul></small>
+    </td>
+    </tr>
+    </table>
+  </td></tr>
+  <tr><td><hr/></td></tr>
+  {% endfor %}
+</table>

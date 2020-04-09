@@ -2,6 +2,7 @@ from flask import Flask, request
 import re
 
 import view.index
+import view.passage
 import view.poem
 import view.poemdiff
 import view.verse
@@ -13,6 +14,16 @@ def _compact(string):
     'Remove empty lines from the HTML code.'
     return re.sub(r'\n(\s*\n)+', '\n', string)
 
+@application.route('/passage')
+def show_passage():
+    start_id = request.args.get('start', 1, type=int)
+    end_id = request.args.get('end', 1, type=int)
+    dist = request.args.get('dist', 2, type=int)
+    context = request.args.get('context', 2, type=int)
+    hitfact = request.args.get('hitfact', 0.5, type=float)
+    return _compact(view.passage.render(
+                start_id, end_id, dist=dist,
+                context=context, hitfact=hitfact))
 
 @application.route('/poemdiff')
 @application.route('/runodiff')
