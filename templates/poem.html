@@ -13,7 +13,9 @@
 <h2>Metadata</h2>
 <table>
   {% for key, val in meta.items() %}
-  <tr><td align="right"><b>{{ key }}&ensp;</b></td><td>{{ val }}</td></tr>
+  <tr>
+    <td align="right" width="50"><b>{{ key }}&ensp;</b></td>
+    <td width="350">{{ val }}</td></tr>
   {% endfor %}
 </table>
 
@@ -59,7 +61,7 @@
           <img src="/static/img/transparent.png" width="15" height="15" title="{{ v[2] }} similar" alt="{{ v[2] }}">
         </a>
       </td>
-      <td align="right" width="30">&ensp;<sup><small>{{ v[0] }}</a></small></sup></td>
+      <td align="right" width="35">&ensp;<sup><small>{{ v[0] }}</a></small></sup></td>
       <td width="350" class="verse" id="{{ v[1] }}">
       {% if v[0] in hl %}
         <b>{{ v[5] }}</b>
