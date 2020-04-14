@@ -36,6 +36,27 @@ def render(v_id):
             ' WHERE v_id = %s;', v_id)
         v_id, text, nro = db.fetchall()[0]
         db.execute(
+            'SELECT region, count(*) as freq '
+            ' FROM v_clust vc1 '
+            ' JOIN v_clust vc2 ON vc1.clust_id = vc2.clust_id'
+            ' JOIN v_so ON v_so.v_id = vc2.v_id'
+            ' NATURAL JOIN sources'
+            ' NATURAL JOIN locations'
+            ' WHERE vc1.v_id=%s'
+            ' GROUP BY region ORDER BY freq DESC;', v_id)
+        regions = db.fetchall()
+        db.execute(
+        'SELECT CONCAT(f.title, " — ", t.title_1), count(*) as freq '
+        ' FROM v_clust vc1'
+        ' JOIN v_clust vc2 ON vc1.clust_id = vc2.clust_id'
+        ' JOIN v_so ON v_so.v_id = vc2.v_id'
+        ' JOIN so_type ON v_so.so_id = so_type.so_id'
+        ' JOIN types t ON t.t_id=so_type.t_id'
+        ' JOIN files f ON f.f_id = t.f_id'
+        ' WHERE vc1.v_id=%s'
+        ' GROUP BY t.title_1 ORDER BY freq DESC;', v_id)
+        themes = db.fetchall()
+        db.execute(
             'SELECT so.nro, v_so.pos, v_so.v_id, v.text,'
             '       CONCAT(sm1.value, " ", sm2.value),'
             '       CONCAT(loc.region, " — ", loc.name),'
@@ -62,5 +83,6 @@ def render(v_id):
             (v_id,))
         verses = _group_by_source(db.fetchall())
     return render_template('verse.html', v_id=v_id, text=text,
-                           nro=nro, verses=verses)
+                           nro=nro, regions=regions, themes=themes,
+                           verses=verses)
 

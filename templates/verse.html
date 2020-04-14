@@ -1,6 +1,26 @@
 <h1>{{ text }}</h1>
 <small>[<a href="/poem?nro={{ nro }}">back to poem</a>]</small>
 
+<h2>Areal distribution</h2>
+<table>
+{% for region, freq in regions %}
+<tr>
+  <td>{{ region }}</td>
+  <td>&emsp;<img src="/static/img/blue.png" width="{{ freq }}" height="10">&ensp;<small>{{ freq }}</small></td>
+</tr>
+{% endfor %}
+</table>
+
+<h2>Thematic distribution</h2>
+<table>
+{% for theme, freq in themes %}
+<tr>
+  <td>{{ theme }}</td>
+  <td>&emsp;<img src="/static/img/blue.png" width="{{ freq }}" height="10">&ensp;<small>{{ freq }}</small></td>
+</tr>
+{% endfor %}
+</table>
+
 <h2>Cluster</h2>
 <table>
   <tr><td><hr/></td></tr>
