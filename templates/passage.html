@@ -7,16 +7,16 @@
     <table>
     <tr>
       <td valign="top">
-        <b><a href="/poem?nro={{ sources[h['so_id']]['nro'] }}">
+        <b><a href="/poem?nro={{ sources[h['so_id']]['nro'] }}&hl={{ h['verses'] | selectattr(3) | map(attribute=1) | join(',') }}#{{ h['verses'] | map(attribute=1) | min }}">
 	  {{ sources[h['so_id']]['name'] }}
 	</a></b>
       </td>
       <td>
         <table border="0" cellpadding="0" cellspacing="0">
-	{% for v_id, hl in h['verses'] %}
+	{% for v_id, pos, text, hl in h['verses'] %}
 	<tr>
-          <td align="right"><sup><small>{{ verses[v_id]['pos'] }}</small></sup>&thinsp;</td>
-	  <td>{% if hl %}<b>{% endif %}{{ verses[v_id]['text'] }}{% if hl %}</b>{% endif %}</td>
+          <td align="right"><sup><small>{{ pos }}</small></sup>&thinsp;</td>
+	  <td>{% if hl %}<b>{% endif %}{{ text }}{% if hl %}</b>{% endif %}</td>
 	</tr>
 	{% endfor %}
 	</table>

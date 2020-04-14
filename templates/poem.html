@@ -68,11 +68,16 @@
       {% endif %}</td>
     {% else %}
       {% if v[4] == "L" %}
-      <td></td><td></td><td><small><i>{{ v[5] }}</i></small></td>
+      <td><a name="{{ v[0] }}" href="/verse?id={{ v[1] }}"></a></td>
+      <td></td><td><small><i>{{ v[5] }}</i></small></td>
       {% elif v[4] == "K" %}
-      <td></td><td></td><td><small>{{ v[5] }}</small></td>
+      <td><a name="{{ v[0] }}" href="/verse?id={{ v[1] }}"></a></td>
+      <td></td><td><small>{{ v[5] }}</small></td>
       {% elif v[4] == "CPT" %}
-      <td colspan="3" align="center"><h4>{{ v[5] }}</h4></td>
+      <td colspan="3" align="center">
+        <a name="{{ v[0] }}" href="/verse?id={{ v[1] }}"></a>
+        <h4>{{ v[5] }}</h4>
+      </td>
       {% endif %}
     {% endif %}
   </tr>
