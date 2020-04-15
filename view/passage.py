@@ -134,5 +134,7 @@ def render(start_id, end_id, dist=2, context=2, hitfact=0.5):
                     if v_id in verses \
                         and verses[v_id]['so_id'] == h['so_id']]
             h['hl'] = start_id in range(*h['interval'])
-        return render_template('passage.html', hits=hits, sources=sources)
+        return render_template(
+            'passage.html', start=start_id, end=end_id, dist=dist,
+            context=context, hitfact=hitfact, hits=hits, sources=sources)
 

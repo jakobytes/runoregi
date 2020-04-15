@@ -1,5 +1,11 @@
 <h1>Similar passages</h1>
 
+[<a href="/passage?start={{ start }}&end={{ end }}&context={{ context }}&dist={{ dist+1 }}&hitfact={{ hitfact*0.8 }}">more results</a>]
+[<a href="/passage?start={{ start }}&end={{ end }}&context={{ context }}&dist={{ [dist-1, 1] | max }}&hitfact={{ [hitfact*1.25, 1] | min }}">less results</a>]
+[<a href="/passage?start={{ start }}&end={{ end }}&context={{ context+2 }}&dist={{ dist }}&hitfact={{ hitfact }}">more context</a>]
+[<a href="/passage?start={{ start }}&end={{ end }}&context={{ [context-2, 0] | max }}&dist={{ dist }}&hitfact={{ hitfact }}">less context</a>]
+[<a href="/passage?start={{ start }}&end={{ end }}">reset to defaults</a>]
+
 <table>
   <tr><td><hr/></td></tr>
   {% for h in hits %}
