@@ -23,7 +23,7 @@ def render(nro, hl):
     topics, sim_poems, meta, verses, refs = [], [], [], [], []
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         poem = Poem.from_db_by_nro(db, nro, fmt='mysql')
-        title = 'SKVR {OSA} {ID}'.format(**poem.meta)
+        title = '{OSA} {ID}'.format(**poem.meta)
         loc, col, year = poem.loc, poem.col, poem.year
         if poem.refs is not None:
             refs = re.sub('\n+', ' ', poem.refs).replace('#', '\n#').split('\n')
