@@ -46,7 +46,7 @@ class Poem:
             'SELECT v.v_id, v.type, v.text, cf.freq FROM verses v'\
             ' JOIN v_so ON v_so.v_id = v.v_id'\
             ' LEFT OUTER JOIN v_clust vc ON v_so.v_id = vc.v_id'\
-            ' JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id'\
+            ' LEFT OUTER JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id'\
             ' WHERE v_so.so_id=%s;',
             fmt)
         cursor.execute(query, (so_id,))

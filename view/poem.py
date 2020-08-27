@@ -15,6 +15,8 @@ def render(nro, hl):
         return result
 
     def _makecol(value):
+        if value is None:
+            value = 1
         val_norm = min(math.log(value), 10)
         rg = _makecolcomp(min(val_norm, 5))
         b = _makecolcomp(max(val_norm-5, 0))
