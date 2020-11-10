@@ -16,13 +16,14 @@ def _compact(string):
 
 @application.route('/passage')
 def show_passage():
-    start_id = request.args.get('start', 1, type=int)
-    end_id = request.args.get('end', 1, type=int)
+    nro = request.args.get('nro', type=str)
+    start_pos = request.args.get('start', 1, type=int)
+    end_pos = request.args.get('end', 1, type=int)
     dist = request.args.get('dist', 2, type=int)
     context = request.args.get('context', 2, type=int)
     hitfact = request.args.get('hitfact', 0.5, type=float)
     return _compact(view.passage.render(
-                start_id, end_id, dist=dist,
+                nro, start_pos, end_pos, dist=dist,
                 context=context, hitfact=hitfact))
 
 @application.route('/poemdiff')

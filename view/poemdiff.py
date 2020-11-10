@@ -1,3 +1,4 @@
+from collections import defaultdict
 from flask import render_template
 import numpy as np
 import pymysql
@@ -17,12 +18,12 @@ SIM_SELECT = '''
 SELECT
     s.v1_id, s.v2_id, s.sim_cos
 FROM
-    v_sim_cos s
-    JOIN v_so v_so1 ON s.v1_id = v_so1.v_id
-    JOIN v_so v_so2 ON s.v2_id = v_so2.v_id
+    v_sim s
+    JOIN verse_poem vp1 ON s.v1_id = vp1.v_id
+    JOIN verse_poem vp2 ON s.v2_id = vp2.v_id
 WHERE
-    v_so1.so_id = %s
-    AND v_so2.so_id = %s
+    vp1.p_id = %s
+    AND vp2.p_id = %s
 ;
 '''
 
@@ -37,15 +38,26 @@ def get_data_from_db(nro_1, nro_2, mysql_params):
     return poem_1, poem_2, sims_list
 
 
+def poem_to_verse_dict(poem):
+    '''Convert a poem to dictionary: verse_id -> list of positions
+       in the text. Also return the total number of verses.'''
+    v_dict = defaultdict(lambda: list())
+    n = 0
+    for i, v in enumerate(poem.text_verses()):
+        v_dict[v.v_id].append(i)
+        n += 1
+    return v_dict, n
+
+
 def build_similarity_matrix(poem_1, poem_2, sims_list):
-    # create a verse similarity matrix for the poems
-    poem_1_v_ids = { v.v_id : i for i, v in enumerate(poem_1.text_verses()) }
-    poem_2_v_ids = { v.v_id : i for i, v in enumerate(poem_2.text_verses()) }
-    sims = np.zeros(
-        shape=(len(poem_1_v_ids), len(poem_2_v_ids)),
-        dtype=np.float32)
+    '''Create a verse similarity matrix for the poems.'''
+    poem_1_v_ids, n1 = poem_to_verse_dict(poem_1)
+    poem_2_v_ids, n2 = poem_to_verse_dict(poem_2)
+    sims = np.zeros(shape=(n1, n2), dtype=np.float32)
     for v1_id, v2_id, s in sims_list:
-        sims[poem_1_v_ids[v1_id], poem_2_v_ids[v2_id]] = float(s)
+        for i in poem_1_v_ids[v1_id]:
+            for j in poem_2_v_ids[v2_id]:
+                sims[i,j] = float(s)
     return sims
 
 

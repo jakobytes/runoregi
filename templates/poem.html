@@ -62,7 +62,7 @@
         </a>
       </td>
       <td align="right" width="35">&ensp;<sup><small>{{ v[0] }}</a></small></sup></td>
-      <td width="350" class="verse" id="{{ v[1] }}">
+      <td width="350" class="verse" id="{{ v[0] }}">
       {% if v[0] in hl %}
         <b>{{ v[5] }}</b>
       {% else %}
@@ -105,7 +105,7 @@
     })
   ds.on('stop', ({inst,selected}) => {
     inst.clearSelection()
-    window.open('/passage?start=' + selected[0].id + '&end=' + selected[selected.length - 1].id,'_self')
+    window.open('/passage?nro={{ nro }}&start=' + selected[0].id + '&end=' + selected[selected.length - 1].id,'_self')
   })
 </script>
 
