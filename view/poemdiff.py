@@ -31,8 +31,8 @@ WHERE
 def get_data_from_db(nro_1, nro_2, mysql_params):
     poem_1, poem_2, sim_list = None, None, None
     with pymysql.connect(**mysql_params) as db:
-        poem_1 = Poem.from_db_by_nro(db, nro_1, fmt='mysql')
-        poem_2 = Poem.from_db_by_nro(db, nro_2, fmt='mysql')
+        poem_1 = Poem.from_db_by_nro(db, nro_1)
+        poem_2 = Poem.from_db_by_nro(db, nro_2)
         db.execute(SIM_SELECT, (poem_1.p_id, poem_2.p_id))
         sims_list = db.fetchall()
     return poem_1, poem_2, sims_list

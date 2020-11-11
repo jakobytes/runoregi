@@ -1,15 +1,6 @@
 from collections import namedtuple
 
 
-def _format_query(query, fmt):
-    if fmt == 'sqlite':
-        return query.replace('%s', '?')
-    elif fmt == 'mysql':
-        return query
-    else:
-        raise Exception('Unknown query format: {}'.format(fmt))
-
-
 StructuredMetadata = \
     namedtuple('StructuredMetadata',
                ['p_id', 'nro', 'title', 'location', 'collector', 'year', 'themes'])
@@ -75,7 +66,7 @@ class Poem:
         return (v for v in self.verses if v.type == 'V')
 
     @staticmethod
-    def from_db(db, p_id, fmt='mysql'):
+    def from_db(db, p_id):
         # cursor.execute(
         #     'SELECT nro, region, name, collector, year FROM sources'
         #     ' NATURAL JOIN locations'
@@ -87,14 +78,14 @@ class Poem:
             ' WHERE p_id = %s;',
             (p_id,))
         nro, loc_reg, loc_name, col, year = db.fetchall()[0]
-        query = _format_query(
+        db.execute( 
             'SELECT v.v_id, v.type, v.text, cf.freq FROM verses v'\
             ' JOIN verse_poem vp ON vp.v_id = v.v_id'\
             ' LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id'\
             ' LEFT OUTER JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id'\
             ' WHERE vp.p_id=%s;',
-            fmt)
-        db.execute(query, (p_id,))
+            (p_id,))
+        #db.execute(query, (p_id,))
         verses = [Verse(v_id, type, text, cf) \
                   for v_id, type, text, cf in db.fetchall()]
         # query = _format_query(
@@ -120,9 +111,9 @@ class Poem:
         return Poem(p_id, smd, meta, verses, refs)
 
     @staticmethod
-    def from_db_by_nro(db, nro, fmt='mysql'):
-        query = _format_query('SELECT p_id FROM poems WHERE nro=%s;', fmt)
-        db.execute(query, (nro,))
+    def from_db_by_nro(db, nro):
+        #query = _format_query('SELECT p_id FROM poems WHERE nro=%s;', fmt)
+        db.execute('SELECT p_id FROM poems WHERE nro=%s;', (nro,))
         p_id = db.fetchall()[0]
-        return Poem.from_db(db, p_id, fmt)
+        return Poem.from_db(db, p_id)
 

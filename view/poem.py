@@ -24,7 +24,7 @@ def render(nro, hl):
 
     topics, sim_poems, meta, verses, refs = [], [], [], [], []
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        poem = Poem.from_db_by_nro(db, nro, fmt='mysql')
+        poem = Poem.from_db_by_nro(db, nro)
         #title = '{OSA} {ID}'.format(**poem.meta)
         title = poem.smd.nro
         loc, col, year = poem.smd.location, poem.smd.collector, poem.smd.year
