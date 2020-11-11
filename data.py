@@ -101,13 +101,9 @@ class Poem:
         #     (so_id,))
         # topics = cursor.fetchall()
         topics = []
-        # query = _format_query(
-        #     'SELECT refs FROM so_refs WHERE so_id = %s', fmt)
-        # cursor.execute(query, (so_id,))
-        # result = cursor.fetchall()
-        # refs = result[0][0] if result else None
+        db.execute('SELECT text FROM refs WHERE p_id = %s', (p_id,))
+        refs = [x[0] for x in db.fetchall()]
         smd = get_structured_metadata(db, nro=nro)[0]
-        refs = ''
         return Poem(p_id, smd, meta, verses, refs)
 
     @staticmethod

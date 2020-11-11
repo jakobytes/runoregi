@@ -29,7 +29,7 @@ def render(nro, hl):
         title = poem.smd.nro
         loc, col, year = poem.smd.location, poem.smd.collector, poem.smd.year
         if poem.refs is not None:
-            refs = re.sub('\n+', ' ', poem.refs).replace('#', '\n#').split('\n')
+            refs = re.sub('\n+', ' ', '\n'.join(poem.refs)).replace('#', '\n#').split('\n')
         topics = poem.smd.themes
         # db.execute(
         #     'SELECT so.nro,'
