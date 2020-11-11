@@ -85,14 +85,10 @@ class Poem:
             ' LEFT OUTER JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id'\
             ' WHERE vp.p_id=%s;',
             (p_id,))
-        #db.execute(query, (p_id,))
         verses = [Verse(v_id, type, text, cf) \
                   for v_id, type, text, cf in db.fetchall()]
-        # query = _format_query(
-        #     'SELECT field, value FROM so_meta WHERE so_id = %s', fmt)
-        # cursor.execute(query, (so_id,))
-        # meta = { field : value for field, value in cursor.fetchall() }
-        meta = { 'OSA': None, }
+        db.execute('SELECT field, value FROM raw_meta WHERE p_id = %s', (p_id,))
+        meta = { field : value for field, value in db.fetchall() }
         # cursor.execute(
         #     'SELECT f.code, t.code, f.title, t.title_1 FROM so_type st'
         #     ' JOIN types t ON st.t_id = t.t_id'
