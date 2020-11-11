@@ -33,7 +33,7 @@ def get_data_from_db(nro_1, nro_2, mysql_params):
     with pymysql.connect(**mysql_params) as db:
         poem_1 = Poem.from_db_by_nro(db, nro_1, fmt='mysql')
         poem_2 = Poem.from_db_by_nro(db, nro_2, fmt='mysql')
-        db.execute(SIM_SELECT, (poem_1.so_id, poem_2.so_id))
+        db.execute(SIM_SELECT, (poem_1.p_id, poem_2.p_id))
         sims_list = db.fetchall()
     return poem_1, poem_2, sims_list
 
@@ -110,8 +110,8 @@ def render(nro_1, nro_2):
                 verse_2.append((COLOR_LINEDIFF, row[1].text))
         alignment.append((verse_1, verse_2))
     return render_template('poemdiff.html', nro_1=nro_1, nro_2=nro_2,
-                           loc_1=poem_1.loc, loc_2=poem_2.loc,
+                           loc_1=poem_1.smd.location, loc_2=poem_2.smd.location,
                            meta_keys=meta_keys, meta_1=meta_1, meta_2=meta_2,
-                           topics_1=poem_1.topics, topics_2=poem_2.topics,
+                           topics_1=poem_1.smd.themes, topics_2=poem_2.smd.themes,
                            alignment=alignment)
 

@@ -3,7 +3,7 @@ from operator import itemgetter
 import pymysql
 
 import config
-
+from data import get_structured_metadata
 
 MAX_QUERY_LENGTH = 20
 
@@ -64,39 +64,6 @@ def get_verses(db, hits):
     return result
 
 
-def get_sources_metadata(db, p_ids):
-    # db.execute(
-    #     'SELECT so.so_id, so.nro,'
-    #     '       CONCAT(sm1.value, " ", sm2.value),'
-    #     '       CONCAT(loc.region, " — ", loc.name),'
-    #     '       so.year, col.collector, tt.types'
-    #     ' FROM sources so'
-    #     '   JOIN locations loc ON so.loc_id = loc.loc_id'
-    #     '   JOIN collectors col ON so.col_id = col.col_id'
-    #     '   LEFT OUTER JOIN so_meta sm1 ON so.so_id = sm1.so_id AND sm1.field = "OSA"'
-    #     '   LEFT OUTER JOIN so_meta sm2 ON so.so_id = sm2.so_id AND sm2.field = "ID"'
-    #     '   LEFT OUTER JOIN'
-    #     '     (SELECT'
-    #     '        so_id,'
-    #     '        GROUP_CONCAT(CONCAT(f.title, " — ", t.title_1) SEPARATOR ";;;") AS types'
-    #     '      FROM so_type st'
-    #     '      JOIN types t ON t.t_id = st.t_id'
-    #     '      JOIN files f ON t.f_id = f.f_id'
-    #     '      GROUP BY so_id)'
-    #     '     tt ON so.so_id = tt.so_id'
-    #     ' WHERE so.so_id IN ({});'.format(','.join(map(str, so_ids))))
-    db.execute(
-        'SELECT p_id, nro, nro, "No location", "No year", "No collector", ""'
-        ' FROM poems'
-        ' WHERE p_id IN ({});'.format(','.join(map(str, p_ids))))
-    result = { p_id: {
-                 'nro' : nro, 'name': name, 'year' : year,
-                 'loc' : loc, 'col': col,
-                 'types': types.split(';;;') if types else []
-               } for p_id, nro, name, loc, year, col, types in db.fetchall() }
-    return result
-
-
 def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5):
     if (end_pos - start_pos) > MAX_QUERY_LENGTH:
         return '<b>Error:</b> passage length currently limited to {} verses!'\
@@ -124,7 +91,7 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5):
         verses = get_verses(db, hits)
         # get source information
         p_ids = sorted(set(p_id for (p_id, pos) in verses))
-        sources = get_sources_metadata(db, p_ids)
+        smd = {x.p_id: x for x in get_structured_metadata(db, p_ids=p_ids)}
         # add snippets to hits
         for h in hits:
             p_id = h['p_id']
@@ -135,8 +102,8 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5):
                  pos in h['matches']) \
                     for pos in range(h['interval'][0], h['interval'][1]+1) \
                     if (p_id, pos) in verses]
-            h['hl'] = sources[p_id]['nro'] == nro and start_pos in range(*h['interval'])
+            h['hl'] = smd[p_id].nro == nro and start_pos in range(*h['interval'])
         return render_template(
             'passage.html', start=start_pos, end=end_pos, dist=dist,
-            context=context, hitfact=hitfact, hits=hits, sources=sources)
+            context=context, hitfact=hitfact, hits=hits, smd=smd)
 

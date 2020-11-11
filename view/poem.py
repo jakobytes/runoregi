@@ -26,11 +26,11 @@ def render(nro, hl):
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         poem = Poem.from_db_by_nro(db, nro, fmt='mysql')
         #title = '{OSA} {ID}'.format(**poem.meta)
-        title = poem.nro
-        loc, col, year = poem.loc, poem.col, poem.year
+        title = poem.smd.nro
+        loc, col, year = poem.smd.location, poem.smd.collector, poem.smd.year
         if poem.refs is not None:
             refs = re.sub('\n+', ' ', poem.refs).replace('#', '\n#').split('\n')
-        topics = poem.topics
+        topics = poem.smd.themes
         # db.execute(
         #     'SELECT so.nro,'
         #     '       CONCAT(sm1.value, " ", sm2.value),'

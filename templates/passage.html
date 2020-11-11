@@ -13,8 +13,8 @@
     <table>
     <tr>
       <td valign="top">
-        <b><a href="/poem?nro={{ sources[h['p_id']]['nro'] }}&hl={{ h['verses'] | selectattr(3) | map(attribute=1) | join(',') }}#{{ h['verses'] | map(attribute=1) | min }}">
-	  {{ sources[h['p_id']]['name'] }}
+        <b><a href="/poem?nro={{ smd[h['p_id']].nro }}&hl={{ h['verses'] | selectattr(3) | map(attribute=1) | join(',') }}#{{ h['verses'] | map(attribute=1) | min }}">
+	  {{ smd[h['p_id']].title }}
 	</a></b>
       </td>
       <td>
@@ -32,12 +32,12 @@
     <table>
     <tr>
     <td valign="top" width="400">
-      &emsp;{{ sources[h['p_id']]['loc'] }}<br/>
-      &emsp;{{ sources[h['p_id']]['year'] }}&ensp;{{ sources[h['p_id']]['col'] }}
+      &emsp;{{ smd[h['p_id']].location }}<br/>
+      &emsp;{{ smd[h['p_id']].year }}&ensp;{{ smd[h['p_id']].collector }}
     </td>
     <td valign="top" width="400">
       <small><ul>
-      {% for theme in sources[h['p_id']]['types'] %}
+      {% for theme in smd[h['p_id']].themes %}
         <li>{{ theme }}
       {% endfor %}
       </ul></small>
