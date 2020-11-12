@@ -13,8 +13,10 @@ def get_similar_poems(db, p_id):
         ' ORDER BY sim_al DESC;', (p_id,))
     id_sim = db.fetchall()
     ids = [x[0] for x in id_sim]
-    smd = {x.p_id: x for x in get_structured_metadata(db, p_ids=ids)}
-    result = [(x[1], smd[x[0]]) for x in id_sim]
+    result = []
+    if ids:
+        smd = {x.p_id: x for x in get_structured_metadata(db, p_ids=ids)}
+        result = [(x[1], smd[x[0]]) for x in id_sim]
     return result
 
 
