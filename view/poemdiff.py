@@ -53,6 +53,14 @@ def build_similarity_matrix(poem_1, poem_2, sims_list):
     '''Create a verse similarity matrix for the poems.'''
     poem_1_v_ids, n1 = poem_to_verse_dict(poem_1)
     poem_2_v_ids, n2 = poem_to_verse_dict(poem_2)
+
+    # FIXME this is a slight hack to add identical verse pairs
+    # the preferred way is to use clusters for alignment rather than raw
+    # similarities
+    ids = set(poem_1_v_ids.keys()) | set(poem_2_v_ids.keys())
+    sims_list = list(sims_list)
+    sims_list.extend((i, i, 1.0) for i in ids)
+
     sims = np.zeros(shape=(n1, n2), dtype=np.float32)
     for v1_id, v2_id, s in sims_list:
         for i in poem_1_v_ids[v1_id]:
