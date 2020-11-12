@@ -4,7 +4,18 @@ import pymysql
 import re
 
 import config
-from data import Poem
+from data import Poem, get_structured_metadata
+
+
+def get_similar_poems(db, p_id):
+    db.execute(
+        'SELECT p2_id, sim_al FROM p_sim WHERE p1_id = %s'
+        ' ORDER BY sim_al DESC;', (p_id,))
+    id_sim = db.fetchall()
+    ids = [x[0] for x in id_sim]
+    smd = {x.p_id: x for x in get_structured_metadata(db, p_ids=ids)}
+    result = [(x[1], smd[x[0]]) for x in id_sim]
+    return result
 
 
 def render(nro, hl):
@@ -31,22 +42,7 @@ def render(nro, hl):
         if poem.refs is not None:
             refs = re.sub('\n+', ' ', '\n'.join(poem.refs)).replace('#', '\n#').split('\n')
         topics = poem.smd.themes
-        # db.execute(
-        #     'SELECT so.nro,'
-        #     '       CONCAT(sm1.value, " ", sm2.value),'
-        #     '       CONCAT(loc.region, " — ", loc.name),'
-        #     '       so.year, col.collector, s.sim_al'
-        #     ' FROM so_sim_al s'
-        #     ' JOIN sources so ON so.so_id = s.so2_id'
-        #     ' JOIN collectors col ON so.col_id = col.col_id'
-        #     ' JOIN locations loc ON so.loc_id = loc.loc_id'
-        #     ' LEFT OUTER JOIN so_meta sm1 ON so.so_id = sm1.so_id AND sm1.field = "OSA"'
-        #     ' LEFT OUTER JOIN so_meta sm2 ON so.so_id = sm2.so_id AND sm2.field = "ID"'
-        #     ' WHERE s.so1_id = %s AND s.sim_al > 0.01'
-        #     ' ORDER BY s.sim_al DESC;',
-        #     (poem.so_id,))
-        # sim_poems = db.fetchall()
-        sim_poems = []
+        sim_poems = get_similar_poems(db, poem.p_id)
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.v_id, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text))

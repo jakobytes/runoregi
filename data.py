@@ -32,7 +32,7 @@ def get_structured_metadata(
             'WHERE clust_id = {}'.format(clust_id)
         ])
     else:
-        raise Exception('Either p_id or clust_id or nro or p_ids must be supplied!')
+        raise Exception('Either of: (p_id, p_ids, clust_id, nro) must be specified!')
     print(' '.join(query_lst))
     db.execute(' '.join(query_lst))
     results = []
@@ -106,6 +106,6 @@ class Poem:
     def from_db_by_nro(db, nro):
         #query = _format_query('SELECT p_id FROM poems WHERE nro=%s;', fmt)
         db.execute('SELECT p_id FROM poems WHERE nro=%s;', (nro,))
-        p_id = db.fetchall()[0]
+        p_id = db.fetchall()[0][0]
         return Poem.from_db(db, p_id)
 

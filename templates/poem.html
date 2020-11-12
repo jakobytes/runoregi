@@ -31,21 +31,21 @@
 {% for sp in sim_poems %}
   <tr>
     <td align="right">
-    <a href="/poemdiff?nro1={{ nro }}&nro2={{ sp[0] }}">{{ sp[1] }}</a>
+    <a href="/poemdiff?nro1={{ nro }}&nro2={{ sp[1].nro }}">{{ sp[1].title }}</a>
       &ensp;
     </td>
     <td>
-      <img src="/static/img/blue.png" width="{{ (sp[5]*300) | int }}" height="10">
-      &ensp;<small>{{ (sp[5]*100) | int }} %&emsp;</small>
+      <img src="/static/img/blue.png" width="{{ (sp[0]*300) | int }}" height="10">
+      &ensp;<small>{{ (sp[0]*100) | int }} %&emsp;</small>
     </td>
     <td>
-      <small>{{ sp[3] }}</small>
+      <small>{{ sp[1].year }}</small>
     </td>
     <td>
-      <small>{{ sp[2] }}</small>
+      <small>{{ sp[1].location }}</small>
     </td>
     <td>
-      <small>{{ sp[4] }}</small>
+      <small>{{ sp[1].collector }}</small>
     </td>
   </tr>
   {% endfor %}
