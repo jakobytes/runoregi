@@ -47,8 +47,6 @@ def render(nro, hl):
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.v_id, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text))
-    return render_template('poem.html', nro=nro, hl=hl, title=title,
-                           loc=loc, col=col, year=year,
-                           topics=topics, sim_poems=sim_poems, meta=poem.meta,
+    return render_template('poem.html', p=poem, hl=hl, sim_poems=sim_poems,
                            verses=verses, refs=refs)
 

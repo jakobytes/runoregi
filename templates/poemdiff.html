@@ -1,25 +1,25 @@
 <table>
   <tr>
     <td>
-      <small>[<a href="/poem?nro={{ nro_1 }}">to poem</a>]</small>
-      <h2>{{ nro_1 }}</h2>
-      <small> {{ loc_1 }}<br /> </small>
+      <small>[<a href="/poem?nro={{ p1.smd.nro }}">to poem</a>]</small>
+      <h2>{{ p1.smd.title }}</h2>
+      <small> {{ p1.smd.location }}<br /> </small>
     </td>
     <td width="30"></td>
     <td>
-      <small>[<a href="/poem?nro={{ nro_2 }}">to poem</a>]</small>
-      <h2>{{ nro_2 }}</h2>
-      <small> {{ loc_2 }}<br /> </small>
+      <small>[<a href="/poem?nro={{ p2.smd.nro }}">to poem</a>]</small>
+      <h2>{{ p2.smd.title }}</h2>
+      <small> {{ p2.smd.location }}<br /> </small>
     </td>
   </tr>
   {% for key in meta_keys %}
   <tr>
     <td width="350">
-      <small><b>{{ key }}:</b> {{ meta_1[key] }}</small>
+      <small><b>{{ key }}:</b> {{ p1.meta[key] }}</small>
     </td>
     <td></td>
     <td width="350">
-      <small><b>{{ key }}:</b> {{ meta_2[key] }}</small>
+      <small><b>{{ key }}:</b> {{ p2.meta[key] }}</small>
     </td>
   </tr>
   {% endfor %}
@@ -27,7 +27,7 @@
     <td valign="top">
       <small
         ><ul>
-          {% for f_id, t_id, f, t in topics_1 %}
+          {% for f_id, t_id, f, t in p1.smd.themes %}
           <li>{{ f }} &mdash; {{ t }} {% endfor %}</li>
         </ul></small
       >
@@ -36,7 +36,7 @@
     <td valign="top">
       <small
         ><ul>
-          {% for f_id, t_id, f, t in topics_2 %}
+          {% for f_id, t_id, f, t in p2.smd.themes %}
           <li>{{ f }} &mdash; {{ t }} {% endfor %}</li>
         </ul></small
       >

@@ -117,9 +117,6 @@ def render(nro_1, nro_2):
             if row[1] is not None:
                 verse_2.append((COLOR_LINEDIFF, row[1].text))
         alignment.append((verse_1, verse_2))
-    return render_template('poemdiff.html', nro_1=nro_1, nro_2=nro_2,
-                           loc_1=poem_1.smd.location, loc_2=poem_2.smd.location,
-                           meta_keys=meta_keys, meta_1=meta_1, meta_2=meta_2,
-                           topics_1=poem_1.smd.themes, topics_2=poem_2.smd.themes,
-                           alignment=alignment)
+    return render_template('poemdiff.html', p1=poem_1, p2=poem_2,
+                           meta_keys=meta_keys, alignment=alignment)
 

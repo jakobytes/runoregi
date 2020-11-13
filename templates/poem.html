@@ -5,14 +5,14 @@
   }
 </style>
 <small>[<a target="_parent" href="/#paahakemisto">to index</a>]</small>
-<h1>{{ title }}</h1>
+<h1>{{ p.smd.title }}</h1>
 
-{{ loc }}<br/>
-{{ year }}&ensp;{{ col }} 
+{{ p.smd.location }}<br/>
+{{ p.smd.year }}&ensp;{{ p.smd.collector }} 
 
 <h2>Metadata</h2>
 <table>
-  {% for key, val in meta.items() %}
+  {% for key, val in p.meta.items() %}
   <tr>
     <td align="right" width="50"><b>{{ key }}&ensp;</b></td>
     <td width="350">{{ val }}</td></tr>
@@ -21,7 +21,7 @@
 
 <h2>Themes</h2>
 <ul>
-{% for f_id, t_id, f, t in topics %}
+{% for f_id, t_id, f, t in p.smd.themes %}
 <li><a target="_parent" href="/#{{f_id}}">{{ f }}</a> &mdash; <a target="_parent" href="/#{{t_id}}">{{ t }}</a></li>
 {% endfor %}
 </ul>
@@ -31,7 +31,7 @@
 {% for sp in sim_poems %}
   <tr>
     <td align="right">
-    <a href="/poemdiff?nro1={{ nro }}&nro2={{ sp[1].nro }}">{{ sp[1].title }}</a>
+    <a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ sp[1].nro }}">{{ sp[1].title }}</a>
       &ensp;
     </td>
     <td>
@@ -105,7 +105,7 @@
     })
   ds.on('stop', ({inst,selected}) => {
     inst.clearSelection()
-    window.open('/passage?nro={{ nro }}&start=' + selected[0].id + '&end=' + selected[selected.length - 1].id,'_self')
+    window.open('/passage?nro={{ p.smd.nro }}&start=' + selected[0].id + '&end=' + selected[selected.length - 1].id,'_self')
   })
 </script>
 
