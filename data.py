@@ -9,25 +9,39 @@ StructuredMetadata = \
 # TODO if getting by clust_id -> also verse ID and text!
 def get_structured_metadata(
         db, p_id = None, p_ids = None, clust_id = None, nro = None,
-        title = False, location = False, collector = False, year = False,
+        title = True, location = False, collector = False, year = False,
         themes = False):
+
+    def _make_title(nro, osa, _id):
+        if nro.startswith('skvr'):
+            return 'SKVR {} {}'.format(osa, _id)
+        else:
+            return _id
+
     query_lst = [
-        'SELECT DISTINCT p_id, nro,',
-        'nro,',
+        'SELECT DISTINCT poems.p_id, nro,',
+        ('rm_osa.value as osa, rm_id.value as id,' if title else '"", "",'),
         '"no location",',
         '"no collector",',
         '"no year",',
         '""',
         'FROM poems']
+    if title:
+        query_lst.extend([
+          'LEFT OUTER JOIN raw_meta rm_osa'
+          '  ON poems.p_id = rm_osa.p_id AND rm_osa.field = "OSA"',
+          'LEFT OUTER JOIN raw_meta rm_id'
+          '  ON poems.p_id = rm_id.p_id AND rm_id.field = "ID"',
+        ])
     if p_id is not None:
-        query_lst.append('WHERE p_id = {}'.format(p_id))
+        query_lst.append('WHERE poems.p_id = {}'.format(p_id))
     elif p_ids is not None:
-        query_lst.append('WHERE p_id IN ({})'.format(','.join(map(str, p_ids))))
+        query_lst.append('WHERE poems.p_id IN ({})'.format(','.join(map(str, p_ids))))
     elif nro is not None:
         query_lst.append('WHERE nro = "{}"'.format(nro))
     elif clust_id is not None:
         query_lst.extend([
-            'NATURAL JOIN verse_poem',
+            'JOIN verse_poem vp ON vp.p_id = poems.p_id',
             'NATURAL JOIN v_clust',
             'WHERE clust_id = {}'.format(clust_id)
         ])
@@ -36,9 +50,10 @@ def get_structured_metadata(
     print(' '.join(query_lst))
     db.execute(' '.join(query_lst))
     results = []
-    for p_id, nro, title, loc, col, year, themes_str in db.fetchall():
+    for p_id, nro, osa, _id, loc, col, year, themes_str in db.fetchall():
         themes = themes_str.split(';;;') if themes_str else []
-        results.append(StructuredMetadata(p_id, nro, title, loc, col, year, themes))
+        tit = _make_title(nro, osa, _id) if title else nro
+        results.append(StructuredMetadata(p_id, nro, tit, loc, col, year, themes))
     return results
 
 
