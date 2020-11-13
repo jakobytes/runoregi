@@ -104,6 +104,6 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5):
                     if (p_id, pos) in verses]
             h['hl'] = smd[p_id].nro == nro and start_pos in range(*h['interval'])
         return render_template(
-            'passage.html', start=start_pos, end=end_pos, dist=dist,
+            'passage.html', nro=nro, start=start_pos, end=end_pos, dist=dist,
             context=context, hitfact=hitfact, hits=hits, smd=smd)
 
