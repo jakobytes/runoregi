@@ -6,10 +6,9 @@ StructuredMetadata = \
                ['p_id', 'nro', 'title', 'location', 'collector', 'year', 'themes'])
 
 
-# TODO if getting by clust_id -> also verse ID and text!
 def get_structured_metadata(
         db, p_id = None, p_ids = None, clust_id = None, nro = None,
-        title = True, location = False, collector = False, year = False,
+        title = True, location = True, collector = True, year = True,
         themes = False):
 
     def _make_title(nro, osa, _id):
@@ -21,9 +20,12 @@ def get_structured_metadata(
     query_lst = [
         'SELECT DISTINCT poems.p_id, nro,',
         ('rm_osa.value as osa, rm_id.value as id,' if title else '"", "",'),
-        '"no location",',
-        '"no collector",',
-        '"no year",',
+        ('GROUP_CONCAT(DISTINCT CONCAT(l.region, " — ", l.name)'
+         ' SEPARATOR "; "),'\
+         if location else '"no location",'),
+        ('GROUP_CONCAT(DISTINCT c.name SEPARATOR "; "),'\
+         if collector else '"no collector",'),
+        ('year,' if year else '"no year",'),
         '""',
         'FROM poems']
     if title:
@@ -33,6 +35,18 @@ def get_structured_metadata(
           'LEFT OUTER JOIN raw_meta rm_id'
           '  ON poems.p_id = rm_id.p_id AND rm_id.field = "ID"',
         ])
+    if location:
+        query_lst.extend([
+          'LEFT OUTER JOIN p_loc ON poems.p_id = p_loc.p_id',
+          'LEFT OUTER JOIN locations l ON p_loc.loc_id = l.loc_id'
+        ])
+    if collector:
+        query_lst.extend([
+          'LEFT OUTER JOIN p_col ON poems.p_id = p_col.p_id',
+          'LEFT OUTER JOIN collectors c ON p_col.col_id = c.col_id'
+        ])
+    if year:
+        query_lst.append('LEFT OUTER JOIN p_year ON poems.p_id = p_year.p_id')
     if p_id is not None:
         query_lst.append('WHERE poems.p_id = {}'.format(p_id))
     elif p_ids is not None:
@@ -47,7 +61,8 @@ def get_structured_metadata(
         ])
     else:
         raise Exception('Either of: (p_id, p_ids, clust_id, nro) must be specified!')
-    print(' '.join(query_lst))
+    if location or collector:
+        query_lst.append('GROUP BY poems.p_id')
     db.execute(' '.join(query_lst))
     results = []
     for p_id, nro, osa, _id, loc, col, year, themes_str in db.fetchall():
