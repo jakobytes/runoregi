@@ -7,7 +7,7 @@ from subprocess import Popen, PIPE
 
 from align import align
 import config
-from data import Poem
+from data import Poem, render_themes_tree
 
 
 COLOR_NORMAL = None
@@ -118,5 +118,7 @@ def render(nro_1, nro_2):
                 verse_2.append((COLOR_LINEDIFF, row[1].text))
         alignment.append((verse_1, verse_2))
     return render_template('poemdiff.html', p1=poem_1, p2=poem_2,
-                           meta_keys=meta_keys, alignment=alignment)
+                           meta_keys=meta_keys, alignment=alignment,
+                           themes_1=render_themes_tree(poem_1.smd.themes),
+                           themes_2=render_themes_tree(poem_2.smd.themes))
 

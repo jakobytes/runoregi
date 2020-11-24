@@ -3,7 +3,7 @@ from operator import itemgetter
 import pymysql
 
 import config
-from data import get_structured_metadata
+from data import get_structured_metadata, render_themes_tree
 
 MAX_QUERY_LENGTH = 20
 
@@ -103,6 +103,7 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5):
                     for pos in range(h['interval'][0], h['interval'][1]+1) \
                     if (p_id, pos) in verses]
             h['hl'] = smd[p_id].nro == nro and start_pos in range(*h['interval'])
+            h['themes'] = render_themes_tree(smd[p_id].themes)
         return render_template(
             'passage.html', nro=nro, start=start_pos, end=end_pos, dist=dist,
             context=context, hitfact=hitfact, hits=hits, smd=smd)

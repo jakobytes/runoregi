@@ -25,21 +25,19 @@
   {% endfor %}
   <tr>
     <td valign="top">
-      <small
-        ><ul>
-          {% for f_id, t_id, f, t in p1.smd.themes %}
-          <li>{{ f }} &mdash; {{ t }} {% endfor %}</li>
-        </ul></small
-      >
+      <small>
+        {% for d, p, minor, t in themes_1 %}
+        {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t }}{% if minor %}</font>{% endif %}<br/>
+        {% endfor %}
+      </small>
     </td>
     <td></td>
     <td valign="top">
-      <small
-        ><ul>
-          {% for f_id, t_id, f, t in p2.smd.themes %}
-          <li>{{ f }} &mdash; {{ t }} {% endfor %}</li>
-        </ul></small
-      >
+      <small>
+        {% for d, p, minor, t in themes_2 %}
+        {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t }}{% if minor %}</font>{% endif %}<br/>
+        {% endfor %}
+      </small>
     </td>
   </tr>
   <tr>

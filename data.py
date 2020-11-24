@@ -1,4 +1,5 @@
 from collections import namedtuple
+from operator import itemgetter
 
 
 StructuredMetadata = \
@@ -6,10 +7,54 @@ StructuredMetadata = \
                ['p_id', 'nro', 'title', 'location', 'collector', 'year', 'themes'])
 
 
+def render_themes_tree(themes):
+
+    def _themes_to_lines(themes):
+        lines = []
+        current = []
+        for theme_lst in themes:
+            # if the last element of a list is '*', it's a "minor" theme
+            # that will be specially marked in the UI
+            minor = False
+            if theme_lst[-1] == '*':
+                minor = True
+                theme_lst.pop()
+            for i, t in enumerate(theme_lst):
+                if i >= len(current) or t != current[i]:
+                    pref = ['│'] * (i-1) + ['├'] * (i > 0)
+                    if i == len(theme_lst)-1:
+                        # only the leaf node is marked as "minor"
+                        lines.append((i, pref, minor, t))
+                    else:
+                        lines.append((i, pref, False, t))
+                    current = current[:i] + [t]
+        return lines
+
+    def _fix_prefixes(lines):
+        # this removes the tree branches ("|") that lead nowhere
+        max_d = max(lines, key=itemgetter(0))[0]
+        for i in range(len(lines)-1, -1, -1):
+            d = lines[i][0]
+            next_d = lines[i+1][0] if i+1 < len(lines) else 0
+            if next_d < d:
+                for j in range(next_d, d-1):
+                    lines[i][1][j] = ' '
+            if i+1 < len(lines):
+                for j in range(d-1):
+                    if j < next_d and lines[i+1][1][j] == ' ':
+                        lines[i][1][j] = ' '
+            if d > 0 and (d > next_d or lines[i+1][1][d-1] == ' '):
+                lines[i][1][d-1] = '└'
+
+    lines = _themes_to_lines(themes)
+    _fix_prefixes(lines)
+    return lines
+
+
 def get_structured_metadata(
         db, p_id = None, p_ids = None, clust_id = None, nro = None,
         title = True, location = True, collector = True, year = True,
-        themes = False):
+        themes = True):
 
     def _make_title(nro, osa, _id):
         if nro.startswith('skvr'):
@@ -26,7 +71,13 @@ def get_structured_metadata(
         ('GROUP_CONCAT(DISTINCT c.name SEPARATOR "; "),'\
          if collector else '"no collector",'),
         ('year,' if year else '"no year",'),
-        '""',
+        ('GROUP_CONCAT(DISTINCT'
+         '  CONCAT(IFNULL(CONCAT(t4.name, "::"), ""),'
+	     '         IFNULL(CONCAT(t3.name, "::"), ""),'
+         '         IFNULL(CONCAT(t2.name, "::"), ""),'
+         '         IFNULL(t1.name, ""),'
+         '         IF(pt.is_minor OR (t1.theme_id LIKE "orig%"), "::*", ""))'
+         '  SEPARATOR ";;;")' if themes else '""'),
         'FROM poems']
     if title:
         query_lst.extend([
@@ -47,6 +98,14 @@ def get_structured_metadata(
         ])
     if year:
         query_lst.append('LEFT OUTER JOIN p_year ON poems.p_id = p_year.p_id')
+    if themes:
+        query_lst.extend([
+          'LEFT OUTER JOIN poem_theme pt on pt.p_id = poems.p_id',
+          'LEFT OUTER JOIN themes t1 on pt.t_id = t1.t_id',
+          'LEFT OUTER JOIN themes t2 on t1.par_id = t2.t_id',
+          'LEFT OUTER JOIN themes t3 on t2.par_id = t3.t_id',
+          'LEFT OUTER JOIN themes t4 on t3.par_id = t4.t_id',
+        ])
     if p_id is not None:
         query_lst.append('WHERE poems.p_id = {}'.format(p_id))
     elif p_ids is not None:
@@ -61,12 +120,12 @@ def get_structured_metadata(
         ])
     else:
         raise Exception('Either of: (p_id, p_ids, clust_id, nro) must be specified!')
-    if location or collector:
+    if location or collector or themes:
         query_lst.append('GROUP BY poems.p_id')
     db.execute(' '.join(query_lst))
     results = []
     for p_id, nro, osa, _id, loc, col, year, themes_str in db.fetchall():
-        themes = themes_str.split(';;;') if themes_str else []
+        themes = sorted(t.split('::') for t in themes_str.split(';;;'))
         tit = _make_title(nro, osa, _id) if title else nro
         results.append(StructuredMetadata(p_id, nro, tit, loc, col, year, themes))
     return results

@@ -20,11 +20,9 @@
 </table>
 
 <h2>Themes</h2>
-<ul>
-{% for f_id, t_id, f, t in p.smd.themes %}
-<li><a target="_parent" href="/#{{f_id}}">{{ f }}</a> &mdash; <a target="_parent" href="/#{{t_id}}">{{ t }}</a></li>
+{% for d, p, minor, t in themes %}
+{% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t }}{% if minor %}</font>{% endif %}<br/>
 {% endfor %}
-</ul>
 
 <h2>Similar poems</h2>
 <table style="user-select: none">

@@ -2,7 +2,7 @@ from flask import render_template
 import pymysql
 
 import config
-from data import get_structured_metadata
+from data import get_structured_metadata, render_themes_tree
 
 
 def render(v_id):
@@ -27,7 +27,7 @@ def render(v_id):
                     (smd[p_id].nro, [(pos, v_id, text)],
                      smd[p_id].title, smd[p_id].location,
                      smd[p_id].year, smd[p_id].collector,
-                     smd[p_id].themes))
+                     render_themes_tree(smd[p_id].themes)))
         return results
 
     with pymysql.connect(**config.MYSQL_PARAMS) as db:

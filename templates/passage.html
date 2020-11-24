@@ -36,11 +36,11 @@
       &emsp;{{ smd[h['p_id']].year }}&ensp;{{ smd[h['p_id']].collector }}
     </td>
     <td valign="top" width="400">
-      <small><ul>
-      {% for theme in smd[h['p_id']].themes %}
-        <li>{{ theme }}
+      <small>
+      {% for d, p, minor, t in h['themes'] %}
+      {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t }}{% if minor %}</font>{% endif %}<br/>
       {% endfor %}
-      </ul></small>
+      </small>
     </td>
     </tr>
     </table>

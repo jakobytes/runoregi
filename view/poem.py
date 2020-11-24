@@ -4,7 +4,7 @@ import pymysql
 import re
 
 import config
-from data import Poem, get_structured_metadata
+from data import Poem, get_structured_metadata, render_themes_tree
 
 
 def get_similar_poems(db, p_id):
@@ -48,5 +48,6 @@ def render(nro, hl):
             verses.append((i, v.v_id, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text))
     return render_template('poem.html', p=poem, hl=hl, sim_poems=sim_poems,
-                           verses=verses, refs=refs)
+                           verses=verses, refs=refs,
+                           themes=render_themes_tree(poem.smd.themes))
 

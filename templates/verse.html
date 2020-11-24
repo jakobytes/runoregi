@@ -52,11 +52,11 @@
       &emsp;{{ v[4] }}&ensp;{{ v[5] }}
     </td>
     <td valign="top" width="400">
-      <small><ul>
-      {% for theme in v[6] %}
-        <li>{{ theme }}
+      <small>
+      {% for d, p, minor, t in v[6] %}
+      {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t }}{% if minor %}</font>{% endif %}<br/>
       {% endfor %}
-      </ul></small>
+      </small>
     </td>
     </tr>
     </table>
