@@ -1,0 +1,48 @@
+<table>
+  <tr>
+    {% for p in poems %}
+    <td width="350">
+      <small>[<a href="/poem?nro={{ p.smd.nro }}">to poem</a>]</small>
+      <h2>{{ p.smd.title }}</h2>
+      <small> {{ p.smd.location }}<br /> </small>
+    </td>
+    {% endfor %}
+  </tr>
+  {% for key in meta_keys %}
+  <tr>
+    {% for p in poems %}
+    <td width="350">
+      {% if p.meta[key] is defined %}<small><b>{{ key }}:</b> {{ p.meta[key] }}</small>{% endif %}
+    </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+  <tr>
+    {% for p_themes in themes %}
+    <td valign="top">
+      <small>
+        {% for d, p, minor, t in p_themes %}
+        {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t }}{% if minor %}</font>{% endif %}<br/>
+        {% endfor %}
+      </small>
+    </td>
+    {% endfor %}
+  </tr>
+  <tr>
+    <td colspan="3">&nbsp;</td>
+    {% for verses in alignment %}
+  </tr>
+
+  <tr>
+    {% for v in verses %}
+    <td>{% if v is defined %}{{ v.text }}{% endif %}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+  <tr>
+    {% for s in scores %}
+    <td>{{ s }}</td>
+    {% endfor %}
+    <td></td>
+  </tr>
+</table>

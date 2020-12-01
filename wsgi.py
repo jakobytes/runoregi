@@ -2,6 +2,7 @@ from flask import Flask, request
 import re
 
 import view.index
+import view.multidiff
 import view.passage
 import view.poem
 import view.poemdiff
@@ -32,6 +33,12 @@ def show_diff():
     nro_1 = request.args.get('nro1', 1, type=str)
     nro_2 = request.args.get('nro2', 1, type=str)
     return _compact(view.poemdiff.render(nro_1, nro_2))
+
+@application.route('/multidiff')
+def show_multidiff():
+    nros_str = request.args.get('nro', 1, type=str)
+    nros = nros_str.split(',')
+    return _compact(view.multidiff.render(nros))
 
 @application.route('/poem')
 @application.route('/runo')

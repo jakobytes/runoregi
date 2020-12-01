@@ -44,6 +44,41 @@ def align(s1, s2, empty='', insdel_cost=1, dist_fun=None, opt_fun=min):
     return alignment
 
 
+def merge_alignments(alignments, empty=''):
+
+    def _als_get(als, i):
+        return als[i] if i < len(als) else (empty,)*len(als[-1])
+
+    def _merge_one(als, a):
+        result = []
+        i = 0
+        j = 0
+        while j < len(a):
+            if a[j][0] == empty:
+                result.append((empty,)*len(als[0]) + (a[j][1],))
+                j += 1
+            elif a[j][1] == empty:
+                while als[i][-1] == empty:
+                    result.append(_als_get(als, i)+(empty,))
+                    i += 1
+                result.append(_als_get(als, i)+(empty,))
+                i += 1
+                j += 1
+            elif i < len(als) and als[i][-1] == empty:
+                result.append(_als_get(als, i)+(empty,))
+                i += 1
+            else:
+                result.append(_als_get(als, i)+(a[j][1],))
+                i += 1
+                j += 1
+        return result
+
+    result = [(x, y) for (x, y, w) in alignments[0]]
+    for a in alignments[1:]:
+        result = _merge_one(result, a)
+    return result
+
+
 if __name__ == '__main__':
     for line in sys.stdin:
         v1_id, v1_text, v2_id, v2_text = line.rstrip().split('\t')
