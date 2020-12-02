@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, Response, request
 import re
 
 import view.index
@@ -23,9 +23,14 @@ def show_passage():
     dist = request.args.get('dist', 2, type=int)
     context = request.args.get('context', 2, type=int)
     hitfact = request.args.get('hitfact', 0.5, type=float)
-    return _compact(view.passage.render(
-                nro, start_pos, end_pos, dist=dist,
-                context=context, hitfact=hitfact))
+    fmt = request.args.get('format', 'html', type=str)
+    result = view.passage.render(
+                 nro, start_pos, end_pos, dist=dist,
+                 context=context, hitfact=hitfact, fmt=fmt)
+    if fmt == 'csv':
+        return Response(result, mimetype='text/plain')
+    else:
+        return _compact(result)
 
 @application.route('/poemdiff')
 @application.route('/runodiff')
@@ -53,7 +58,12 @@ def show_verse():
     nro = request.args.get('nro', None, type=str)
     pos = request.args.get('pos', 1, type=str)
     v_id = request.args.get('id', 1, type=int)
-    return _compact(view.verse.render(nro=nro, pos=pos, v_id=v_id))
+    fmt = request.args.get('format', 'html', type=str)
+    result = view.verse.render(nro=nro, pos=pos, v_id=v_id, fmt=fmt)
+    if fmt == 'csv':
+        return Response(result, mimetype='text/plain')
+    else:
+        return _compact(result)
 
 @application.route('/')
 def index():

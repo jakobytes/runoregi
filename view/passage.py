@@ -3,7 +3,7 @@ from operator import itemgetter
 import pymysql
 
 import config
-from data import get_structured_metadata, render_themes_tree
+from data import get_structured_metadata, render_themes_tree, render_csv
 
 MAX_QUERY_LENGTH = 20
 
@@ -64,7 +64,7 @@ def get_verses(db, hits):
     return result
 
 
-def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5):
+def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5, fmt='html'):
     if (end_pos - start_pos) > MAX_QUERY_LENGTH:
         return '<b>Error:</b> passage length currently limited to {} verses!'\
                .format(MAX_QUERY_LENGTH)
@@ -104,6 +104,16 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5):
                     if (p_id, pos) in verses]
             h['hl'] = smd[p_id].nro == nro and start_pos in range(*h['interval'])
             h['themes'] = render_themes_tree(smd[p_id].themes)
+
+    if fmt == 'csv':
+        return render_csv([
+            (smd[h['p_id']].nro, h['verses'][0][0],
+             '\n'.join(map(itemgetter(2), h['verses'])),
+             smd[h['p_id']].location, smd[h['p_id']].collector,
+             '\n'.join(' > '.join(t) for t in smd[h['p_id']].themes)) \
+            for h in hits],
+            header=('nro', 'pos', 'snippet', 'location', 'collector', 'themes'))
+    else:
         return render_template(
             'passage.html', nro=nro, start=start_pos, end=end_pos, dist=dist,
             context=context, hitfact=hitfact, hits=hits, smd=smd)

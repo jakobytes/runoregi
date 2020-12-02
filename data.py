@@ -1,4 +1,6 @@
 from collections import namedtuple
+import csv
+from io import StringIO
 from operator import itemgetter
 
 
@@ -129,6 +131,15 @@ def get_structured_metadata(
         tit = _make_title(nro, osa, _id) if title else nro
         results.append(StructuredMetadata(p_id, nro, tit, loc, col, year, themes))
     return results
+
+
+def render_csv(rows, header=None):
+    stream = StringIO()
+    writer = csv.writer(stream, lineterminator='\n')
+    if header is not None:
+        writer.writerow(header)
+    writer.writerows(rows)
+    return stream.getvalue()
 
 
 class Verse:

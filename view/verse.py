@@ -2,10 +2,10 @@ from flask import render_template
 import pymysql
 
 import config
-from data import get_structured_metadata, render_themes_tree
+from data import get_structured_metadata, render_themes_tree, render_csv
 
 
-def render(nro=None, pos=None, v_id=None):
+def render(nro=None, pos=None, v_id=None, fmt='html'):
 
     def _group_by_source(verses, smd):
         '''
@@ -46,8 +46,6 @@ def render(nro=None, pos=None, v_id=None):
                 ' NATURAL JOIN v_clust'
                 ' WHERE v_id = %s;', v_id)
         v_id, text, nro, clust_id = db.fetchall()[0]
-        regions = []
-        themes = []
         smd = { x.p_id: x for x in get_structured_metadata(db, clust_id=clust_id) }
         db.execute(
             'SELECT vp.p_id, vp.pos, vp.v_id, v.text'
@@ -57,6 +55,14 @@ def render(nro=None, pos=None, v_id=None):
             ' WHERE vc.clust_id = %s'
             ' ORDER BY vp.p_id, vp.pos;',
             (clust_id,))
-        verses = _group_by_source(db.fetchall(), smd)
-    return render_template('verse.html', nro=nro, text=text, verses=verses)
 
+    if fmt == 'csv':
+        return render_csv([
+            (smd[p_id].nro, pos, text, smd[p_id].location, smd[p_id].collector,
+             '\n'.join(' > '.join(t) for t in smd[p_id].themes)) \
+            for p_id, pos, v_id, text in db.fetchall()],
+            header=('nro', 'pos', 'text', 'location', 'collector', 'themes'))
+    else:
+        verses = _group_by_source(db.fetchall(), smd)
+        return render_template('verse.html', nro=nro, pos=pos,
+                               text=text, verses=verses)
