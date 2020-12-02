@@ -3,6 +3,7 @@ import pymysql
 
 import config
 from data import get_structured_metadata, render_themes_tree, render_csv
+from external import make_map_link
 
 
 def render(nro=None, pos=None, v_id=None, fmt='html'):
@@ -64,5 +65,6 @@ def render(nro=None, pos=None, v_id=None, fmt='html'):
             header=('nro', 'pos', 'text', 'location', 'collector', 'themes'))
     else:
         verses = _group_by_source(db.fetchall(), smd)
-        return render_template('verse.html', nro=nro, pos=pos,
+        map_lnk = make_map_link('verse', nro=nro, pos=pos)
+        return render_template('verse.html', map_lnk=map_lnk, nro=nro, pos=pos,
                                text=text, verses=verses)

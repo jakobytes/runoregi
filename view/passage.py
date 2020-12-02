@@ -4,6 +4,7 @@ import pymysql
 
 import config
 from data import get_structured_metadata, render_themes_tree, render_csv
+from external import make_map_link
 
 MAX_QUERY_LENGTH = 20
 
@@ -114,7 +115,11 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5, fmt='html'):
             for h in hits],
             header=('nro', 'pos', 'snippet', 'location', 'collector', 'themes'))
     else:
+        map_lnk = make_map_link(
+            'passage', nro=nro, start=start_pos, end=end_pos, dist=dist,
+            context=context, hitfact=hitfact)
         return render_template(
             'passage.html', nro=nro, start=start_pos, end=end_pos, dist=dist,
-            context=context, hitfact=hitfact, hits=hits, smd=smd)
+            context=context, hitfact=hitfact, hits=hits, smd=smd,
+            map_lnk=map_lnk)
 

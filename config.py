@@ -8,3 +8,7 @@ MYSQL_PARAMS = {
     'password' : os.getenv('DB_PASS'),
     'database' : os.getenv('DB_NAME')
 }
+
+BASE_URL = 'http://runoregi.rahtiapp.fi'
+SHINY_URL = 'https://filter-shiny.rahtiapp.fi'
+
