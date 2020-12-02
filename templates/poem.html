@@ -58,30 +58,27 @@
 <table cellspacing="0" cellpadding="2">
   {% for v in verses %}
   <tr>
-    {% if v[4] == "V" %}
-      <td bgcolor="{{ v[3] }}" align="right" width="19">
-        <a name="{{ v[0] }}" href="/verse?id={{ v[1] }}">
-          <img src="/static/img/transparent.png" width="15" height="15" title="{{ v[2] }} similar" alt="{{ v[2] }}">
+    {% if v[3] == "V" %}
+      <td bgcolor="{{ v[2] }}" align="right" width="19">
+        <a name="{{ v[0] }}" href="/verse?nro={{ p.smd.nro }}&pos={{ v[0] }}">
+          <img src="/static/img/transparent.png" width="15" height="15" title="{{ v[1] }} similar" alt="{{ v[2] }}">
         </a>
       </td>
       <td align="right" width="35">&ensp;<sup><small>{{ v[0] }}</a></small></sup></td>
       <td width="350" class="verse" id="{{ v[0] }}">
       {% if v[0] in hl %}
-        <b>{{ v[5] }}</b>
+        <b>{{ v[4] }}</b>
       {% else %}
-        {{ v[5] }}
+        {{ v[4] }}
       {% endif %}</td>
     {% else %}
-      {% if v[4] == "L" %}
-      <td><a name="{{ v[0] }}" href="/verse?id={{ v[1] }}"></a></td>
-      <td></td><td><small><i>{{ v[5] }}</i></small></td>
-      {% elif v[4] == "K" %}
-      <td><a name="{{ v[0] }}" href="/verse?id={{ v[1] }}"></a></td>
-      <td></td><td><small>{{ v[5] }}</small></td>
-      {% elif v[4] == "CPT" %}
+      {% if v[3] == "L" %}
+      <td></td><td></td><td><small><i>{{ v[5] }}</i></small></td>
+      {% elif v[3] == "K" %}
+      <td></td><td></td><td><small>{{ v[5] }}</small></td>
+      {% elif v[3] == "CPT" %}
       <td colspan="3" align="center">
-        <a name="{{ v[0] }}" href="/verse?id={{ v[1] }}"></a>
-        <h4>{{ v[5] }}</h4>
+        <h4>{{ v[4] }}</h4>
       </td>
       {% endif %}
     {% endif %}

@@ -50,8 +50,10 @@ def show_poem():
 
 @application.route('/verse')
 def show_verse():
-    v_id = request.args.get('id', 1, type=str)
-    return _compact(view.verse.render(v_id))
+    nro = request.args.get('nro', None, type=str)
+    pos = request.args.get('pos', 1, type=str)
+    v_id = request.args.get('id', 1, type=int)
+    return _compact(view.verse.render(nro=nro, pos=pos, v_id=v_id))
 
 @application.route('/')
 def index():

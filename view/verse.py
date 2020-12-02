@@ -5,7 +5,7 @@ import config
 from data import get_structured_metadata, render_themes_tree
 
 
-def render(v_id):
+def render(nro=None, pos=None, v_id=None):
 
     def _group_by_source(verses, smd):
         '''
@@ -31,12 +31,20 @@ def render(v_id):
         return results
 
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        db.execute(
-            'SELECT v_id, text, nro, clust_id FROM verses'
-            ' NATURAL JOIN verse_poem'
-            ' NATURAL JOIN poems'
-            ' NATURAL JOIN v_clust'
-            ' WHERE v_id = %s;', v_id)
+        if nro is not None and pos is not None:
+            db.execute(
+                'SELECT v_id, text, nro, clust_id FROM verses'
+                ' NATURAL JOIN verse_poem'
+                ' NATURAL JOIN poems'
+                ' NATURAL JOIN v_clust'
+                ' WHERE nro = %s AND pos = %s;', (nro, pos))
+        elif v_id is not None:
+            db.execute(
+                'SELECT v_id, text, nro, clust_id FROM verses'
+                ' NATURAL JOIN verse_poem'
+                ' NATURAL JOIN poems'
+                ' NATURAL JOIN v_clust'
+                ' WHERE v_id = %s;', v_id)
         v_id, text, nro, clust_id = db.fetchall()[0]
         regions = []
         themes = []
@@ -46,10 +54,9 @@ def render(v_id):
             ' FROM v_clust vc'
             '   JOIN verses v ON vc.v_id = v.v_id'
             '   JOIN verse_poem vp ON v.v_id = vp.v_id'
-            ' WHERE vc.clust_id = %s',
+            ' WHERE vc.clust_id = %s'
+            ' ORDER BY vp.p_id, vp.pos;',
             (clust_id,))
         verses = _group_by_source(db.fetchall(), smd)
-    return render_template('verse.html', v_id=v_id, text=text,
-                           nro=nro, regions=regions, themes=themes,
-                           verses=verses)
+    return render_template('verse.html', nro=nro, text=text, verses=verses)
 

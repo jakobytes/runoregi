@@ -45,7 +45,7 @@ def render(nro, hl):
         topics = poem.smd.themes
         sim_poems = get_similar_poems(db, poem.p_id)
         for i, v in enumerate(poem.verses, 1):
-            verses.append((i, v.v_id, v.clustfreq, _makecol(v.clustfreq),
+            verses.append((i, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text))
     return render_template('poem.html', p=poem, hl=hl, sim_poems=sim_poems,
                            verses=verses, refs=refs,
