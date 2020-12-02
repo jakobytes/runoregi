@@ -6,7 +6,7 @@ import pymysql
 
 from align import align, merge_alignments
 import config
-from data import Poem, render_themes_tree
+from data import Poem, render_themes_tree, render_csv
 
 SIM_SELECT = '''
 SELECT
@@ -89,7 +89,7 @@ def arrange(als):
     return p, [_get_al(als, p[i], p[i+1]) for i in range(len(p)-1)]
 
 
-def render(nros):
+def render(nros, fmt='html'):
     poems, sims_list = get_data_from_db(nros, config.MYSQL_PARAMS)
     sims = build_similarity_matrices(poems, sims_list)
     als = {}
@@ -109,7 +109,11 @@ def render(nros):
         scores.append(sum(z for (x, y, z) in a)/len(a))
     meta_keys = sorted(set([k for p in poems for k in p.meta.keys()]))
     themes = [render_themes_tree(p.smd.themes) for p in poems]
-    return render_template('multidiff.html', poems=poems, alignment=als_merged,
-                           scores=scores, meta_keys=meta_keys,
-                           themes=themes)
+    if fmt == 'csv':
+        rows = [((v.text if v else '') for v in row) for row in als_merged]
+        return render_csv(rows, header=tuple(p.smd.nro for p in poems))
+    else:
+        return render_template('multidiff.html', nro=nros, poems=poems,
+                               alignment=als_merged, scores=scores,
+                               meta_keys=meta_keys, themes=themes)
 

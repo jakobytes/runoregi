@@ -43,7 +43,12 @@ def show_diff():
 def show_multidiff():
     nros_str = request.args.get('nro', 1, type=str)
     nros = nros_str.split(',')
-    return _compact(view.multidiff.render(nros))
+    fmt = request.args.get('format', 'html', type=str)
+    result = view.multidiff.render(nros, fmt=fmt)
+    if fmt == 'csv':
+        return Response(result, mimetype='text/plain')
+    else:
+        return _compact(result)
 
 @application.route('/poem')
 @application.route('/runo')
