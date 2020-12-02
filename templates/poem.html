@@ -25,6 +25,11 @@
 {% endfor %}
 
 <h2>Similar poems</h2>
+
+{% if sim_poems %}
+<p><small>[<a href="/multidiff?nro={{ p.smd.nro }},{{ sim_poems | map(attribute=1) | map(attribute='nro') | join(',') }}">compare all</a>]</small></p>
+{% endif %}
+
 <table style="user-select: none">
 {% for sp in sim_poems %}
   <tr>
