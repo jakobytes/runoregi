@@ -6,7 +6,9 @@
       <small>[<a href="/poem?nro={{ p.smd.nro }}">to poem</a>]</small>
       <small>[<a href="/multidiff?nro={{ poems | map(attribute='smd') | map(attribute='nro') | reject('eq', p.smd.nro) | join(',') }}">remove</a>]</small>
       <h2>{{ p.smd.title }}</h2>
+      <small> {{ p.smd.nro }}<br /> </small>
       <small> {{ p.smd.location }}<br /> </small>
+      <small> {{ p.smd.year }}&nbsp;{{ p.smd.collector }}</small>
     </td>
     {% endfor %}
   </tr>

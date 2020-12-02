@@ -3,13 +3,17 @@
     <td>
       <small>[<a href="/poem?nro={{ p1.smd.nro }}">to poem</a>]</small>
       <h2>{{ p1.smd.title }}</h2>
+      <small> {{ p1.smd.nro }}<br /> </small>
       <small> {{ p1.smd.location }}<br /> </small>
+      <small> {{ p1.smd.year }}&nbsp;{{ p1.smd.collector }}<br /> </small>
     </td>
     <td width="30"></td>
     <td>
       <small>[<a href="/poem?nro={{ p2.smd.nro }}">to poem</a>]</small>
       <h2>{{ p2.smd.title }}</h2>
+      <small> {{ p2.smd.nro }}<br /> </small>
       <small> {{ p2.smd.location }}<br /> </small>
+      <small> {{ p2.smd.year }}&nbsp;{{ p2.smd.collector }}<br /> </small>
     </td>
   </tr>
   {% for key in meta_keys %}
