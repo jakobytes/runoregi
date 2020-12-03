@@ -71,6 +71,9 @@ def merge_alignments(alignments, empty=''):
                 result.append(_als_get(als, i)+(a[j][1],))
                 i += 1
                 j += 1
+        while i < len(als):
+            result.append(als[i] + (empty,))
+            i += 1
         return result
 
     result = [(x, y) for (x, y, w) in alignments[0]]
