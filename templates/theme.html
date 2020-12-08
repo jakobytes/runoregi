@@ -1,0 +1,32 @@
+<html>
+<head>
+<title>{{ name }} — Runoregi</title>
+</head>
+<body>
+[<a href="/search">index</a>] &gt;
+{% for theme_id, name in upper %}
+<a href="/theme?id={{ theme_id }}">{{ name }}</a> &gt;
+{% endfor %}
+<h1>{{ name }}</h1>
+{{ desc }}
+{% if subcat %}
+<h2>Subcategories</h2>
+{% for d, p, minor, t in subcat %}
+{{ p | join('\u2003') }} <a href="/theme?id={{ t[0] }}">{{ t[1] }}</a><br/>
+{% endfor %}
+{% endif %}
+{% if poems %}
+<h2>Poems</h2>
+<table>
+{% for (p_id, is_minor), smd in poems %}
+<tr>
+<td><b>{% if is_minor %}*{% endif %}<a href="/poem?nro={{ smd.nro }}">{{ smd.title }}</a></b></td>
+<td><small>{{ smd.year }}</small></td>
+<td><small>{{ smd.location }}</small></td>
+<td><small>{{ smd.collector }}</small></td>
+</tr>
+{% endfor %}
+</table>
+{% endif %}
+</body>
+</html>

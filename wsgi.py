@@ -6,6 +6,8 @@ import view.multidiff
 import view.passage
 import view.poem
 import view.poemdiff
+import view.search
+import view.theme
 import view.verse
 
 
@@ -69,6 +71,21 @@ def show_verse():
         return Response(result, mimetype='text/plain')
     else:
         return _compact(result)
+
+@application.route('/search')
+def show_search():
+    q = request.args.get('q', None, type=str)
+    method = request.args.get('method', 'plain', type=str)
+    verses = request.args.get('verses', False, type=bool)
+    themes = request.args.get('themes', False, type=bool)
+    meta = request.args.get('meta', False, type=bool)
+    return _compact(view.search.render(
+        q, method=method, verses=verses, themes=themes, meta=meta))
+
+@application.route('/theme')
+def show_theme():
+    theme_id = request.args.get('id', None, type=str)
+    return _compact(view.theme.render(theme_id))
 
 @application.route('/')
 def index():

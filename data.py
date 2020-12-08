@@ -18,7 +18,7 @@ def render_themes_tree(themes):
             # if the last element of a list is '*', it's a "minor" theme
             # that will be specially marked in the UI
             minor = False
-            if theme_lst[-1] == '*':
+            if theme_lst[-1] == ('*',):
                 minor = True
                 theme_lst.pop()
             for i, t in enumerate(theme_lst):
@@ -74,10 +74,10 @@ def get_structured_metadata(
          if collector else '"no collector",'),
         ('year,' if year else '"no year",'),
         ('GROUP_CONCAT(DISTINCT'
-         '  CONCAT(IFNULL(CONCAT(t4.name, "::"), ""),'
-	     '         IFNULL(CONCAT(t3.name, "::"), ""),'
-         '         IFNULL(CONCAT(t2.name, "::"), ""),'
-         '         IFNULL(t1.name, ""),'
+         '  CONCAT(IFNULL(CONCAT(t4.theme_id, "@", t4.name, "::"), ""),'
+	     '         IFNULL(CONCAT(t3.theme_id, "@", t3.name, "::"), ""),'
+         '         IFNULL(CONCAT(t2.theme_id, "@", t2.name, "::"), ""),'
+         '         IFNULL(CONCAT(t1.theme_id, "@", t1.name), ""),'
          '         IF(pt.is_minor OR (t1.theme_id LIKE "orig%"), "::*", ""))'
          '  SEPARATOR ";;;")' if themes else '""'),
         'FROM poems']
@@ -127,7 +127,9 @@ def get_structured_metadata(
     db.execute(' '.join(query_lst))
     results = []
     for p_id, nro, osa, _id, loc, col, year, themes_str in db.fetchall():
-        themes = sorted(t.split('::') for t in themes_str.split(';;;'))
+        themes = sorted(
+            [tuple(t.split('@')) for t in tt.split('::')] \
+            for tt in themes_str.split(';;;'))
         tit = _make_title(nro, osa, _id) if title else nro
         results.append(StructuredMetadata(p_id, nro, tit, loc, col, year, themes))
     return results

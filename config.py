@@ -12,3 +12,4 @@ MYSQL_PARAMS = {
 BASE_URL = 'http://runoregi.rahtiapp.fi'
 SHINY_URL = 'https://filter-shiny.rahtiapp.fi'
 
+SEARCH_LIMIT = 1000

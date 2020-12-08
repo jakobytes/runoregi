@@ -37,7 +37,7 @@
     <td valign="top" width="400">
       <small>
       {% for d, p, minor, t in v[6] %}
-      {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t }}{% if minor %}</font>{% endif %}<br/>
+      {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t[1] }}{% if minor %}</font>{% endif %}<br/>
       {% endfor %}
       </small>
     </td>

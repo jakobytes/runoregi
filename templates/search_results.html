@@ -1,0 +1,85 @@
+<html>
+<head>
+<title>Search: {{ q }} — Runoregi</title>
+</head>
+<body>
+<center>
+<form method="GET" action="/search">
+<table border="0">
+<tr>
+<td rowspan="2">
+<input type="text" name="q" size="50" value="{{ q }}"/>
+<input type="submit" value="Search"/>
+</td>
+<td width="30" rowspan="2"/>
+<td>
+<small>
+<b>Method:</b>
+<input type="radio" id="fulltext" name="method" value="plain"{% if method == "plain" %} checked=""{% endif %}>
+<label for="fulltext">Plain text</label>
+<input type="radio" id="regex" name="method" value="regex"{% if method == "regex" %} checked=""{% endif %}>
+<label for="regex">Regular expression</label>
+</small>
+</td>
+</tr>
+<tr>
+<td>
+<small>
+<b>Search in:</b>
+<input type="checkbox" id="themes" name="themes" value="true"{% if themes %} checked=""{% endif %}>
+<label for="themes">Theme index</label>
+<input type="checkbox" id="meta" name="meta" value="true"{% if meta %} checked=""{% endif %}>
+<label for="meta">Poem metadata</label>
+<input type="checkbox" id="verses" name="verses" value="true"{% if verses %} checked=""{% endif %}>
+<label for="verses">Poem text (verses)</label>
+</small>
+</td>
+</tr>
+</table>
+</form>
+</center>
+<hr/>
+<h1>Search results for: {{q}}</h1>
+{% if r_themes %}
+<h2>Themes</h2>
+{% if r_themes | length >= limit %}
+<p><b><font color="red">
+Limit of {{ limit }} results exceeded!
+Try to make the query more specific.
+</font></b></p>
+{% endif %}
+{% for theme_id, name, desc, upper in r_themes %}
+<h4>{{ upper | join(" > ") }} &gt;
+<a href="/theme?id={{ theme_id }}">{{ name }}</a></h4>
+{{ desc }}
+<hr/>
+{% endfor %}
+{% endif %}
+{% if r_meta %}
+<h2>Metadata</h2>
+{% if r_meta | length >= limit %}
+<p><b><font color="red">
+Limit of {{ limit }} results exceeded!
+Try to make the query more specific.
+</font></b></p>
+{% endif %}
+{% for nro, field, value in r_meta %}
+<a href="/poem?nro={{ nro }}">{{ nro }}</a>
+<b>{{ field }}:</b> {{ value }} <br/>
+{% endfor %}
+{% endif %}
+{% if r_verses %}
+<h2>Verses</h2>
+{% if r_verses | length >= limit %}
+<p><b><font color="red">
+Limit of {{ limit }} results exceeded!
+Try to make the query more specific.
+</font></b></p>
+{% endif %}
+{% for nro, pos, text in r_verses %}
+<a href="/poem?nro={{ nro }}&hl={{ pos }}#{{ pos }}">{{ nro }}</a>
+<sup><small>{{ pos }}</small></sup> {{ text }}<br/>
+{% endfor %}
+{% endif %}
+</body>
+</html>

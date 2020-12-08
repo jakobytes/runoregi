@@ -22,7 +22,7 @@
 
 <h2>Themes</h2>
 {% for d, p, minor, t in themes %}
-{% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t }}{% if minor %}</font>{% endif %}<br/>
+{% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {% if minor %}<small>{% endif %}<a href="/theme?id={{ t[0] }}">{{ t[1] }}</a>{% if minor %}</small></font>{% endif %}<br/>
 {% endfor %}
 
 <h2>Similar poems</h2>
