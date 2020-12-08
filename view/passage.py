@@ -111,7 +111,8 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5, fmt='html'):
             (smd[h['p_id']].nro, h['verses'][0][0],
              '\n'.join(map(itemgetter(2), h['verses'])),
              smd[h['p_id']].location, smd[h['p_id']].collector,
-             '\n'.join(' > '.join(t) for t in smd[h['p_id']].themes)) \
+             '\n'.join(' > '.join(t[1] for t in tt if len(t) >= 2) \
+                       for tt in smd[h['p_id']].themes)) \
             for h in hits],
             header=('nro', 'pos', 'snippet', 'location', 'collector', 'themes'))
     else:

@@ -60,7 +60,8 @@ def render(nro=None, pos=None, v_id=None, fmt='html'):
     if fmt == 'csv':
         return render_csv([
             (smd[p_id].nro, pos, text, smd[p_id].location, smd[p_id].collector,
-             '\n'.join(' > '.join(t) for t in smd[p_id].themes)) \
+             '\n'.join(' > '.join(t[1] for t in tt if len(t) >= 2) \
+                       for tt in smd[p_id].themes)) \
             for p_id, pos, v_id, text in db.fetchall()],
             header=('nro', 'pos', 'text', 'location', 'collector', 'themes'))
     else:
