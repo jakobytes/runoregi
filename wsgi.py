@@ -73,6 +73,7 @@ def show_verse():
         return _compact(result)
 
 @application.route('/search')
+@application.route('/')
 def show_search():
     q = request.args.get('q', None, type=str)
     method = request.args.get('method', 'plain', type=str)
@@ -87,8 +88,8 @@ def show_theme():
     theme_id = request.args.get('id', None, type=str)
     return _compact(view.theme.render(theme_id))
 
-@application.route('/')
-def index():
+@application.route('/skvr-themes')
+def show_skvr_static_index():
     return application.send_static_file('skvr-themes.html')
 #    q = request.args.get('q', 'a', type=str).lower()
 #    return view.index.render(q)
