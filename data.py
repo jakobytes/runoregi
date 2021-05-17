@@ -67,7 +67,7 @@ def get_structured_metadata(
     query_lst = [
         'SELECT DISTINCT poems.p_id, nro,',
         ('rm_osa.value as osa, rm_id.value as id,' if title else '"", "",'),
-        ('GROUP_CONCAT(DISTINCT CONCAT(l.region, " — ", l.name)'
+        ('GROUP_CONCAT(DISTINCT IFNULL(CONCAT(l2.name, " — ", l.name), l.name)'
          ' SEPARATOR "; "),'\
          if location else '"no location",'),
         ('GROUP_CONCAT(DISTINCT c.name SEPARATOR "; "),'\
@@ -91,7 +91,8 @@ def get_structured_metadata(
     if location:
         query_lst.extend([
           'LEFT OUTER JOIN p_loc ON poems.p_id = p_loc.p_id',
-          'LEFT OUTER JOIN locations l ON p_loc.loc_id = l.loc_id'
+          'LEFT OUTER JOIN locations l ON p_loc.loc_id = l.loc_id',
+          'LEFT OUTER JOIN locations l2 ON l.par_id = l2.loc_id'
         ])
     if collector:
         query_lst.extend([
