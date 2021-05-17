@@ -61,6 +61,8 @@ def get_structured_metadata(
     def _make_title(nro, osa, _id):
         if nro.startswith('skvr'):
             return 'SKVR {} {}'.format(osa, _id)
+        elif nro.startswith('kalevala'):
+            return 'Kalevala {}'.format(_id)
         else:
             return _id
 
