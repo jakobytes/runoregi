@@ -63,6 +63,8 @@ def get_structured_metadata(
             return 'SKVR {} {}'.format(osa, _id)
         elif nro.startswith('kalevala'):
             return 'Kalevala {}'.format(_id)
+        elif nro.startswith('kt'):
+            return 'Kanteletar {}:{}'.format(int(nro[2:4]), int(nro[4:]))
         else:
             return _id
 

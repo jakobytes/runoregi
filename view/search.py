@@ -10,10 +10,12 @@ def get_root_categories():
         themes = defaultdict(lambda: list())
         db.execute(\
             'SELECT theme_id, name FROM themes'
-            ' WHERE par_id = 0 AND LENGTH(theme_id) = 3;')
+            ' WHERE par_id = 0 AND (LENGTH(theme_id) = 3 OR theme_id LIKE "kt_t%");')
         for theme_id, name in db.fetchall():
             if theme_id.startswith('t'):
                 themes['skvr'].append((theme_id, name))
+            elif theme_id.startswith('kt_t'):
+                themes['kanteletar'].append((theme_id, name))
             else:
                 themes['regilaul'].append((theme_id, name))
     return themes

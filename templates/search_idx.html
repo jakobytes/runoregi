@@ -111,5 +111,12 @@ or: <a href="/skvr-themes">Entire SKVR index on one page</a>
 <td><a href="/poem?nro=kalevala49">XLIX</a></td>
 <td><a href="/poem?nro=kalevala50">L</a></td>
 </tr>
+</table>
+<h3>Kanteletar</h3>
+<ul>
+{% for theme_id, name in cat['kanteletar'] %}
+<li/><a href="/theme?id={{ theme_id }}">{{ name }}</a>
+{% endfor %}
+</ul>
 </body>
 </html>
