@@ -49,6 +49,6 @@ def render(theme_id):
         poem_ids = list(map(itemgetter(0), poems))
         if poem_ids:
             smd = get_structured_metadata(db, p_ids = poem_ids)
-    return render_template('theme.html', name = name, desc = desc,
+    return render_template('theme.html', name = name, desc = desc, id=theme_id,
         upper = upper, subcat = subcat, poems = list(zip(poems, smd)))
 

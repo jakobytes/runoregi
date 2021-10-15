@@ -1,0 +1,38 @@
+<html>
+<head>
+<title>{{ name }} — Runoregi</title>
+</head>
+<body>
+[<a href="/search">index</a>] &gt;
+{% for theme_id, name in upper %}
+<a href="/theme?id={{ theme_id }}">{{ name }}</a> &gt;
+{% endfor %}
+<h1>{{ name }}</h1>
+<p>{{ desc }}</p>
+<svg version="1.1"
+     width="{{ 450 }}" height="{{ 40 * n + 20 }}"
+     xmlns="http://www.w3.org/2000/svg">
+{% for i in ll %}
+<a href="/poem?nro={{ smd[i].nro }}">
+<text x="200" y="{{ 40*loop.index0+15 }}" font-size="16" text-anchor="left">{{ smd[i].title }}</text>
+</a>
+{% endfor %}
+
+{% for x1, y1, x2, y2, x, y, nros in dd %}
+{% if x > 0 %}
+<line x1="{{ x1 }}" y1="{{ y1 }}" x2="{{ x }}" y2="{{ y1 }}" style="stroke:black;stroke-width:1"/>
+<line x1="{{ x2 }}" y1="{{ y2 }}" x2="{{ x }}" y2="{{ y2 }}" style="stroke:black;stroke-width:1"/>
+<line x1="{{ x }}" y1="{{ y1 }}" x2="{{ x }}" y2="{{ y2 }}"  style="stroke:black;stroke-width:1"/>
+{% endif %}
+{% endfor %}
+
+{% for x1, y1, x2, y2, x, y, nros in dd %}
+{% if x > 0 %}
+<a href="/multidiff?nro={{ nros | join(',') }}">
+<rect x="{{ x-10 }}" y = "{{ y-10 }}" width="{{ 20 }}" height="{{ 20 }}" fill="blue"/>
+</a>
+{% endif %}
+{% endfor %}
+</svg>
+</body>
+</html>

@@ -1,6 +1,7 @@
 from flask import Flask, Response, request
 import re
 
+import view.dendrogram
 import view.index
 import view.multidiff
 import view.passage
@@ -16,6 +17,14 @@ application = Flask(__name__)
 def _compact(string):
     'Remove empty lines from the HTML code.'
     return re.sub(r'\n(\s*\n)+', '\n', string)
+
+
+@application.route('/dendrogram')
+def show_dendrogram():
+    theme_id = request.args.get('theme_id', type=str)
+    result = view.dendrogram.render(theme_id=theme_id)
+    return _compact(result)
+
 
 @application.route('/passage')
 def show_passage():
