@@ -22,7 +22,9 @@ def _compact(string):
 @application.route('/dendrogram')
 def show_dendrogram():
     theme_id = request.args.get('theme_id', type=str)
-    result = view.dendrogram.render(theme_id=theme_id)
+    method = request.args.get('method', 'complete', type=str)
+    dist = request.args.get('dist', 'al', type=str)
+    result = view.dendrogram.render(theme_id=theme_id, method=method, dist=dist)
     return _compact(result)
 
 

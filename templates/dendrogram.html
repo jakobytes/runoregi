@@ -9,23 +9,33 @@
 {% endfor %}
 <h1>{{ name }}</h1>
 <p>{{ desc }}</p>
+<p>
+similarity metric:
+{% for m_abbr, m_name in [("al", "alignment"), ("cos", "cosine")] %}
+[{% if dist != m_abbr %}<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ m_abbr }}&method={{ method }}">{% endif %}{{ m_name }}{% if dist != m_abbr %}</a>{% endif %}]
+{% endfor %}
+<br/>
+linking method:
+{% for m in ["complete", "average", "single", "centroid", "ward"] %}
+[{% if method != m %}<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ dist }}&method={{ m }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}]
+{% endfor %}
+</p>
+
 <svg version="1.1"
      width="100%" height="{{ 70 * n + 35 }}"
      xmlns="http://www.w3.org/2000/svg">
 {% for i in ll %}
 <a href="/poem?nro={{ smd[i].nro }}">
-<text x="400" y="{{ 70*loop.index0+15 }}" font-size="16" text-anchor="left">{{ smd[i].title }}</text>
-<text x="400" y="{{ 70*loop.index0+30 }}" font-size="14" text-anchor="left">{{ smd[i].location }}</text>
-<text x="400" y="{{ 70*loop.index0+45 }}" font-size="14" text-anchor="left">{{ smd[i].year }}&nbsp;{{ smd[i].collector }}</text>
+<text x="420" y="{{ 70*loop.index0+15 }}" font-size="16" text-anchor="left">{{ smd[i].title }}</text>
+<text x="420" y="{{ 70*loop.index0+30 }}" font-size="14" text-anchor="left">{{ smd[i].location }}</text>
+<text x="420" y="{{ 70*loop.index0+45 }}" font-size="14" text-anchor="left">{{ smd[i].year }}&nbsp;{{ smd[i].collector }}</text>
 </a>
 {% endfor %}
 
 {% for x1, y1, x2, y2, x, y, nros in dd %}
-{% if x > 0 %}
 <line x1="{{ x1 }}" y1="{{ y1 }}" x2="{{ x }}" y2="{{ y1 }}" style="stroke:black;stroke-width:1"/>
 <line x1="{{ x2 }}" y1="{{ y2 }}" x2="{{ x }}" y2="{{ y2 }}" style="stroke:black;stroke-width:1"/>
 <line x1="{{ x }}" y1="{{ y1 }}" x2="{{ x }}" y2="{{ y2 }}"  style="stroke:black;stroke-width:1"/>
-{% endif %}
 {% endfor %}
 
 {% for x1, y1, x2, y2, x, y, nros in dd %}
