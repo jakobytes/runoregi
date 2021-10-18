@@ -62,10 +62,10 @@ def get_p_ids_by_theme(db, theme_id):
 def transform_vert(dd, n, smd):
 
     def tx(x):
-        return int(200*(1-x))
+        return int(400*(1-x))
 
     def ty(y):
-        return int(40*y+10)
+        return int(70*y+25)
 
     result = []
     ill = np.zeros(n, dtype=np.uint16)   # inverse leaves list -- positions of leaf nodes
