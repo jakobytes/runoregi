@@ -31,6 +31,15 @@ def get_p_ids_by_theme(db, theme_id):
     return list(map(itemgetter(0), db.fetchall()))
 
 
+def get_expanded_p_ids(db, p_ids, nb):
+    p_ids_str = ','.join(map(str, p_ids))
+    q = 'SELECT DISTINCT p2_id FROM p_sim'\
+        '  WHERE p1_id IN ({}) AND p2_id NOT IN ({}) AND sim_al >= {};'\
+        .format(p_ids_str, p_ids_str, nb)
+    db.execute(q)
+    return list(map(itemgetter(0), db.fetchall()))
+
+
 def cluster(x, method):
     if method == 'average':
         return scipy.cluster.hierarchy.average(x)
@@ -98,8 +107,8 @@ def transform_vert(dd, n, smd):
             result.append((x1, y1, x2, y2, x, y, nros1+nros2))
     return result
 
-def render(theme_id=None, method='complete', dist='al'):
-    p_ids, smd = [], []
+def render(theme_id=None, method='complete', dist='al', nb=None):
+    p_ids, smd, nt = [], [], 0  # `nt` is the number of poems in the theme
     upper, name, desc = None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         db.execute(\
@@ -118,6 +127,10 @@ def render(theme_id=None, method='complete', dist='al'):
 
         if theme_id is not None:
             p_ids = get_p_ids_by_theme(db, theme_id)
+            thm = set(p_ids)
+        if nb is not None and nb > 0:
+            p_ids.extend(get_expanded_p_ids(db, p_ids, nb))
+            p_ids.sort()
         if p_ids:
             smd = get_structured_metadata(db, p_ids = p_ids)
         d = get_dist_mtx(db, p_ids, dist=dist)
@@ -125,6 +138,6 @@ def render(theme_id=None, method='complete', dist='al'):
         ll = scipy.cluster.hierarchy.leaves_list(clust)
         dd = transform_vert(clust, len(p_ids), smd)
     return render_template('dendrogram.html', theme_id=theme_id, smd=smd,
-        ll=ll, dd=dd, n=len(p_ids), upper=upper, name=name, desc=desc,
-        dist=dist, method=method)
+        ll=ll, dd=dd, n=len(p_ids), thm=thm, upper=upper, name=name, desc=desc,
+        dist=dist, method=method, nb=nb if nb is not None else 1)
 

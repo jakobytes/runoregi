@@ -19,6 +19,11 @@ linking method:
 {% for m in ["complete", "average", "single", "centroid", "ward"] %}
 [{% if method != m %}<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ dist }}&method={{ m }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}]
 {% endfor %}
+<br/>
+neighborhood:
+[<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ dist }}&method={{ method }}">none</a>]
+[<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ dist }}&method={{ method }}&nb={{ nb * 0.75 }}">more</a>]
+[<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ dist }}&method={{ method }}&nb={{ nb / 0.75 }}">less</a>]
 </p>
 
 <svg version="1.1"
@@ -26,7 +31,7 @@ linking method:
      xmlns="http://www.w3.org/2000/svg">
 {% for i in ll %}
 <a href="/poem?nro={{ smd[i].nro }}">
-<text x="420" y="{{ 70*loop.index0+15 }}" font-size="16" text-anchor="left">{{ smd[i].title }}</text>
+<text x="420" y="{{ 70*loop.index0+15 }}" font-size="16" text-anchor="left"{% if smd[i].p_id not in thm %} fill="red"{% endif %}>{{ smd[i].title }}</text>
 <text x="420" y="{{ 70*loop.index0+30 }}" font-size="14" text-anchor="left">{{ smd[i].location }}</text>
 <text x="420" y="{{ 70*loop.index0+45 }}" font-size="14" text-anchor="left">{{ smd[i].year }}&nbsp;{{ smd[i].collector }}</text>
 </a>

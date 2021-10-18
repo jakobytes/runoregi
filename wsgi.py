@@ -24,7 +24,8 @@ def show_dendrogram():
     theme_id = request.args.get('theme_id', type=str)
     method = request.args.get('method', 'complete', type=str)
     dist = request.args.get('dist', 'al', type=str)
-    result = view.dendrogram.render(theme_id=theme_id, method=method, dist=dist)
+    nb = request.args.get('nb', type=float)
+    result = view.dendrogram.render(theme_id=theme_id, method=method, dist=dist, nb=nb)
     return _compact(result)
 
 
