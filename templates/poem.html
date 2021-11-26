@@ -3,6 +3,22 @@
   .selected {
     color: red
   }
+  .cn, .c0, .c1, .c2, .c3, .c4, .c5, .c6, .c7, .c8, .c9, .c10, .c11, .c12 {
+      text-decoration: none
+  }
+  .c0 { background-color: rgb(235, 172, 35) }
+  .c1 { background-color: rgb(184, 0, 88) }
+  .c2 { background-color: rgb(0, 140, 249) }
+  .c3 { background-color: rgb(0, 110, 0) }
+  .c4 { background-color: rgb(0, 187, 173) }
+  .c5 { background-color: rgb(209, 99, 230) }
+  .c6 { background-color: rgb(178, 69, 2) }
+  .c7 { background-color: rgb(255, 146, 135) }
+  .c8 { background-color: rgb(89, 84, 214) }
+  .c9 { background-color: rgb(0, 198, 248) }
+  .c10 { background-color: rgb(135, 133, 0) }
+  .c11 { background-color: rgb(0, 167, 108) }
+  .c12 { background-color: rgb(189, 189, 189) }
 </style>
 [<a target="_parent" href="/">to index</a>]
 <h1>{{ p.smd.title }}</h1>
@@ -116,33 +132,65 @@
 </table>
 
 <h2>Text</h2>
+<p>
+    Showing top {{ nr_linked_poems }} (<a href="/poem?nro={{ p.smd.nro }}&sim_order={{ sim_order }}&max_similar={{ max_similar - 10 }}">-10</a>/<a href="/poem?nro={{ p.smd.nro }}&sim_order={{ sim_order }}&max_similar={{ max_similar + 10 }}">+10</a>) out of {{ poems_sharing_verses }} poems sharing verses with this one based on the number of shared [
+{% if sim_order=="consecutive_rare" %}
+    consecutive rare
+{% else %}<a href="/poem?nro={{ p.smd.nro }}&sim_order=consecutive_rare&max_similar={{ max_similar }}">consecutive rare</a>
+{% endif %}
+    /
+{% if sim_order=="consecutive" %} consecutive
+{% else %}<a href="/poem?nro={{ p.smd.nro }}&sim_order=consecutive&max_similar={{ max_similar }}">consecutive</a>
+{% endif %}
+    /
+{% if sim_order=="rare" %} rare
+{% else %}<a href="/poem?nro={{ p.smd.nro }}&sim_order=rare&max_similar={{ max_similar }}">rare</a>
+{% endif %}
+    /
+{% if sim_order=="shared" %} any
+{% else %}<a href="/poem?nro={{ p.smd.nro }}&sim_order=shared&max_similar={{ max_similar }}">any</a>
+{% endif %}
+    ] verses
+</p>
 <table cellspacing="0" cellpadding="2">
   {% for v in verses %}
   <tr>
     {% if v[3] == "V" %}
-      <td bgcolor="{{ v[2] }}" align="right" width="19">
-        <a name="{{ v[0] }}" href="/verse?nro={{ p.smd.nro }}&pos={{ v[0] }}">
-          <img src="/static/img/transparent.png" width="15" height="15" title="{{ v[1] }} similar" alt="{{ v[1] }}">
+      <td bgcolor="{{ v[2] }}">
+        <a name="{{ v[0] }}" href="/verse?nro={{ p.smd.nro }}&pos={{ v[0] }}" title="{{ v[1] }}" class="cn">&nbsp;&nbsp;&nbsp;
         </a>
       </td>
-      <td align="right" width="35">&ensp;<sup><small>{{ v[0] }}</a></small></sup></td>
+      <td align="right" width="35">&ensp;<sup><small>{{ v[0] }}</small></sup></td>
       <td width="350" class="verse" id="{{ v[0] }}">
       {% if v[0] in hl %}
         <b>{{ v[4] }}</b>
       {% else %}
         {{ v[4] }}
       {% endif %}</td>
+      <td bgcolor="{{ v[2] }}">
+        <a name="{{ v[0] }}" href="/verse?nro={{ p.smd.nro }}&pos={{ v[0] }}" title="{{ v[1] }}" class="cn">&nbsp;&nbsp;&nbsp;
+        </a>
+      </td>
     {% else %}
       {% if v[3] == "L" %}
-      <td></td><td></td><td><small><i>{{ v[4] }}</i></small></td>
+      <td></td><td></td><td><small><i>{{ v[4] }}</i></small></td><td></td>
       {% elif v[3] == "K" %}
-      <td></td><td></td><td><small>{{ v[4] }}</small></td>
+      <td></td><td></td><td><small>{{ v[4] }}</small></td><td></td>
       {% elif v[3] == "CPT" %}
-      <td colspan="3" align="center">
+      <td colspan="4" align="center">
         <h4>{{ v[4] }}</h4>
       </td>
       {% endif %}
     {% endif %}
+    <td>
+    {% for p2 in linked_poems %}
+        {% if v[5] in verse_poems and p2 in verse_poems[v[5]] %}
+            <a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ p2 }}" class="c{{ loop.index % 13}}" title="{{ p2 }}">&nbsp;&nbsp;&nbsp;</a>
+        {% else %}
+            <span class="cn">&nbsp;&nbsp;&nbsp;</span>
+        {% endif %}
+    {%  endfor %}
+    </td>
   </tr>
   {% endfor %}
   <tr><td colspan="3"><hr/></td></tr>
