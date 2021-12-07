@@ -10,6 +10,30 @@ import config
 from data import Poem, get_structured_metadata, render_themes_tree
 
 
+# TODO verse-level themes
+# data structure: list
+# - start_pos, end_pos, 
+def get_verse_themes(db, p_id):
+    db.execute('SELECT max(pos) FROM verse_poem WHERE p_id = %s', (p_id,))
+    n = db.fetchall()[0][0]
+    db.execute('SELECT pos_start, pos_end, name '
+               ' FROM verse_theme NATURAL JOIN themes '
+               ' WHERE p_id = %s', (p_id,))
+    i, last_pos = 0, 0
+    results = {}
+    for pos_start, pos_end, name in db.fetchall():
+        if pos_start > last_pos:
+            results[last_pos] = (pos_start-last_pos, '<unknown>', i)
+            i += 1
+        results[pos_start] = (pos_end-pos_start, name, i)
+        i += 1
+        last_pos = pos_end
+    if last_pos < n:
+        results[last_pos] = (n-last_pos-1, '<unknown>', i)
+        i += 1
+    return results
+
+
 def get_similar_poems(db, p_id, thr_sym=0.1, thr_left=0.5, thr_right=0.5):
     db.execute(
         'SELECT p2_id, sim_al, sim_al_l, sim_al_r FROM p_sim WHERE p1_id = %s'
@@ -108,6 +132,7 @@ def render(nro, hl, max_similar, sim_thr, sim_order):
         topics = poem.smd.themes
         sim, sim_l, sim_r = get_similar_poems(db, poem.p_id)
         verse_poems, linked_poems, poems_sharing_verses = get_similar_poems_2(db, poem.p_id, max_similar, sim_thr, sim_order, poem.verses)
+        verse_themes = get_verse_themes(db, poem.p_id)
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text, v.v_id))
@@ -116,5 +141,5 @@ def render(nro, hl, max_similar, sim_thr, sim_order):
                            verses=verses, refs=refs,
                            themes=render_themes_tree(poem.smd.themes), verse_poems=verse_poems,
                            linked_poems=linked_poems, max_similar=max_similar, sim_order=sim_order,
-                           poems_sharing_verses=poems_sharing_verses, nr_linked_poems=len(linked_poems))
+                           poems_sharing_verses=poems_sharing_verses, nr_linked_poems=len(linked_poems), verse_themes=verse_themes)
 
