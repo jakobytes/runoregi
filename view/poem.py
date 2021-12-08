@@ -109,14 +109,14 @@ def get_similar_poems(db, p_id, thr_sym=0.1, thr_left=0.5, thr_right=0.5):
     return result_sym, result_left, result_right
 
 
-def get_similar_poems_2(db, p_id, max, thr, order, verses):
+def get_shared_verses(db, p_id, max, thr, order, verses):
     db.execute("""SELECT DISTINCT v.v_id, p2.nro FROM verses v
-JOIN verse_poem vp ON vp.v_id = v.v_id
-LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id
-LEFT OUTER JOIN v_clust vc2 ON vc2.clust_id = vc.clust_id
-LEFT OUTER JOIN verse_poem vp2 ON vp2.v_id = vc2.v_id
-LEFT OUTER JOIN poems p2 ON p2.p_id = vp2.p_id 
-WHERE v.type='V' AND vp.p_id=%s AND vp2.p_id!=%s;""", (p_id,p_id))
+                  JOIN verse_poem vp ON vp.v_id = v.v_id
+                  LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id
+                  LEFT OUTER JOIN v_clust vc2 ON vc2.clust_id = vc.clust_id
+                  LEFT OUTER JOIN verse_poem vp2 ON vp2.v_id = vc2.v_id
+                  LEFT OUTER JOIN poems p2 ON p2.p_id = vp2.p_id 
+                  WHERE v.type='V' AND vp.p_id=%s AND vp2.p_id!=%s;""", (p_id,p_id))
     results = db.fetchall()
     poem_verses = defaultdict(set)
     poem_versecounts = Counter([x[1] for x in results])
@@ -133,7 +133,8 @@ WHERE v.type='V' AND vp.p_id=%s AND vp2.p_id!=%s;""", (p_id,p_id))
         last = {poem: False for poem in poems}
         for verse in verses:
             if verse.type == 'V':
-                current = {poem: (verse.v_id in verses) for poem, verses in poem_verses.items()}
+                current = { poem: (verse.v_id in verses)
+                            for poem, verses in poem_verses.items() }
                 for poem in poems:
                     if current[poem]:
                         if last[poem]:
@@ -158,7 +159,9 @@ WHERE v.type='V' AND vp.p_id=%s AND vp2.p_id!=%s;""", (p_id,p_id))
         if poem in top_poems and poem_versecounts[poem] >= thr:
             linked_poems.add(poem)
             verse_poems[verse].append(poem)
-    return verse_poems, sorted(linked_poems, key=lambda poem: poem_weights[poem], reverse=True), len(poem_versecounts)
+    linked_poems_sorted = sorted(linked_poems, reverse=True,
+                                 key=lambda poem: poem_weights[poem])
+    return verse_poems, linked_poems_sorted, len(poem_versecounts)
 
 
 def render(nro, **options):
@@ -188,7 +191,10 @@ def render(nro, **options):
             refs = re.sub('\n+', ' ', '\n'.join(poem.refs)).replace('#', '\n#').split('\n')
         topics = poem.smd.themes
         sim, sim_l, sim_r = get_similar_poems(db, poem.p_id)
-        verse_poems, linked_poems, poems_sharing_verses = get_similar_poems_2(db, poem.p_id, options['max_similar'], options['sim_thr'], options['sim_order'], poem.verses)
+        verse_poems, linked_poems, poems_sharing_verses = \
+            get_shared_verses(db, poem.p_id, options['max_similar'],
+                              options['sim_thr'], options['sim_order'],
+                              poem.verses)
         verse_themes = get_verse_themes(db, poem.p_id)
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.clustfreq, _makecol(v.clustfreq),
