@@ -14,7 +14,9 @@ DEFAULTS = {
   'sim_order': 'consecutive_rare',
   'max_similar': 50,
   'hl': [],
-  'sim_thr': 1
+  'sim_thr': 1,
+  'show_verse_themes': False,
+  'show_shared_verses': False
 }
 
 def link(nro, options, defaults):
@@ -23,6 +25,8 @@ def link(nro, options, defaults):
     def _str(value):
         if isinstance(value, list):
             return ','.join(map(str, value))
+        elif isinstance(value, bool):
+            return str(value).lower()
         else:
             return str(value)
 
@@ -37,6 +41,14 @@ def link(nro, options, defaults):
 
 def generate_page_links(nro, options, defaults):
     return {
+        '+show_verse_themes':
+            link(nro, dict(options, show_verse_themes=True), defaults),
+        '-show_verse_themes':
+            link(nro, dict(options, show_verse_themes=False), defaults),
+        '+show_shared_verses':
+            link(nro, dict(options, show_shared_verses=True), defaults),
+        '-show_shared_verses':
+            link(nro, dict(options, show_shared_verses=False), defaults),
         'sim_order:consecutive_rare':
             link(nro, dict(options, sim_order='consecutive_rare'), defaults),
         'sim_order:consecutive':
@@ -186,5 +198,6 @@ def render(nro, **options):
                            verses=verses, refs=refs,
                            themes=render_themes_tree(poem.smd.themes), verse_poems=verse_poems,
                            linked_poems=linked_poems, max_similar=options['max_similar'], sim_order=options['sim_order'],
-                           poems_sharing_verses=poems_sharing_verses, nr_linked_poems=len(linked_poems), verse_themes=verse_themes, links=links)
+                           poems_sharing_verses=poems_sharing_verses, nr_linked_poems=len(linked_poems), verse_themes=verse_themes, links=links,
+                           show_verse_themes=options['show_verse_themes'], show_shared_verses=options['show_shared_verses'])
 
