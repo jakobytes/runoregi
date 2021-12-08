@@ -199,11 +199,14 @@ def render(nro, **options):
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text, v.v_id))
-    return render_template('poem.html', p=poem, hl=options['hl'], sim_poems=sim,
+    return render_template('poem.html', p=poem, sim_poems=sim,
                            sim_poems_left=sim_l, sim_poems_right=sim_r,
-                           verses=verses, refs=refs,
-                           themes=render_themes_tree(poem.smd.themes), verse_poems=verse_poems,
-                           linked_poems=linked_poems, max_similar=options['max_similar'], sim_order=options['sim_order'],
-                           poems_sharing_verses=poems_sharing_verses, nr_linked_poems=len(linked_poems), verse_themes=verse_themes, links=links,
-                           show_verse_themes=options['show_verse_themes'], show_shared_verses=options['show_shared_verses'])
+                           verses=verses, refs=refs, options=options,
+                           themes=render_themes_tree(poem.smd.themes),
+                           verse_poems=verse_poems,
+                           linked_poems=linked_poems,
+                           poems_sharing_verses=poems_sharing_verses,
+                           nr_linked_poems=len(linked_poems),
+                           verse_themes=verse_themes,
+                           links=links)
 

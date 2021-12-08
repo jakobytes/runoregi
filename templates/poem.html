@@ -136,16 +136,16 @@
 <h2>Text</h2>
 
 <p><small>
-{% if show_verse_themes %}[<a href="{{ links['-show_verse_themes'] }}">hide verse-level themes</a>]
+{% if options['show_verse_themes'] %}[<a href="{{ links['-show_verse_themes'] }}">hide verse-level themes</a>]
 {% else %}
 [<a href="{{ links['+show_verse_themes'] }}">show verse-level themes</a>]
 {% endif %}
-{% if show_shared_verses %}[<a href="{{ links['-show_shared_verses'] }}">hide shared verses matrix</a>]
+{% if options['show_shared_verses'] %}[<a href="{{ links['-show_shared_verses'] }}">hide shared verses matrix</a>]
 {% else %}
 [<a href="{{ links['+show_shared_verses'] }}">show shared verses matrix</a>]
 {% endif %}
 </small></p>
-{% if show_shared_verses %}
+{% if options['show_shared_verses'] %}
 <p>
     Showing top {{ nr_linked_poems }}
     (<a href="{{ links['-max_similar'] }}">-10</a>/<a href="{{ links['+max_similar'] }}">+10</a>) out of {{ poems_sharing_verses }} poems sharing verses with this one based on the number of shared [
@@ -168,7 +168,7 @@
     ] verses
 </p>
 {% endif %}
-{% if show_verse_themes %}
+{% if options['show_verse_themes'] %}
 <p><b>Note:</b> Verse-level theme recognition is done using an experimental
 method and the quality of the results is not yet known.
 </p>
@@ -176,7 +176,7 @@ method and the quality of the results is not yet known.
 <table cellspacing="0" cellpadding="2">
   {% for v in verses %}
   <tr>
-    {% if show_verse_themes %}
+    {% if options['show_verse_themes'] %}
       {% if v[0]-1 in verse_themes %}
       <td rowspan={{ verse_themes[v[0]-1][0] }} class="g{{ verse_themes[v[0]-1][2] % 2 }}">
         {{ verse_themes[v[0]-1][1] }}
@@ -190,7 +190,7 @@ method and the quality of the results is not yet known.
       </td>
       <td align="right" width="35">&ensp;<sup><small>{{ v[0] }}</small></sup></td>
       <td width="350" class="verse" id="{{ v[0] }}">
-      {% if v[0] in hl %}
+      {% if v[0] in options['hl'] %}
         <b>{{ v[4] }}</b>
       {% else %}
         {{ v[4] }}
@@ -214,7 +214,7 @@ method and the quality of the results is not yet known.
       {% endif %}
     {% endif %}
     <td>
-    {% if show_shared_verses %}
+    {% if options['show_shared_verses'] %}
     {% for p2 in linked_poems %}
         {% if v[5] in verse_poems and p2 in verse_poems[v[5]] %}
             <a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ p2 }}" class="c{{ loop.index % 13}}" title="{{ p2 }}">&nbsp;&nbsp;&nbsp;</a>
