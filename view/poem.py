@@ -83,7 +83,7 @@ def get_verse_themes(db, p_id):
         i += 1
         last_pos = pos_end
     if last_pos < n:
-        results[last_pos] = (n-last_pos-1, '<unknown>', i)
+        results[last_pos] = (n-last_pos, '<unknown>', i)
         i += 1
     return results
 
