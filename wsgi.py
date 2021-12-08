@@ -73,7 +73,8 @@ def show_poem():
     sim_thr = request.args.get('sim_thr', 1, type=int)
     sim_order = request.args.get('sim_order', 'consecutive_rare', type=str)
     hl = list(map(int, hl_str.split(','))) if hl_str is not None else []
-    return _compact(view.poem.render(nro, hl, max_similar, sim_thr, sim_order))
+    return _compact(view.poem.render(nro, hl=hl, max_similar=max_similar,
+                                     sim_thr=sim_thr, sim_order=sim_order))
 
 @application.route('/verse')
 def show_verse():

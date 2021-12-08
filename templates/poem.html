@@ -135,22 +135,23 @@
 
 <h2>Text</h2>
 <p>
-    Showing top {{ nr_linked_poems }} (<a href="/poem?nro={{ p.smd.nro }}&sim_order={{ sim_order }}&max_similar={{ max_similar - 10 }}">-10</a>/<a href="/poem?nro={{ p.smd.nro }}&sim_order={{ sim_order }}&max_similar={{ max_similar + 10 }}">+10</a>) out of {{ poems_sharing_verses }} poems sharing verses with this one based on the number of shared [
+    Showing top {{ nr_linked_poems }}
+    (<a href="{{ links['-max_similar'] }}">-10</a>/<a href="{{ links['+max_similar'] }}">+10</a>) out of {{ poems_sharing_verses }} poems sharing verses with this one based on the number of shared [
 {% if sim_order=="consecutive_rare" %}
     consecutive rare
-{% else %}<a href="/poem?nro={{ p.smd.nro }}&sim_order=consecutive_rare&max_similar={{ max_similar }}">consecutive rare</a>
+{% else %}<a href="{{ links['sim_order:consecutive_rare'] }}">consecutive rare</a>
 {% endif %}
     /
 {% if sim_order=="consecutive" %} consecutive
-{% else %}<a href="/poem?nro={{ p.smd.nro }}&sim_order=consecutive&max_similar={{ max_similar }}">consecutive</a>
+{% else %}<a href="{{ links['sim_order:consecutive'] }}">consecutive</a>
 {% endif %}
     /
 {% if sim_order=="rare" %} rare
-{% else %}<a href="/poem?nro={{ p.smd.nro }}&sim_order=rare&max_similar={{ max_similar }}">rare</a>
+{% else %}<a href="{{ links['sim_order:rare'] }}">rare</a>
 {% endif %}
     /
 {% if sim_order=="shared" %} any
-{% else %}<a href="/poem?nro={{ p.smd.nro }}&sim_order=shared&max_similar={{ max_similar }}">any</a>
+{% else %}<a href="{{ links['sim_oder:any'] }}">any</a>
 {% endif %}
     ] verses
 </p>
