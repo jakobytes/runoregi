@@ -2,7 +2,9 @@ from flask import render_template
 import pymysql
 
 import config
-from data import get_structured_metadata, render_themes_tree, render_csv
+from data import \
+    clean_special_chars, get_structured_metadata, \
+    render_themes_tree, render_csv
 from external import make_map_link
 
 
@@ -25,7 +27,7 @@ def render(nro=None, pos=None, v_id=None, fmt='html'):
             else:
                 cur_p_id = p_id
                 results.append(
-                    (smd[p_id].nro, [(pos, v_id, text)],
+                    (smd[p_id].nro, [(pos, v_id, clean_special_chars(text))],
                      smd[p_id].title, smd[p_id].location,
                      smd[p_id].year, smd[p_id].collector,
                      render_themes_tree(smd[p_id].themes)))

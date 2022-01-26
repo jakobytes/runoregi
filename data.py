@@ -2,11 +2,17 @@ from collections import namedtuple
 import csv
 from io import StringIO
 from operator import itemgetter
+import re
 
 
 StructuredMetadata = \
     namedtuple('StructuredMetadata',
                ['p_id', 'nro', 'title', 'location', 'collector', 'year', 'themes'])
+
+
+def clean_special_chars(text):
+    text = re.sub('[@$^_\xb0\xa8\u02c7\u20ac\u2020]', '', text)
+    return text
 
 
 def render_themes_tree(themes):
@@ -193,7 +199,7 @@ class Poem:
             ' LEFT OUTER JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id'\
             ' WHERE vp.p_id=%s;',
             (p_id,))
-        verses = [Verse(v_id, type, text, c_id, cf) \
+        verses = [Verse(v_id, type, clean_special_chars(text), c_id, cf) \
                   for v_id, type, text, c_id, cf in db.fetchall()]
         db.execute('SELECT field, value FROM raw_meta WHERE p_id = %s', (p_id,))
         meta = { field : value for field, value in db.fetchall() }

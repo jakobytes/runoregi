@@ -3,7 +3,9 @@ from operator import itemgetter
 import pymysql
 
 import config
-from data import get_structured_metadata, render_themes_tree, render_csv
+from data import \
+    clean_special_chars, get_structured_metadata, \
+    render_themes_tree, render_csv
 from external import make_map_link
 
 MAX_QUERY_LENGTH = 20
@@ -60,7 +62,7 @@ def get_verses(db, hits):
         ' WHERE v.type = "V" AND {};'\
         .format(ids_clause))
     result = \
-        { (p_id, pos): { 'text' : text } \
+        { (p_id, pos): { 'text' : clean_special_chars(text) } \
           for p_id, pos, text in db.fetchall() }
     return result
 
