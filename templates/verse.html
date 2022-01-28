@@ -42,6 +42,16 @@
       </small>
     </td>
     </tr>
+    {% if v[7] %}
+    <tr><td width="800" colspan="2">
+    <small>
+    <b>See also: </b>
+    {% for sv in v[7] %}
+    <a href="/verse?nro={{ sv[0] }}&pos={{ sv[1] }}">{{ sv[2] }}</a> ({{ sv[3] }})
+    {% endfor %}
+    </small>
+    </td></tr>
+    {% endif %}
     </table>
   </td></tr>
   <tr><td><hr/></td></tr>
