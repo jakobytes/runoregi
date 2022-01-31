@@ -108,7 +108,7 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5, fmt='html'):
             h['hl'] = smd[p_id].nro == nro and start_pos in range(*h['interval'])
             h['themes'] = render_themes_tree(smd[p_id].themes)
 
-    if fmt == 'csv':
+    if fmt in ('csv', 'tsv'):
         return render_csv([
             (smd[h['p_id']].nro, h['verses'][0][0],
              '\n'.join(map(itemgetter(2), h['verses'])),
@@ -116,7 +116,8 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5, fmt='html'):
              '\n'.join(' > '.join(t[1] for t in tt if len(t) >= 2) \
                        for tt in smd[h['p_id']].themes)) \
             for h in hits],
-            header=('nro', 'pos', 'snippet', 'location', 'collector', 'themes'))
+            header=('nro', 'pos', 'snippet', 'location', 'collector', 'themes'),
+            delimiter='\t' if fmt == 'tsv' else ',')
     else:
         map_lnk = make_map_link(
             'passage', nro=nro, start=start_pos, end=end_pos, dist=dist,

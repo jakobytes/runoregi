@@ -146,9 +146,9 @@ def get_structured_metadata(
     return results
 
 
-def render_csv(rows, header=None):
+def render_csv(rows, header=None, delimiter=','):
     stream = StringIO()
-    writer = csv.writer(stream, lineterminator='\n')
+    writer = csv.writer(stream, delimiter=delimiter, lineterminator='\n')
     if header is not None:
         writer.writerow(header)
     writer.writerows(rows)

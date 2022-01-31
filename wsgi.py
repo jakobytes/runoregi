@@ -41,7 +41,7 @@ def show_passage():
     result = view.passage.render(
                  nro, start_pos, end_pos, dist=dist,
                  context=context, hitfact=hitfact, fmt=fmt)
-    if fmt == 'csv':
+    if fmt in ('csv', 'tsv'):
         return Response(result, mimetype='text/plain')
     else:
         return _compact(result)
@@ -59,7 +59,7 @@ def show_multidiff():
     nros = nros_str.split(',')
     fmt = request.args.get('format', 'html', type=str)
     result = view.multidiff.render(nros, fmt=fmt)
-    if fmt == 'csv':
+    if fmt in ('csv', 'tsv'):
         return Response(result, mimetype='text/plain')
     else:
         return _compact(result)
@@ -87,7 +87,7 @@ def show_verse():
     v_id = request.args.get('id', 1, type=int)
     fmt = request.args.get('format', 'html', type=str)
     result = view.verse.render(nro=nro, pos=pos, v_id=v_id, fmt=fmt)
-    if fmt == 'csv':
+    if fmt in ('csv', 'tsv'):
         return Response(result, mimetype='text/plain')
     else:
         return _compact(result)

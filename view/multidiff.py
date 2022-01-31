@@ -151,9 +151,10 @@ def render(nros, fmt='html'):
     poems = [poems[i] for i in ids]
     meta_keys = sorted(set([k for p in poems for k in p.meta.keys()]))
     themes = [render_themes_tree(p.smd.themes) for p in poems]
-    if fmt == 'csv':
+    if fmt in ('csv', 'tsv'):
         rows = [((v.text if v else '') for v in row) for row in als]
-        return render_csv(rows, header=tuple(p.smd.nro for p in poems))
+        return render_csv(rows, header=tuple(p.smd.nro for p in poems),
+                          delimiter='\t' if fmt == 'tsv' else ',')
     else:
         return render_template('multidiff.html', nro=nros, poems=poems,
                                alignment=als, meta_keys=meta_keys,

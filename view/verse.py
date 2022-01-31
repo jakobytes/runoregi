@@ -92,13 +92,14 @@ def render(nro=None, pos=None, v_id=None, fmt='html'):
             (clust_id,))
         verses = list(db.fetchall())
 
-    if fmt == 'csv':
+    if fmt in ('csv', 'tsv'):
         return render_csv([
             (smd[p_id].nro, pos, text, smd[p_id].location, smd[p_id].collector,
              '\n'.join(' > '.join(t[1] for t in tt if len(t) >= 2) \
                        for tt in smd[p_id].themes)) \
             for p_id, pos, v_id, text in verses],
-            header=('nro', 'pos', 'text', 'location', 'collector', 'themes'))
+            header=('nro', 'pos', 'text', 'location', 'collector', 'themes'),
+            delimiter='\t' if fmt == 'tsv' else ',')
     else:
         simverses = get_similar_verses(db, clust_id)
         verses_by_src = _group_by_source(verses, smd, simverses)
