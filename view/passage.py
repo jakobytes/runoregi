@@ -11,17 +11,24 @@ from external import make_map_link
 MAX_QUERY_LENGTH = 20
 
 
-def get_hits(db, nro, start_pos, end_pos, dist=2, hitfact=0.5, context=2):
+def get_hits(db, nro, start_pos, end_pos, clustering_id=0, dist=2, hitfact=0.5, context=2):
     hits = []
     # Get candidate verses: all verses belonging to one of the clusters
     # occurring in the query.
     db.execute(
         'SELECT vp.p_id, vp.pos FROM v_clust vc'
         ' JOIN verse_poem vp ON vc.v_id = vp.v_id'
-        ' JOIN (SELECT DISTINCT clust_id FROM v_clust NATURAL JOIN verse_poem NATURAL JOIN poems'
-        '       WHERE nro = %s AND pos BETWEEN %s AND %s) AS c'
-        '   ON c.clust_id = vc.clust_id'
-        ' ORDER BY vp.p_id, vp.pos;', (nro, start_pos, end_pos))
+        ' JOIN (SELECT DISTINCT clust_id'
+        '       FROM v_clust'
+        '            NATURAL JOIN verse_poem'
+        '            NATURAL JOIN poems'
+        '       WHERE clustering_id = %s'
+        '       AND nro = %s'
+        '       AND pos BETWEEN %s AND %s'
+        '      ) AS c'
+        '   ON c.clust_id = vc.clust_id AND vc.clustering_id = %s'
+        ' ORDER BY vp.p_id, vp.pos;',
+        (clustering_id, nro, start_pos, end_pos, clustering_id))
     # Find sequences of candidate verses that are in distance <= `dist`
     # from each other and their cluster IDs are a subsequence of those
     # in the query. Such sequences are called `hits`.
@@ -67,7 +74,7 @@ def get_verses(db, hits):
     return result
 
 
-def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5, fmt='html'):
+def render(nro, start_pos, end_pos, clustering_id=0, dist=2, context=2, hitfact=0.5, fmt='html'):
     if (end_pos - start_pos) > MAX_QUERY_LENGTH:
         return '<b>Error:</b> passage length currently limited to {} verses!'\
                .format(MAX_QUERY_LENGTH)
@@ -86,7 +93,7 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5, fmt='html'):
         # for i in range(len(clust_ids)):
         #     clust_succ[clust_ids[i]] = set(clust_ids[i+1:])
         hits = get_hits(
-            db, nro, start_pos, end_pos,
+            db, nro, start_pos, end_pos, clustering_id=clustering_id,
             dist=dist, context=context, hitfact=hitfact)
         if not hits:
             return 'No matching passages found.'
@@ -107,6 +114,8 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5, fmt='html'):
                     if (p_id, pos) in verses]
             h['hl'] = smd[p_id].nro == nro and start_pos in range(*h['interval'])
             h['themes'] = render_themes_tree(smd[p_id].themes)
+        db.execute('SELECT * FROM v_clusterings;')
+        clusterings = db.fetchall()
 
     if fmt in ('csv', 'tsv'):
         return render_csv([
@@ -125,5 +134,5 @@ def render(nro, start_pos, end_pos, dist=2, context=2, hitfact=0.5, fmt='html'):
         return render_template(
             'passage.html', nro=nro, start=start_pos, end=end_pos, dist=dist,
             context=context, hitfact=hitfact, hits=hits, smd=smd,
-            map_lnk=map_lnk)
+            clustering_id=clustering_id, clusterings=clusterings, map_lnk=map_lnk)
 

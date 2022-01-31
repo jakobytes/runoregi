@@ -60,9 +60,9 @@ def render_themes_tree(themes):
 
 
 def get_structured_metadata(
-        db, p_id = None, p_ids = None, clust_id = None, nro = None,
-        title = True, location = True, collector = True, year = True,
-        themes = True):
+        db, p_id = None, p_ids = None, clust_id = None, clustering_id = 0,
+        nro = None, title = True, location = True, collector = True,
+        year = True, themes = True):
 
     def _make_title(nro, osa, _id):
         if nro.startswith('skvr'):
@@ -129,7 +129,7 @@ def get_structured_metadata(
         query_lst.extend([
             'JOIN verse_poem vp ON vp.p_id = poems.p_id',
             'NATURAL JOIN v_clust',
-            'WHERE clust_id = {}'.format(clust_id)
+            'WHERE clust_id = {} AND clustering_id = {}'.format(clust_id, clustering_id)
         ])
     else:
         raise Exception('Either of: (p_id, p_ids, clust_id, nro) must be specified!')
@@ -180,7 +180,7 @@ class Poem:
         return (v for v in self.verses if v.type == 'V')
 
     @staticmethod
-    def from_db(db, p_id):
+    def from_db(db, p_id, clustering_id=0):
         # cursor.execute(
         #     'SELECT nro, region, name, collector, year FROM sources'
         #     ' NATURAL JOIN locations'
@@ -195,10 +195,10 @@ class Poem:
         db.execute( 
             'SELECT v.v_id, v.type, v.text, cf.clust_id, cf.freq FROM verses v'\
             ' JOIN verse_poem vp ON vp.v_id = v.v_id'\
-            ' LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id'\
-            ' LEFT OUTER JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id'\
+            ' LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id AND vc.clustering_id = %s'\
+            ' LEFT OUTER JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id AND cf.clustering_id = %s'\
             ' WHERE vp.p_id=%s;',
-            (p_id,))
+            (clustering_id, clustering_id, p_id))
         verses = [Verse(v_id, type, clean_special_chars(text), c_id, cf) \
                   for v_id, type, text, c_id, cf in db.fetchall()]
         db.execute('SELECT field, value FROM raw_meta WHERE p_id = %s', (p_id,))

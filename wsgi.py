@@ -34,12 +34,13 @@ def show_passage():
     nro = request.args.get('nro', type=str)
     start_pos = request.args.get('start', 1, type=int)
     end_pos = request.args.get('end', 1, type=int)
+    clustering = request.args.get('clustering', 0, type=int)
     dist = request.args.get('dist', 2, type=int)
     context = request.args.get('context', 2, type=int)
     hitfact = request.args.get('hitfact', 0.5, type=float)
     fmt = request.args.get('format', 'html', type=str)
     result = view.passage.render(
-                 nro, start_pos, end_pos, dist=dist,
+                 nro, start_pos, end_pos, clustering_id=clustering, dist=dist,
                  context=context, hitfact=hitfact, fmt=fmt)
     if fmt in ('csv', 'tsv'):
         return Response(result, mimetype='text/plain')
@@ -85,8 +86,10 @@ def show_verse():
     nro = request.args.get('nro', None, type=str)
     pos = request.args.get('pos', 1, type=str)
     v_id = request.args.get('id', 1, type=int)
+    clustering = request.args.get('clustering', 0, type=int)
     fmt = request.args.get('format', 'html', type=str)
-    result = view.verse.render(nro=nro, pos=pos, v_id=v_id, fmt=fmt)
+    result = view.verse.render(nro=nro, pos=pos, v_id=v_id, fmt=fmt,
+                               clustering_id=clustering)
     if fmt in ('csv', 'tsv'):
         return Response(result, mimetype='text/plain')
     else:

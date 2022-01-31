@@ -7,7 +7,15 @@
 [<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}">reset to defaults</a>]
 [<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}&context={{ context }}&dist={{ dist }}&hitfact={{ hitfact }}&format=csv">CSV</a>
 / <a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}&context={{ context }}&dist={{ dist }}&hitfact={{ hitfact }}&format=tsv">TSV</a>]
-[<a href="{{ map_lnk }}">map</a>]
+[<a href="{{ map_lnk }}">map</a>]<br/>
+clustering: 
+{% for c in clusterings %}
+{% if clustering_id == c[0] %}
+{{ c[1] }}
+{% else %}
+<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
+{% endif %}
+{% endfor %}
 
 <table>
   <tr><td><hr/></td></tr>

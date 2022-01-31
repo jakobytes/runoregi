@@ -109,14 +109,15 @@ def get_similar_poems(db, p_id, thr_sym=0.1, thr_left=0.5, thr_right=0.5):
     return result_sym, result_left, result_right
 
 
-def get_shared_verses(db, p_id, max, thr, order, verses):
+def get_shared_verses(db, p_id, max, thr, order, verses, clustering_id=0):
     db.execute("""SELECT DISTINCT v.v_id, p2.nro FROM verses v
                   JOIN verse_poem vp ON vp.v_id = v.v_id
-                  LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id
-                  LEFT OUTER JOIN v_clust vc2 ON vc2.clust_id = vc.clust_id
+                  LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id AND vc.clustering_id = %s
+                  LEFT OUTER JOIN v_clust vc2 ON vc2.clust_id = vc.clust_id AND vc2.clustering_id = %s
                   LEFT OUTER JOIN verse_poem vp2 ON vp2.v_id = vc2.v_id
                   LEFT OUTER JOIN poems p2 ON p2.p_id = vp2.p_id 
-                  WHERE v.type='V' AND vp.p_id=%s AND vp2.p_id!=%s;""", (p_id,p_id))
+                  WHERE v.type='V' AND vp.p_id=%s AND vp2.p_id!=%s;""",
+                  (clustering_id, clustering_id, p_id, p_id))
     results = db.fetchall()
     poem_verses = defaultdict(set)
     poem_versecounts = Counter([x[1] for x in results])

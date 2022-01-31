@@ -2,9 +2,17 @@
 [<a href="/poem?nro={{ nro }}">back to poem</a>]
 [<a href="/verse?nro={{ nro }}&pos={{ pos }}&format=csv">CSV</a>
 / <a href="/verse?nro={{ nro }}&pos={{ pos }}&format=tsv">TSV</a>]
-[<a href="{{ map_lnk }}">map</a>]
+[<a href="{{ map_lnk }}">map</a>]<br/>
 
 <h2>Cluster</h2>
+clustering: 
+{% for c in clusterings %}
+{% if clustering_id == c[0] %}
+{{ c[1] }}
+{% else %}
+<a href="/verse?nro={{ nro }}&pos={{ pos }}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
+{% endif %}
+{% endfor %}
 <table>
   <tr><td><hr/></td></tr>
   {% for v in verses %}
@@ -48,7 +56,7 @@
     <small>
     <b>See also: </b>
     {% for sv in v[7] %}
-    <a href="/verse?nro={{ sv[0] }}&pos={{ sv[1] }}">{{ sv[2] }}</a> ({{ sv[3] }})
+    <a href="/verse?nro={{ sv[0] }}&pos={{ sv[1] }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">{{ sv[2] }}</a> ({{ sv[3] }})
     {% endfor %}
     </small>
     </td></tr>
