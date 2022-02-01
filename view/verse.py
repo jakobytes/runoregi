@@ -68,20 +68,22 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         if nro is not None and pos is not None:
             db.execute(
-                'SELECT v_id, text, nro, clust_id FROM verses'
+                'SELECT v_id, text, nro, clust_id, freq FROM verses'
                 ' NATURAL JOIN verse_poem'
                 ' NATURAL JOIN poems'
                 ' NATURAL JOIN v_clust'
+                ' NATURAL JOIN v_clust_freq'
                 ' WHERE nro = %s AND pos = %s AND clustering_id = %s;',
                 (nro, pos, clustering_id))
         elif v_id is not None:
             db.execute(
-                'SELECT v_id, text, nro, clust_id FROM verses'
+                'SELECT v_id, text, nro, clust_id, freq FROM verses'
                 ' NATURAL JOIN verse_poem'
                 ' NATURAL JOIN poems'
                 ' NATURAL JOIN v_clust'
+                ' NATURAL JOIN v_clust_freq'
                 ' WHERE v_id = %s AND clustering_id = %s;', (v_id, clustering_id))
-        v_id, text, nro, clust_id = db.fetchall()[0]
+        v_id, text, nro, clust_id, freq = db.fetchall()[0]
         smd = { x.p_id: x for x in get_structured_metadata(db, clust_id=clust_id, clustering_id=clustering_id) }
         db.execute(
             'SELECT vp.p_id, vp.pos, vp.v_id, v.text'
@@ -108,6 +110,6 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
         verses_by_src = _group_by_source(verses, smd, simverses)
         map_lnk = make_map_link('verse', nro=nro, pos=pos, clustering=clustering_id)
         return render_template('verse.html', map_lnk=map_lnk, nro=nro, pos=pos,
-                               text=text, verses=verses_by_src,
+                               text=text, freq=freq, verses=verses_by_src,
                                clustering_id=clustering_id, clusterings=clusterings)
 
