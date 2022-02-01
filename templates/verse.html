@@ -1,7 +1,7 @@
 <h1>{{ text }}</h1>
 [<a href="/poem?nro={{ nro }}">back to poem</a>]
-[<a href="/verse?nro={{ nro }}&pos={{ pos }}&format=csv">CSV</a>
-/ <a href="/verse?nro={{ nro }}&pos={{ pos }}&format=tsv">TSV</a>]
+[<a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&format=csv">CSV</a>
+/ <a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&format=tsv">TSV</a>]
 [<a href="{{ map_lnk }}">map</a>]<br/>
 
 <h2>Cluster</h2>
