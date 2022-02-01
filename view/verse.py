@@ -106,7 +106,7 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
     else:
         simverses = get_similar_verses(db, clust_id, clustering_id=clustering_id)
         verses_by_src = _group_by_source(verses, smd, simverses)
-        map_lnk = make_map_link('verse', nro=nro, pos=pos)
+        map_lnk = make_map_link('verse', nro=nro, pos=pos, clustering=clustering_id)
         return render_template('verse.html', map_lnk=map_lnk, nro=nro, pos=pos,
                                text=text, verses=verses_by_src,
                                clustering_id=clustering_id, clusterings=clusterings)

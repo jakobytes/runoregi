@@ -129,7 +129,8 @@ def render(nro, start_pos, end_pos, clustering_id=0, dist=2, context=2, hitfact=
             delimiter='\t' if fmt == 'tsv' else ',')
     else:
         map_lnk = make_map_link(
-            'passage', nro=nro, start=start_pos, end=end_pos, dist=dist,
+            'passage', nro=nro, start=start_pos, end=end_pos,
+            clustering=clustering_id, dist=dist,
             context=context, hitfact=hitfact)
         return render_template(
             'passage.html', nro=nro, start=start_pos, end=end_pos, dist=dist,
