@@ -131,26 +131,21 @@ def get_shared_verses(db, p_id, max, thr, order, verses, clustering_id=0):
                 poem_weights[poem] += 1.0/verse_poemcounts[verse]
     elif order == "consecutive" or order == "consecutive_rare":
         poems = [poem for poem, verses in poem_verses.items()]
-        last = {poem: False for poem in poems}
-        for verse in verses:
+        last_index = {poem: -1 for poem in poems}
+        for index, verse in enumerate(verses):
             if verse.type == 'V':
                 current = { poem: (verse.v_id in verses)
                             for poem, verses in poem_verses.items() }
                 for poem in poems:
                     if current[poem]:
-                        if last[poem]:
-                            if order == "consecutive_rare":
-                                poem_weights[poem] += 1.0/verse_poemcounts[verse.v_id]
-                            else:
-                                poem_weights[poem] += 1
+                        if order == "consecutive_rare":
+                            poem_weights[poem] += 1.0/(index-last_index[poem]/verse_poemcounts[verse.v_id])
                         else:
-                            if order == "consecutive_rare":
-                                poem_weights[poem] += 0.01 / verse_poemcounts[verse.v_id]
-                            else:
-                                poem_weights[poem] += 0.01
+                            poem_weights[poem] += 1.0/(index-last_index[poem])
+                        last_index[poem]=index
             else:
-                current = {poem: False for poem in poems}
-            last = current
+                for poem in poems:
+                    last_index[poem] = index
     else:  #order == "shared"
         poem_weights = poem_versecounts
     verse_poems = defaultdict(list)
