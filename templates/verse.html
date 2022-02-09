@@ -1,4 +1,4 @@
-<h1>{{ text }}</h1>
+<h1><small>#{{clust_id}}</small> {{ text }}</h1>
 [<a href="/poem?nro={{ nro }}">back to poem</a>]
 [<a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&format=csv">CSV</a>
 / <a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&format=tsv">TSV</a>]
@@ -56,7 +56,7 @@ clustering:
     <small>
     <b>See also: </b>
     {% for sv in v[7] %}
-    <a href="/verse?nro={{ sv[0] }}&pos={{ sv[1] }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">{{ sv[2] }}</a> ({{ sv[3] }})
+    <small>#{{ sv[3] }}</small> <a href="/verse?nro={{ sv[0] }}&pos={{ sv[1] }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">{{ sv[2] }}</a> ({{ sv[4] }})
     {% endfor %}
     </small>
     </td></tr>

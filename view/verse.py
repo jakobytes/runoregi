@@ -12,7 +12,7 @@ from external import make_map_link
 def get_similar_verses(db, clust_id, clustering_id=0):
     db.execute(
         'SELECT'
-        '  min(v1.v_id), p2.nro, vp2.pos, v2.text, vcf2.freq'
+        '  min(v1.v_id), p2.nro, vp2.pos, v2.text, vc2.clust_id, vcf2.freq'
         ' FROM'
         '   v_sim s'
         '   JOIN verses v1 ON s.v1_id = v1.v_id'
@@ -30,7 +30,7 @@ def get_similar_verses(db, clust_id, clustering_id=0):
         (clustering_id, clustering_id, clustering_id, clust_id))
     results = defaultdict(lambda: list())
     for r in db.fetchall():
-        results[r[0]].append((r[1], r[2], clean_special_chars(r[3]), r[4]))
+        results[r[0]].append((r[1], r[2], clean_special_chars(r[3]), r[4], r[5]))
     return dict(results)
 
 
@@ -110,6 +110,7 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
         verses_by_src = _group_by_source(verses, smd, simverses)
         map_lnk = make_map_link('verse', nro=nro, pos=pos, clustering=clustering_id)
         return render_template('verse.html', map_lnk=map_lnk, nro=nro, pos=pos,
-                               text=text, freq=freq, verses=verses_by_src,
+                               clust_id=clust_id, text=text, freq=freq,
+                               verses=verses_by_src,
                                clustering_id=clustering_id, clusterings=clusterings)
 
