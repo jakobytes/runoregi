@@ -1,7 +1,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/selection-js/dist/selection.min.js"></script>
 <style>
   .selected {
-    color: red
+    background-color: #FFEEAA
   }
   .cn, .c0, .c1, .c2, .c3, .c4, .c5, .c6, .c7, .c8, .c9, .c10, .c11, .c12 {
       text-decoration: none
@@ -188,8 +188,8 @@ method and the quality of the results is not yet known.
         <a name="{{ v[0] }}" href="/verse?nro={{ p.smd.nro }}&pos={{ v[0] }}" title="{{ v[1] }}" class="cn">&nbsp;&nbsp;&nbsp;
         </a>
       </td>
-      <td align="right" width="35">&ensp;<sup><small>{{ v[0] }}</small></sup></td>
-      <td width="350" class="verse" id="{{ v[0] }}">
+      <td align="right" width="35" class="verse_id" id="{{ v[0] }}">&ensp;<sup><small>{{ v[0] }}</small></sup></td>
+      <td width="350">
       {% if v[0] in options['hl'] %}
         <b>{{ v[4] }}</b>
       {% else %}
@@ -238,16 +238,35 @@ method and the quality of the results is not yet known.
 </table>
 <script lang="javascript">
   const ds = new Selection({
-    selectables: '.verse'
+    selectables: '.verse_id'
   })
+  function getTableCell(node) {
+    var n = node;
+    while (n.tagName != "TD" && n.parentNode) {
+      n = n.parentNode;
+    }
+    if (n.tagName == "TD") {
+      return n;
+    } else {
+      return null;
+    }
+  }
+  ds.on('beforestart', (evt) => {
+    console.log(evt);
+    var c = getTableCell(evt.oe.target);
+    return c !== null && c.className == "verse_id";
+  });
   ds.on('move', ({ changed: { removed, added } }) => {
       for (const el of added)
-        el.classList.add('selected')
+        getTableCell(el).classList.add('selected')
       for (const el of removed)
-        el.classList.remove('selected')
+        getTableCell(el).classList.remove('selected')
     })
   ds.on('stop', ({inst,selected}) => {
     inst.clearSelection()
+    for (const el of selected) {
+      getTableCell(el).classList.remove('selected')
+    }
     window.open('/passage?nro={{ p.smd.nro }}&start=' + selected[0].id + '&end=' + selected[selected.length - 1].id,'_self')
   })
 </script>
