@@ -8,7 +8,7 @@ from data import \
     render_themes_tree, render_csv
 from external import make_map_link
 
-MAX_QUERY_LENGTH = 20
+MAX_QUERY_LENGTH = None
 
 
 def get_hits(db, nro, start_pos, end_pos, clustering_id=0, dist=2, hitfact=0.5, context=2):
@@ -75,7 +75,7 @@ def get_verses(db, hits):
 
 
 def render(nro, start_pos, end_pos, clustering_id=0, dist=2, context=2, hitfact=0.5, fmt='html'):
-    if (end_pos - start_pos) > MAX_QUERY_LENGTH:
+    if MAX_QUERY_LENGTH is not None and (end_pos - start_pos) > MAX_QUERY_LENGTH:
         return '<b>Error:</b> passage length currently limited to {} verses!'\
                .format(MAX_QUERY_LENGTH)
     if end_pos < start_pos:
