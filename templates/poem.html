@@ -208,7 +208,7 @@ method and the quality of the results is not yet known.
       <td></td><td></td><td><small>{{ v[4] }}</small></td><!-- <td></td> -->
       {% elif v[3] == "CPT" %}
       <!-- <td colspan="4" align="center">-->
-      <td colspan="3" align="center">
+      <td></td><td></td><td align="center">
         <h4>{{ v[4] }}</h4>
       </td>
       {% endif %}
@@ -254,7 +254,7 @@ method and the quality of the results is not yet known.
   ds.on('beforestart', (evt) => {
     console.log(evt);
     var c = getTableCell(evt.oe.target);
-    return c !== null && c.className == "verse_id";
+    return (c !== null && c.className == "verse_id");
   });
   ds.on('move', ({ changed: { removed, added } }) => {
       for (const el of added)
