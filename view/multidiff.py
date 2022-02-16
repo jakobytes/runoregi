@@ -137,7 +137,8 @@ def build_poem_similarity_matrix(poems, p_sims_list, v_sims):
                             else -1,
                     opt_fun=max,
                     empty=None)
-                s = sum(map(itemgetter(2), al)) / len(al)
+                s = sum(map(itemgetter(2), al)) / len(al) \
+                    if len(al) > 0 else 0
                 p_sims[i,j] = s
                 p_sims[j,i] = s
     return p_sims
