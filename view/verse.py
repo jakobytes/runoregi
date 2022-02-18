@@ -1,5 +1,6 @@
 from collections import defaultdict
 from flask import render_template
+from operator import itemgetter
 import pymysql
 
 import config
@@ -32,6 +33,57 @@ def get_similar_verses(db, clust_id, clustering_id=0):
     for r in db.fetchall():
         results[r[0]].append((r[1], r[2], clean_special_chars(r[3]), r[4], r[5]))
     return dict(results)
+
+
+# FIXME this is partially duplicate with get_similar_verses()
+# (not exactly the same, but some queries might be redundant)
+def get_cluster_network(db, clust_id, clustering_id=0, maxdepth=3, maxnodes=30):
+    nodes_set = { clust_id }
+    nodes = []
+    depth = 0
+    while depth < maxdepth and len(nodes) < maxnodes:
+        depth += 1
+        node_ids = ', '.join(map(str, nodes_set))
+        query = \
+            '''SELECT
+              DISTINCT vc2.clust_id, v2.text, vcf2.freq
+             FROM
+               v_sim s
+               JOIN v_clust vc1 ON s.v1_id = vc1.v_id AND vc1.clustering_id = %s
+               JOIN verses v2 ON s.v2_id = v2.v_id
+               JOIN v_clust vc2 ON s.v2_id = vc2.v_id AND vc2.clustering_id = %s
+               JOIN v_clust_freq vcf2 ON vc2.clust_id = vcf2.clust_id AND vcf2.clustering_id = %s
+             WHERE
+               vc1.clust_id IN ({})
+               AND vc2.clust_id <> vc1.clust_id
+             GROUP BY
+               vc2.clust_id
+             ORDER BY vcf2.freq DESC
+             LIMIT %s;'''.format(node_ids)
+        db.execute(query, (clustering_id, clustering_id, clustering_id, maxnodes))
+        for c_id, text, freq in db.fetchall():
+            if c_id not in nodes_set:
+                nodes_set.add(c_id)
+                nodes.append((c_id, text, freq, depth))
+    node_ids = ', '.join(map(str, nodes_set))
+    # FIXME inserting node_ids directly to db.execute() throws an error,
+    # dunno why
+    query = \
+        '''SELECT
+          vc1.clust_id, vc2.clust_id, SUM(s.sim_cos)
+         FROM
+           v_sim s
+           JOIN v_clust vc1 ON s.v1_id = vc1.v_id AND vc1.clustering_id = %s
+           JOIN v_clust vc2 ON s.v2_id = vc2.v_id AND vc2.clustering_id = %s
+         WHERE
+           vc1.clust_id IN ({})
+           AND vc2.clust_id IN ({})
+           AND vc1.clust_id < vc2.clust_id
+         GROUP BY vc1.clust_id, vc2.clust_id;'''\
+        .format(node_ids, node_ids)
+    db.execute(query, (clustering_id, clustering_id))
+    edges = db.fetchall()
+    return { 'nodes': nodes, 'edges': edges }
 
 
 def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
@@ -107,10 +159,11 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
             delimiter='\t' if fmt == 'tsv' else ',')
     else:
         simverses = get_similar_verses(db, clust_id, clustering_id=clustering_id)
+        clustnet = get_cluster_network(db, clust_id, clustering_id=clustering_id)
         verses_by_src = _group_by_source(verses, smd, simverses)
         map_lnk = make_map_link('verse', nro=nro, pos=pos, clustering=clustering_id)
         return render_template('verse.html', map_lnk=map_lnk, nro=nro, pos=pos,
                                clust_id=clust_id, text=text, freq=freq,
-                               verses=verses_by_src,
+                               verses=verses_by_src, clustnet=clustnet,
                                clustering_id=clustering_id, clusterings=clusterings)
 
