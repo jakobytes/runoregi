@@ -41,10 +41,12 @@ clustering:
       // create an array with nodes
       var nodes = new vis.DataSet([
         { id: {{ clust_id }}, label: {{ text | tojson }}, shape: "box" ,
-          color: "#FFEEAA", title: "#{{ clust_id }} ({{ freq }} verses)" },
+          color: "#FFEEAA", title: "#{{ clust_id }} ({{ freq }} verses)",
+          link: "/verse?nro={{ nro }}&pos={{ pos}}"},
         {% for n in clustnet['nodes'] %}
           { id: {{ n[0] }}, label: {{ n[1] | tojson }}, shape: "box",
-            title: "#{{ n[0] }} ({{ n[2] }} verses)" },
+            title: "#{{ n[0] }} ({{ n[2] }} verses)",
+            link: "/verse?nro={{ n[4] }}&pos={{ n[5] }}"},
         {% endfor %}
       ]);
 
@@ -63,6 +65,13 @@ clustering:
       };
       var options = {  };
       var network = new vis.Network(container, data, options);
+      network.on("doubleClick", function (params) {
+        for (n of nodes.get(params.nodes)) {
+          if (n.link) {
+            window.open(n.link)
+          }
+        }
+      });
     </script>
 </body>
 </html>

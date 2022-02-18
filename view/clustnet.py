@@ -13,14 +13,15 @@ def get_cluster_network(db, clust_id, clustering_id=0, maxdepth=3, maxnodes=30):
         depth += 1
         node_ids = ', '.join(map(str, nodes_set))
         query = \
-            '''SELECT
-              DISTINCT vc2.clust_id, v2.text, vcf2.freq
+            '''SELECT DISTINCT vc2.clust_id, v2.text, vcf2.freq, p2.nro, vp2.pos
              FROM
                v_sim s
                JOIN v_clust vc1 ON s.v1_id = vc1.v_id AND vc1.clustering_id = %s
                JOIN verses v2 ON s.v2_id = v2.v_id
                JOIN v_clust vc2 ON s.v2_id = vc2.v_id AND vc2.clustering_id = %s
                JOIN v_clust_freq vcf2 ON vc2.clust_id = vcf2.clust_id AND vcf2.clustering_id = %s
+               JOIN verse_poem vp2 ON v2.v_id = vp2.v_id
+               JOIN poems p2 ON vp2.p_id = p2.p_id
              WHERE
                vc1.clust_id IN ({})
                AND vc2.clust_id <> vc1.clust_id
@@ -29,10 +30,10 @@ def get_cluster_network(db, clust_id, clustering_id=0, maxdepth=3, maxnodes=30):
              ORDER BY vcf2.freq DESC
              LIMIT %s;'''.format(node_ids)
         db.execute(query, (clustering_id, clustering_id, clustering_id, maxnodes))
-        for c_id, text, freq in db.fetchall():
+        for c_id, text, freq, nro, pos in db.fetchall():
             if c_id not in nodes_set:
                 nodes_set.add(c_id)
-                nodes.append((c_id, text, freq, depth))
+                nodes.append((c_id, text, freq, depth, nro, pos))
     node_ids = ', '.join(map(str, nodes_set))
     # FIXME inserting node_ids directly to db.execute() throws an error,
     # dunno why
