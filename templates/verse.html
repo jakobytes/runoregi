@@ -1,17 +1,6 @@
 <html>
 <head>
 <title>#{{clust_id}} {{ text }}</title>
-<script
-    type="text/javascript"
-    src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"
-  ></script>
-<style type="text/css">
-      #clustnet {
-        width: 1000px;
-        height: 800px;
-        border: 1px solid lightgray;
-      }
-    </style>
 </head>
 
 <body>
@@ -19,7 +8,8 @@
 [<a href="/poem?nro={{ nro }}">back to poem</a>]
 [<a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&format=csv">CSV</a>
 / <a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&format=tsv">TSV</a>]
-[<a href="{{ map_lnk }}">map</a>]<br/>
+[<a href="{{ map_lnk }}">map</a>]
+[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}">cluster network</a>]<br/>
 
 <h2>Cluster ({{ freq }})</h2>
 clustering: 
@@ -83,37 +73,6 @@ clustering:
   <tr><td><hr/></td></tr>
   {% endfor %}
 </table>
-
-<h2>Neighboring clusters</h2>
-
-<div id="clustnet"></div>
-<script type="text/javascript">
-      // create an array with nodes
-      var nodes = new vis.DataSet([
-        { id: {{ clust_id }}, label: {{ text | tojson }}, shape: "box" ,
-          color: "#FFEEAA", title: "#{{ clust_id }} ({{ freq }} verses)" },
-        {% for n in clustnet['nodes'] %}
-          { id: {{ n[0] }}, label: {{ n[1] | tojson }}, shape: "box",
-            title: "#{{ n[0] }} ({{ n[2] }} verses)" },
-        {% endfor %}
-      ]);
-
-      // create an array with edges
-      var edges = new vis.DataSet([
-        {% for e in clustnet['edges'] %}
-          { from: {{ e[0] }}, to: {{ e[1] }}, value: {{ e[2] }} },
-        {% endfor %}
-      ]);
-
-      // create a network
-      var container = document.getElementById("clustnet");
-      var data = {
-        nodes: nodes,
-        edges: edges,
-      };
-      var options = {  };
-      var network = new vis.Network(container, data, options);
-    </script>
 
 </body>
 </html>

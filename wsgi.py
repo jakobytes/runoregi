@@ -1,6 +1,7 @@
 from flask import Flask, Response, request
 import re
 
+import view.clustnet
 import view.dendrogram
 import view.index
 import view.multidiff
@@ -17,6 +18,20 @@ application = Flask(__name__)
 def _compact(string):
     'Remove empty lines from the HTML code.'
     return re.sub(r'\n(\s*\n)+', '\n', string)
+
+
+@application.route('/clustnet')
+def show_clustnet():
+    nro = request.args.get('nro', None, type=str)
+    pos = request.args.get('pos', 1, type=str)
+    v_id = request.args.get('id', 1, type=int)
+    clustering = request.args.get('clustering', 0, type=int)
+    maxdepth = request.args.get('maxdepth', 1, type=int)
+    maxnodes = request.args.get('maxnodes', 20, type=int)
+    result = view.clustnet.render(nro=nro, pos=pos, v_id=v_id,
+                                  clustering_id=clustering, maxdepth=maxdepth,
+                                  maxnodes=maxnodes)
+    return _compact(result)
 
 
 @application.route('/dendrogram')

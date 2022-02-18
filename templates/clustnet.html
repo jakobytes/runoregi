@@ -1,0 +1,68 @@
+<html>
+<head>
+<title>#{{clust_id}} {{ text }}</title>
+<script
+    type="text/javascript"
+    src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"
+  ></script>
+<style type="text/css">
+      #clustnet {
+        width: 100%;
+        height: 750;
+        border: 1px solid lightgray;
+      }
+    </style>
+</head>
+
+<body>
+
+<h1><small>#{{clust_id}}</small> {{ text }}</h1>
+
+[<a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">back to cluster</a>]
+[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth +1 }}&maxnodes={{ maxnodes }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">+</a>
+/ <a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth -1 }}&maxnodes={{ maxnodes }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">-</a>
+depth]
+[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes + 10 }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">+</a>
+/ <a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes -10 }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">-</a>
+nodes]
+
+<h2>Neighboring clusters</h2>
+clustering: 
+{% for c in clusterings %}
+{% if clustering_id == c[0] %}
+{{ c[1] }}
+{% else %}
+<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes }}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
+{% endif %}
+{% endfor %}
+
+<div id="clustnet"></div>
+<script type="text/javascript">
+      // create an array with nodes
+      var nodes = new vis.DataSet([
+        { id: {{ clust_id }}, label: {{ text | tojson }}, shape: "box" ,
+          color: "#FFEEAA", title: "#{{ clust_id }} ({{ freq }} verses)" },
+        {% for n in clustnet['nodes'] %}
+          { id: {{ n[0] }}, label: {{ n[1] | tojson }}, shape: "box",
+            title: "#{{ n[0] }} ({{ n[2] }} verses)" },
+        {% endfor %}
+      ]);
+
+      // create an array with edges
+      var edges = new vis.DataSet([
+        {% for e in clustnet['edges'] %}
+          { from: {{ e[0] }}, to: {{ e[1] }}, value: {{ e[2] }} },
+        {% endfor %}
+      ]);
+
+      // create a network
+      var container = document.getElementById("clustnet");
+      var data = {
+        nodes: nodes,
+        edges: edges,
+      };
+      var options = {  };
+      var network = new vis.Network(container, data, options);
+    </script>
+</body>
+</html>
