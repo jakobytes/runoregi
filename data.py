@@ -71,6 +71,9 @@ def get_structured_metadata(
             return 'Kalevala {}'.format(_id)
         elif nro.startswith('kt'):
             return 'Kanteletar {}:{}'.format(int(nro[2:4]), int(nro[4:]))
+        elif nro.startswith('kalevipoeg'):
+            num = re.sub('^0', '', nro.replace('kalevipoeg', '')).upper()
+            return 'Kalevipoeg {}'.format(num)
         else:
             return _id
 
