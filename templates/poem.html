@@ -29,6 +29,23 @@
 {{ p.smd.location }}<br/>
 {{ p.smd.year }}&ensp;{{ p.smd.collector }}
 
+{% if duplicates %}
+<p>
+<b>Duplicates:</b>
+{% for p in duplicates %}
+<a href="/poem?nro={{ p.nro }}">{{ p.title }}</a>
+{% endfor %}
+</p>
+{% endif %}
+{% if parents %}
+<p>
+<b>Duplicate of:</b>
+{% for p in parents %}
+<a href="/poem?nro={{ p.nro }}">{{ p.title }}</a>
+{% endfor %}
+</p>
+{% endif %}
+
 <h2>Metadata</h2>
 <table>
   {% for key, val in p.meta.items() %}

@@ -109,6 +109,25 @@ def get_similar_poems(db, p_id, thr_sym=0.1, thr_left=0.5, thr_right=0.5):
     return result_sym, result_left, result_right
 
 
+def get_duplicates_and_parents(db, p_id):
+    duplicate_ids, parent_ids = [], []
+    db.execute(
+        'SELECT * FROM p_dupl WHERE p_id = %s OR master_p_id = %s;',
+        (p_id, p_id))
+    for id_1, id_2 in db.fetchall():
+        if id_1 == p_id:
+            parent_ids.append(id_2)
+        elif id_2 == p_id:
+            duplicate_ids.append(id_1)
+    duplicates, parents = [], []
+    duplicates = get_structured_metadata(db, p_ids=duplicate_ids) \
+                 if duplicate_ids else []
+    parents = get_structured_metadata(db, p_ids=parent_ids) \
+              if parent_ids else []
+    return duplicates, parents
+
+
+
 def get_shared_verses(db, p_id, max, thr, order, verses, clustering_id=0):
     db.execute("""SELECT DISTINCT v.v_id, p2.nro FROM verses v
                   JOIN verse_poem vp ON vp.v_id = v.v_id
@@ -192,6 +211,7 @@ def render(nro, **options):
                               options['sim_thr'], options['sim_order'],
                               poem.verses)
         verse_themes = get_verse_themes(db, poem.p_id)
+        duplicates, parents = get_duplicates_and_parents(db, poem.p_id)
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text, v.v_id))
@@ -204,5 +224,6 @@ def render(nro, **options):
                            poems_sharing_verses=poems_sharing_verses,
                            nr_linked_poems=len(linked_poems),
                            verse_themes=verse_themes,
-                           links=links)
+                           links=links,
+                           duplicates=duplicates, parents=parents)
 
