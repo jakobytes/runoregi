@@ -8,7 +8,7 @@ from shortsim.align import align
 from shortsim.ngrcos import vectorize
 
 import config
-from data import Poem, render_themes_tree
+from data import Poem, render_csv, render_themes_tree
 
 
 COLOR_NORMAL = None
@@ -25,7 +25,7 @@ def compute_similarity(text_1, text_2, threshold):
     return v_ids, sim
 
 
-def render(nro_1, nro_2, threshold=0.75):
+def render(nro_1, nro_2, threshold=0.75, fmt='html'):
 
     # FIXME code duplication with poem.py!
     def _makecolcomp(value):
@@ -63,6 +63,14 @@ def render(nro_1, nro_2, threshold=0.75):
           else 0,
         opt_fun=max,
         empty=None)
+    if fmt in ('csv', 'tsv'):
+        return render_csv([(x.text if x is not None else None,
+                            y.text if y is not None else None,
+                            w) for x, y, w in al],
+                          header=(poem_1.smd.nro, poem_2.smd.nro, 'sim_cos'),
+                          delimiter='\t' if fmt == 'tsv' else ',')
+
+    # render HTML
     meta_keys = sorted(list(set(poem_1.meta.keys()) | set(poem_2.meta.keys())))
     meta_1, meta_2 = {}, {}
     for key in meta_keys:

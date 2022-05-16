@@ -67,8 +67,9 @@ def show_passage():
 def show_diff():
     nro_1 = request.args.get('nro1', 1, type=str)
     nro_2 = request.args.get('nro2', 1, type=str)
-    threshold = request.args.get('t', 0.75, type=float)
-    return _compact(view.poemdiff.render(nro_1, nro_2, threshold=threshold))
+    t = request.args.get('t', 0.75, type=float)
+    fmt = request.args.get('format', 'html', type=str)
+    return _compact(view.poemdiff.render(nro_1, nro_2, threshold=t, fmt=fmt))
 
 @application.route('/multidiff')
 def show_multidiff():

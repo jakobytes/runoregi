@@ -1,8 +1,14 @@
 <p>
-[<a href="/poemdiff?nro1={{ p1.smd.nro }}&nro2={{ p2.smd.nro }}&t={{ [threshold-0.05, 0] | max }}">lower</a>
+[
+<a href="/poemdiff?nro1={{ p1.smd.nro }}&nro2={{ p2.smd.nro }}&t={{ threshold }}&format=csv">CSV</a>
+/
+<a href="/poemdiff?nro1={{ p1.smd.nro }}&nro2={{ p2.smd.nro }}&t={{ threshold }}&format=tsv">TSV</a>
+][
+<a href="/poemdiff?nro1={{ p1.smd.nro }}&nro2={{ p2.smd.nro }}&t={{ [threshold-0.05, 0] | max }}">lower</a>
 /
 <a href="/poemdiff?nro1={{ p1.smd.nro }}&nro2={{ p2.smd.nro }}&t={{ [threshold+0.05, 1] | min }}">higher</a>
-threshold]
+threshold
+]
 </p>
 
 <table>
