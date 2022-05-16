@@ -1,6 +1,5 @@
 from collections import defaultdict
 from flask import render_template
-#import numpy as np
 import pymysql
 import re
 from subprocess import Popen, PIPE
@@ -17,9 +16,9 @@ COLOR_CHARDIFF = 'blue'
 COLOR_LINEDIFF = 'grey'
 
 
-def compute_similarity(poem_1, poem_2, threshold):
+def compute_similarity(text_1, text_2, threshold):
     verses = set((v.v_id, v.text_cl if v.text_cl is not None else '') \
-                 for v in poem_1.verses + poem_2.verses)
+                 for v in text_1 + text_2)
     v_ids, v_texts, ngr_ids, m = vectorize(verses)
     sim = m.dot(m.T)
     sim[sim < threshold] = 0
@@ -48,10 +47,10 @@ def render(nro_1, nro_2, threshold=0.75):
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         poem_1 = Poem.from_db_by_nro(db, nro_1)
         poem_2 = Poem.from_db_by_nro(db, nro_2)
-    v_ids, sims = compute_similarity(poem_1, poem_2, threshold)
-    v_ids_dict = { v_id: i for i, v_id in enumerate(v_ids) }
     poem_1_text = list(poem_1.text_verses())
     poem_2_text = list(poem_2.text_verses())
+    v_ids, sims = compute_similarity(poem_1_text, poem_2_text, threshold)
+    v_ids_dict = { v_id: i for i, v_id in enumerate(v_ids) }
     al = align(
         poem_1_text,
         poem_2_text,
@@ -59,8 +58,8 @@ def render(nro_1, nro_2, threshold=0.75):
         dist_fun=lambda i, j:
           sims[v_ids_dict[poem_1_text[i].v_id],
                v_ids_dict[poem_2_text[j].v_id]] \
-          if poem_1.verses[i].v_id in v_ids_dict and \
-             poem_2.verses[j].v_id in v_ids_dict \
+          if poem_1_text[i].v_id in v_ids_dict and \
+             poem_2_text[j].v_id in v_ids_dict \
           else 0,
         opt_fun=max,
         empty=None)
