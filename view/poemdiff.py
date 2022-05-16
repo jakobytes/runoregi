@@ -104,7 +104,7 @@ def render(nro_1, nro_2, threshold=0.75):
         sum([w for x, y, w in al]) / len(al),
         sum([w**2 for x, y, w in al]) / len(al)
     ]
-    return render_template('poemdiff.html', p1=poem_1, p2=poem_2,
+    return render_template('poemdiff.html', p1=poem_1, p2=poem_2, threshold=threshold,
                            meta_keys=meta_keys, alignment=alignment, scores=scores,
                            themes_1=render_themes_tree(poem_1.smd.themes),
                            themes_2=render_themes_tree(poem_2.smd.themes))
