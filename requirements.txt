@@ -3,3 +3,4 @@ gunicorn
 numpy
 scipy
 pymysql >=0.9.0,< 0.10.0
+git+https://github.com/hsci-r/shortsim

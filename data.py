@@ -159,10 +159,11 @@ def render_csv(rows, header=None, delimiter=','):
 
 
 class Verse:
-    def __init__(self, v_id, type, text, clust_id, clustfreq):
+    def __init__(self, v_id, type, text, text_cl, clust_id, clustfreq):
         self.v_id = v_id
         self.type = type
         self.text = text
+        self.text_cl = text_cl
         self.clust_id = clust_id
         self.clustfreq = clustfreq
 
@@ -196,14 +197,15 @@ class Poem:
             (p_id,))
         nro, loc_reg, loc_name, col, year = db.fetchall()[0]
         db.execute( 
-            'SELECT v.v_id, v.type, v.text, cf.clust_id, cf.freq FROM verses v'\
+            'SELECT v.v_id, v.type, v.text, v_cl.text, cf.clust_id, cf.freq FROM verses v'\
             ' JOIN verse_poem vp ON vp.v_id = v.v_id'\
+            ' LEFT OUTER JOIN verses_cl v_cl ON v_cl.v_id = v.v_id'\
             ' LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id AND vc.clustering_id = %s'\
             ' LEFT OUTER JOIN v_clust_freq cf ON vc.clust_id = cf.clust_id AND cf.clustering_id = %s'\
             ' WHERE vp.p_id=%s;',
             (clustering_id, clustering_id, p_id))
-        verses = [Verse(v_id, type, clean_special_chars(text), c_id, cf) \
-                  for v_id, type, text, c_id, cf in db.fetchall()]
+        verses = [Verse(v_id, type, clean_special_chars(text), text_cl, c_id, cf) \
+                  for v_id, type, text, text_cl, c_id, cf in db.fetchall()]
         db.execute('SELECT field, value FROM raw_meta WHERE p_id = %s', (p_id,))
         meta = { field : value for field, value in db.fetchall() }
         # cursor.execute(

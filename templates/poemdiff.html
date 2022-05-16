@@ -1,5 +1,6 @@
 <table>
   <tr>
+    <td></td><td></td>
     <td>
       <small>[<a href="/poem?nro={{ p1.smd.nro }}">to poem</a>]</small>
       <h2>{{ p1.smd.title }}</h2>
@@ -18,6 +19,7 @@
   </tr>
   {% for key in meta_keys %}
   <tr>
+    <td></td><td></td>
     <td width="350">
       <small><b>{{ key }}:</b> {{ p1.meta[key] }}</small>
     </td>
@@ -28,6 +30,7 @@
   </tr>
   {% endfor %}
   <tr>
+    <td></td><td></td>
     <td valign="top">
       <small>
         {% for d, p, minor, t in themes_1 %}
@@ -45,11 +48,15 @@
     </td>
   </tr>
   <tr>
-    <td colspan="3">&nbsp;</td>
-    {% for x, y in alignment %}
+    <td colspan="5">&nbsp;</td>
+    {% for x, y, w in alignment %}
   </tr>
 
   <tr>
+    <td bgcolor="{{ w[1] }}"><div title="{{ "%0.2f"|format(w[0]) }}">
+       &nbsp;&nbsp;&nbsp;</div>
+    </td>
+    <td>&nbsp;&nbsp;&nbsp;</td>
     <td>
       {% for c, t in x %}{% if t %}{% if c %}<font color="{{ c }}"
         >{% endif %}{{ t }}{% if c %}</font
@@ -63,4 +70,14 @@
     </td>
   </tr>
   {% endfor %}
+  <tr>
+    <td colspan="5">
+    <hr/>
+    <small>
+    alignment similarity: {{ (scores[0]*100) | int }} % <br/>
+    mean weight: {{ (scores[1]*100) | int }} % <br/>
+    mean squared weight: {{ (scores[2]*100) | int }} %
+    </small>
+    </td>
+  </tr>
 </table>

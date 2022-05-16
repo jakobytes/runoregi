@@ -1,11 +1,13 @@
 from collections import defaultdict
 from flask import render_template
-import numpy as np
+#import numpy as np
 import pymysql
 import re
 from subprocess import Popen, PIPE
 
-from align import align
+from shortsim.align import align
+from shortsim.ngrcos import vectorize
+
 import config
 from data import Poem, render_themes_tree
 
@@ -14,73 +16,52 @@ COLOR_NORMAL = None
 COLOR_CHARDIFF = 'blue'
 COLOR_LINEDIFF = 'grey'
 
-SIM_SELECT = '''
-SELECT
-    s.v1_id, s.v2_id, s.sim_cos
-FROM
-    v_sim s
-    JOIN verse_poem vp1 ON s.v1_id = vp1.v_id
-    JOIN verse_poem vp2 ON s.v2_id = vp2.v_id
-WHERE
-    vp1.p_id = %s
-    AND vp2.p_id = %s
-;
-'''
+
+def compute_similarity(poem_1, poem_2, threshold):
+    verses = set((v.v_id, v.text_cl if v.text_cl is not None else '') \
+                 for v in poem_1.verses + poem_2.verses)
+    v_ids, v_texts, ngr_ids, m = vectorize(verses)
+    sim = m.dot(m.T)
+    sim[sim < threshold] = 0
+    return v_ids, sim
 
 
-def get_data_from_db(nro_1, nro_2, mysql_params):
-    poem_1, poem_2, sim_list = None, None, None
-    with pymysql.connect(**mysql_params) as db:
-        poem_1 = Poem.from_db_by_nro(db, nro_1)
-        poem_2 = Poem.from_db_by_nro(db, nro_2)
-        db.execute(SIM_SELECT, (poem_1.p_id, poem_2.p_id))
-        sims_list = db.fetchall()
-    return poem_1, poem_2, sims_list
+def render(nro_1, nro_2, threshold=0.75):
 
+    # FIXME code duplication with poem.py!
+    def _makecolcomp(value):
+        result = hex(255-int(value*255))[2:]
+        if len(result) == 1:
+            result = '0'+result
+        return result
 
-def poem_to_verse_dict(poem):
-    '''Convert a poem to dictionary: verse_id -> list of positions
-       in the text. Also return the total number of verses.'''
-    v_dict = defaultdict(lambda: list())
-    n = 0
-    for i, v in enumerate(poem.text_verses()):
-        v_dict[v.v_id].append(i)
-        n += 1
-    return v_dict, n
+    def _makecol(value):
+        if value is None:
+            value = 0
+        rg = _makecolcomp(value)
+        b = _makecolcomp(max(value-0.5, 0))
+        return '#'+rg+rg+b 
 
-
-def build_similarity_matrix(poem_1, poem_2, sims_list):
-    '''Create a verse similarity matrix for the poems.'''
-    poem_1_v_ids, n1 = poem_to_verse_dict(poem_1)
-    poem_2_v_ids, n2 = poem_to_verse_dict(poem_2)
-
-    # FIXME this is a slight hack to add identical verse pairs
-    # the preferred way is to use clusters for alignment rather than raw
-    # similarities
-    ids = set(poem_1_v_ids.keys()) | set(poem_2_v_ids.keys())
-    sims_list = list(sims_list)
-    sims_list.extend((i, i, 1.0) for i in ids)
-
-    sims = np.zeros(shape=(n1, n2), dtype=np.float32)
-    for v1_id, v2_id, s in sims_list:
-        for i in poem_1_v_ids[v1_id]:
-            for j in poem_2_v_ids[v2_id]:
-                sims[i,j] = float(s)
-    return sims
-
-
-def render(nro_1, nro_2):
     # TODO
     # - some refactoring
     # - bold for captions
-    poem_1, poem_2, sims_list = \
-        get_data_from_db(nro_1, nro_2, config.MYSQL_PARAMS)
-    sims = build_similarity_matrix(poem_1, poem_2, sims_list)
+    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+        poem_1 = Poem.from_db_by_nro(db, nro_1)
+        poem_2 = Poem.from_db_by_nro(db, nro_2)
+    v_ids, sims = compute_similarity(poem_1, poem_2, threshold)
+    v_ids_dict = { v_id: i for i, v_id in enumerate(v_ids) }
+    poem_1_text = list(poem_1.text_verses())
+    poem_2_text = list(poem_2.text_verses())
     al = align(
-        list(poem_1.text_verses()),
-        list(poem_2.text_verses()),
+        poem_1_text,
+        poem_2_text,
         insdel_cost=0,
-        dist_fun=lambda i, j: sims[i,j],
+        dist_fun=lambda i, j:
+          sims[v_ids_dict[poem_1_text[i].v_id],
+               v_ids_dict[poem_2_text[j].v_id]] \
+          if poem_1.verses[i].v_id in v_ids_dict and \
+             poem_2.verses[j].v_id in v_ids_dict \
+          else 0,
         opt_fun=max,
         empty=None)
     meta_keys = sorted(list(set(poem_1.meta.keys()) | set(poem_2.meta.keys())))
@@ -89,6 +70,7 @@ def render(nro_1, nro_2):
         meta_1[key] = poem_1.meta[key] if key in poem_1.meta else ''
         meta_2[key] = poem_2.meta[key] if key in poem_2.meta else ''
     alignment = []
+    # TODO rendering the verse-level alignments - ugly code, refactor this!
     for row in al:
         verse_1, verse_2 = [], []
         if row[2] > 0:
@@ -116,9 +98,14 @@ def render(nro_1, nro_2):
                 verse_1.append((COLOR_LINEDIFF, row[0].text))
             if row[1] is not None:
                 verse_2.append((COLOR_LINEDIFF, row[1].text))
-        alignment.append((verse_1, verse_2))
+        alignment.append((verse_1, verse_2, (row[2], _makecol(row[2]**2))))
+    scores = [
+        sum([int(w > 0) for x, y, w in al]) / len(al),
+        sum([w for x, y, w in al]) / len(al),
+        sum([w**2 for x, y, w in al]) / len(al)
+    ]
     return render_template('poemdiff.html', p1=poem_1, p2=poem_2,
-                           meta_keys=meta_keys, alignment=alignment,
+                           meta_keys=meta_keys, alignment=alignment, scores=scores,
                            themes_1=render_themes_tree(poem_1.smd.themes),
                            themes_2=render_themes_tree(poem_2.smd.themes))
 
