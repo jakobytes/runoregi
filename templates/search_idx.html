@@ -4,6 +4,7 @@
 </head>
 <body>
 <center>
+[<a href="#about">about</a>]
 <h1>Runoregi</h1>
 <form method="GET" action="/search">
 <table border="0">
@@ -150,5 +151,56 @@ or: <a href="/skvr-themes">Entire SKVR index on one page</a>
 <td><a href="/poem?nro=kalevipoeg20">XX</a></td>
 </tr>
 </table>
+<hr/>
+<h2><a name="about">About the project</a></h2>
+
+<p>Runoregi is a Web-based user interface for browsing a large corpus of Finnic 
+tetrameter poetry. In addition to combining several independent collections, it 
+also provides innovative similarity detection and visualization algorithms, 
+allowing the user to quickly move between related texts, read similar texts in 
+a side-by-side view, find occurrences of lines and passages regardless of 
+linguistic variation, and more.</p>
+
+<p>The data currently combines the following collections:
+<ul>
+<li><a href="https://skvr.fi/">Suomen Kansan Vanhat Runot</a> (Old Poems of the Finnish People; SKVR)
+<li><a href="https://www.folklore.ee/regilaul/andmebaas/">Eesti Regilaulude Andmebaas</a> (Estonian Runosongs Database; ERAB)
+<li>A corpus of previously unpublished poems in possession of the <a href="https://www.finlit.fi/">Finnish Literature Society</a> (available online only here - poem titles starting with “JR”)
+<li>Publicly available literary works related to oral folk poetry: Kalevala, Kanteletar, Kalevipoeg
+</ul></p>
+
+<p>Runoregi is part of the active research project
+<a href="https://blogs.helsinki.fi/filter-project/">“Formulaic intertextuality, 
+thematic networks and poetic variation across regional cultures of Finnic oral 
+poetry” (FILTER)</a> funded by the Academy of Finland grant no. 333138. As such, 
+it is <b>experimental</b> and <b>under constant development</b>: frequent 
+changes to both the
+interface and the functionality are to be expected, some of the shown 
+information might be incomplete or incorrect, and at the current stage the main 
+purpose of making it available to the public is demonstrating the progress and 
+possibilities of the computational methods we apply, rather than providing a 
+ready-to-use and reliable resource. For any applications
+<b>it should be considered an alpha version</b>.</p>
+
+<p>We intend to release the complete source code openly by the end of the project 
+(spring 2024) the latest. The following parts are available so far:
+<ul>
+<li><a href="https://github.com/hsci-r/shortsim">shortsim</a> – a Python library and toolkit for string similarity computations
+</ul></p>
+
+<p>If you use Runoregi in your research, please cite:
+<ul>
+<li>Maciej Janicki, Kati Kallio & Mari Sarv (in press). Exploring Finnic written 
+oral folk poetry through string similarity. <i>Digital Scholarship in the 
+Humanities</i>.
+</ul></p>
+
+<p>Contact persons:
+<ul>
+<li>Maciej Janicki, University of Helsinki (code and computational methods)
+<li>Kati Kallio & Jukka Saarinen, Finnish Literature Society (Finnish collections)
+<li>Mari Sarv, Estonian Literary Museum (Estonian collections)
+</ul></p>
+
 </body>
 </html>
