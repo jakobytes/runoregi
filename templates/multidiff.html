@@ -1,9 +1,14 @@
-[<a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&format=csv">CSV</a>
- / <a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&format=tsv">TSV</a>]
+[<a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ threshold }}&format=csv">CSV</a>
+ / <a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ threshold }}&format=tsv">TSV</a>]
 [ linking method:
 {% for m in ["none", "complete", "average", "single"] %}
 {% if method != m %}<a href="/multidiff?nro={{ nro | join (',') }}&method={{ m }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}
-{% endfor %}]
+{% endfor %}][
+<a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ [threshold-0.05, 0] | max }}">lower</a>
+/
+<a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ [threshold+0.05, 1] | min }}">higher</a>
+threshold
+]
 <table>
   <tr>
     {% for p in poems %}

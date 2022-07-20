@@ -5,25 +5,13 @@ import pymysql
 import scipy.cluster.hierarchy
 from scipy.spatial.distance import squareform
 
-from align import align
+from shortsim.align import align
+from shortsim.ngrcos import vectorize
+
 import config
 from data import Poem, render_themes_tree, render_csv
+
 from view.dendrogram import cluster    # TODO move it to some common place
-
-
-V_SIM_SELECT = '''
-SELECT
-    s.v1_id, s.v2_id, s.sim_cos
-FROM
-    v_sim s
-    JOIN verse_poem vp1 ON s.v1_id = vp1.v_id
-    JOIN verse_poem vp2 ON s.v2_id = vp2.v_id
-WHERE
-    vp1.p_id IN ({})
-    AND vp2.p_id IN ({})
-    AND vp1.p_id < vp2.p_id
-;
-'''
 
 
 def get_dist_mtx(db, nros):
@@ -41,21 +29,17 @@ def get_dist_mtx(db, nros):
     return squareform(1-m)
 
 
-def get_data_from_db(db, nros):
-    poems = [Poem.from_db_by_nro(db, nro) for nro in nros]
-    d = get_dist_mtx(db, nros)
-    ids_str = ','.join(str(p.p_id) for p in poems)
-    query = V_SIM_SELECT.format(ids_str, ids_str)
-    db.execute(query)
-    v_sims = {}
-    for i, j, s in db.fetchall():
-        v_sims[i,j] = s
-        v_sims[j,i] = s
-    # insert identities explicitly
-    for p in poems:
-        for v in p.text_verses():
-            v_sims[v.v_id,v.v_id] = 1
-    return poems, d, v_sims
+# TODO merge with view.poemdiff.compute_similarity()
+def compute_verse_similarity(poems, threshold):
+    verses = set((v.v_id, v.text_cl if v.text_cl is not None else '') \
+                 for p in poems for v in p.text_verses())
+    v_ids, v_texts, ngr_ids, m = vectorize(verses)
+    sim = m.dot(m.T)
+    sim[sim < threshold] = 0
+    v_sim = {}
+    for i, j in list(zip(*sim.nonzero())):
+        v_sim[v_ids[i], v_ids[j]] = sim[i,j]
+    return v_sim
 
 
 def merge_alignments(poems, merges, v_sims):
@@ -96,11 +80,12 @@ def merge_alignments(poems, merges, v_sims):
     return alignments[-1]
 
 
-def render(nros, method='complete', fmt='html'):
+def render(nros, method='complete', threshold=0.75, fmt='html'):
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        poems, d, v_sims = get_data_from_db(db, nros)
+        poems = [Poem.from_db_by_nro(db, nro) for nro in nros]
+        d = get_dist_mtx(db, nros)
 
-    d = get_dist_mtx(db, nros)
+    v_sims = compute_verse_similarity(poems, threshold)
     clust, ids = None, None
     if method == 'none':
         # align the poems from left to right, in the order given by `nros`
@@ -126,5 +111,5 @@ def render(nros, method='complete', fmt='html'):
     else:
         return render_template('multidiff.html', nro=nros, poems=poems,
                                alignment=als, meta_keys=meta_keys,
-                               themes=themes, method=method)
+                               themes=themes, method=method, threshold=threshold)
 
