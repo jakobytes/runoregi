@@ -1,5 +1,9 @@
-[<a href="/multidiff?nro={{ nro | join (',') }}&format=csv">CSV</a>
- / <a href="/multidiff?nro={{ nro | join (',') }}&format=tsv">TSV</a>]
+[<a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&format=csv">CSV</a>
+ / <a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&format=tsv">TSV</a>]
+[ linking method:
+{% for m in ["none", "complete", "average", "single"] %}
+{% if method != m %}<a href="/multidiff?nro={{ nro | join (',') }}&method={{ m }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}
+{% endfor %}]
 <table>
   <tr>
     {% for p in poems %}

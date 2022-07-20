@@ -76,7 +76,8 @@ def show_multidiff():
     nros_str = request.args.get('nro', 1, type=str)
     nros = nros_str.split(',')
     fmt = request.args.get('format', 'html', type=str)
-    result = view.multidiff.render(nros, fmt=fmt)
+    method = request.args.get('method', 'complete', type=str)
+    result = view.multidiff.render(nros, method=method, fmt=fmt)
     if fmt in ('csv', 'tsv'):
         return Response(result, mimetype='text/plain')
     else:
