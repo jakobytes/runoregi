@@ -1,5 +1,6 @@
 [<a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ threshold }}&format=csv">CSV</a>
  / <a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ threshold }}&format=tsv">TSV</a>]
+[ <a href="/poemnet?nro={{ nro | join(',') }}">network view</a> ]
 [ linking method:
 {% for m in ["none", "complete", "average", "single"] %}
 {% if method != m %}<a href="/multidiff?nro={{ nro | join (',') }}&method={{ m }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}

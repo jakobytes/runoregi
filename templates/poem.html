@@ -62,7 +62,9 @@
 
 {% if sim_poems %}
 <h2>Similar poems</h2>
-<p><small>[<a href="/multidiff?nro={{ p.smd.nro }},{{ sim_poems | map(attribute=0) | map(attribute='nro') | join(',') }}">compare all</a>]</small></p>
+<p><small>[<a href="/multidiff?nro={{ p.smd.nro }},{{ sim_poems | map(attribute=0) | map(attribute='nro') | join(',') }}">compare all</a>]
+[<a href="/poemnet?nro={{ p.smd.nro }}">network view</a>]
+</small></p>
 {% endif %}
 
 <table style="user-select: none">

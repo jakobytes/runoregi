@@ -1,0 +1,74 @@
+<html>
+<head>
+<title>Poem network — Runoregi</title>
+<script
+    type="text/javascript"
+    src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"
+  ></script>
+<style type="text/css">
+      #poemnet {
+        width: 100%;
+        height: 750;
+        border: 1px solid lightgray;
+      }
+    </style>
+</head>
+
+<body>
+
+<h1>Poem network</h1>
+
+[<a href="/{% if nro | length > 1 %}multidiff{% else %}poem{% endif %}?nro={{ nro | join(',') }}">back to {% if nro | length > 1 %}alignment{% else %}poem{% endif %}</a>]
+[<a href="{{ links['+depth'] }}">+</a>
+/ <a href="{{ links['-depth'] }}">-</a>
+depth]
+[<a href="{{ links['+nodes'] }}">+</a>
+/ <a href="{{ links['-nodes'] }}">-</a>
+nodes]
+[<a href="{{ links['+threshold'] }}">+</a>
+/ <a href="{{ links['-threshold'] }}">-</a>
+threshold]
+
+<div id="poemnet"></div>
+<script type="text/javascript">
+      // create an array with nodes
+      var nodes = new vis.DataSet([
+        {% for md in smd %}
+          { id: {{ md.p_id }}, label: {{ md.title | tojson }},
+            title: "{{ md.location }}\n{{ md.year }} {{ md.collector }}\n" + {{ tt[md.p_id] | tojson }},
+            shape: "box", {% if md.nro in nro %}color: "#FFEEAA",{% endif %}
+            link: "/poem?nro={{ md.nro }}"},
+        {% endfor %}
+      ]);
+
+      // create an array with edges
+      var edges = new vis.DataSet([
+        {% for e in poemnet['edges'] %}
+          { from: {{ e[0] }}, to: {{ e[1] }}, value: {{ e[2] }}, title: "{{ e[2] }}",
+            link: "/poemdiff?nro1={{ nros_by_id[e[0]] }}&nro2={{ nros_by_id[e[1]] }}" },
+        {% endfor %}
+      ]);
+
+      // create a network
+      var container = document.getElementById("poemnet");
+      var data = {
+        nodes: nodes,
+        edges: edges,
+      };
+      var options = { physics: { enabled: false }  };
+      var network = new vis.Network(container, data, options);
+      network.on("doubleClick", function (params) {
+        for (n of nodes.get(params.nodes)) {
+          if (n.link) {
+            window.open(n.link)
+          }
+        }
+        for (e of edges.get(params.edges)) {
+          if (e.link) {
+            window.open(e.link)
+          }
+        }
+      });
+    </script>
+</body>
+</html>

@@ -8,6 +8,7 @@ import view.multidiff
 import view.passage
 import view.poem
 import view.poemdiff
+import view.poemnet
 import view.search
 import view.theme
 import view.verse
@@ -99,6 +100,16 @@ def show_poem():
                                      sim_thr=sim_thr, sim_order=sim_order,
                                      show_verse_themes=show_verse_themes,
                                      show_shared_verses=show_shared_verses))
+
+@application.route('/poemnet')
+def show_poemnet():
+    nro = request.args.get('nro', None, type=str)
+    maxdepth = request.args.get('maxdepth', 1, type=int)
+    maxnodes = request.args.get('maxnodes', 20, type=int)
+    t = request.args.get('t', 0.1, type=float)
+    result = view.poemnet.render(nro, t=t, maxdepth=maxdepth, maxnodes=maxnodes)
+    return _compact(result)
+
 
 @application.route('/verse')
 def show_verse():
