@@ -58,15 +58,20 @@ threshold]
       var options = { physics: { enabled: false }  };
       var network = new vis.Network(container, data, options);
       network.on("doubleClick", function (params) {
+        opened = false
         for (n of nodes.get(params.nodes)) {
           if (n.link) {
             window.open(n.link)
+            opened = true
+            break
           }
         }
-        for (e of edges.get(params.edges)) {
-          if (e.link) {
-            window.open(e.link)
-          }
+        if (!opened) {
+            for (e of edges.get(params.edges)) {
+              if (e.link) {
+                window.open(e.link)
+              }
+            }
         }
       });
     </script>
