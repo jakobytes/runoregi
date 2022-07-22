@@ -86,10 +86,13 @@ threshold
   <tr>
     <td colspan="5">
     <hr/>
-    <small>
-    alignment similarity: {{ (scores[0]*100) | int }} % <br/>
-    mean weight: {{ (scores[1]*100) | int }} % <br/>
-    mean squared weight: {{ (scores[2]*100) | int }} %
+    <table border="0">
+    <tr><td align="right"><small>raw similarity:</small></td><td><small>{{ '%.1f' % scores[0] }}</small></td></tr>
+    <tr><td align="right"><small>symmetric normalized:</small></td><td><small>{{ (scores[1]*100) | int }} %</small></td></tr>
+    <tr><td align="right"><small>left-normalized:</small></td><td><small>{{ (scores[2]*100) | int }} %</small></td></tr>
+    <tr><td align="right"><small>right-normalized:</small></td><td><small>{{ (scores[3]*100) | int }} %</small></td></tr>
+    <tr><td align="right"><small>old normalization:</small></td><td><small>{{ (scores[4]*100) | int }} %</small></td></tr>
+    </table>
     </small>
     </td>
   </tr>

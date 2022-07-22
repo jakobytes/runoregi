@@ -106,10 +106,13 @@ def render(nro_1, nro_2, threshold=0.75, fmt='html'):
             if row[1] is not None:
                 verse_2.append((COLOR_LINEDIFF, row[1].text))
         alignment.append((verse_1, verse_2, (row[2], _makecol(row[2]**2))))
+    raw_sim = sum(w for x, y, w in al)
     scores = [
+        raw_sim,
+        2*raw_sim / (len(poem_1_text) + len(poem_2_text)),
+        raw_sim / len(poem_1_text),
+        raw_sim / len(poem_2_text),
         sum([int(w > 0) for x, y, w in al]) / len(al),
-        sum([w for x, y, w in al]) / len(al),
-        sum([w**2 for x, y, w in al]) / len(al)
     ]
     return render_template('poemdiff.html', p1=poem_1, p2=poem_2, threshold=threshold,
                            meta_keys=meta_keys, alignment=alignment, scores=scores,
