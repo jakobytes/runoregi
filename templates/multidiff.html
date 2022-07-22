@@ -14,8 +14,10 @@ threshold
   <tr>
     {% for p in poems %}
     <td width="350">
+      {% if loop.index0 > 0 %}<small>[<a href="/poemdiff?nro1={{ poems[loop.index0-1].smd.nro}}&nro2={{ p.smd.nro }}">&lt;~</a>]</small>{% endif %}
       <small>[<a href="/poem?nro={{ p.smd.nro }}">to poem</a>]</small>
       <small>[<a href="/multidiff?nro={{ poems | map(attribute='smd') | map(attribute='nro') | reject('eq', p.smd.nro) | join(',') }}">remove</a>]</small>
+      {% if loop.index0+1 < poems | length %}<small>[<a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ poems[loop.index0+1].smd.nro}}">~&gt;</a>]</small>{% endif %}
       <h2>{{ p.smd.title }}</h2>
       <small> {{ p.smd.nro }}<br /> </small>
       <small> {{ p.smd.location }}<br /> </small>
