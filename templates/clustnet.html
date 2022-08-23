@@ -40,12 +40,12 @@ clustering:
 <script type="text/javascript">
       // create an array with nodes
       var nodes = new vis.DataSet([
-        { id: {{ clust_id }}, label: {{ text | tojson }}, shape: "box" ,
-          color: "#FFEEAA", title: "#{{ clust_id }} ({{ freq }} verses)",
+        { id: {{ clust_id }}, label: "#{{ clust_id }} " + {{ text | tojson }}, shape: "box" ,
+          color: "#FFEEAA", title: "{{ freq }} verses",
           link: "/verse?nro={{ nro }}&pos={{ pos}}"},
         {% for n in clustnet['nodes'] %}
-          { id: {{ n[0] }}, label: {{ n[1] | tojson }}, shape: "box",
-            title: "#{{ n[0] }} ({{ n[2] }} verses)",
+          { id: {{ n[0] }}, label: "#{{ n[0] }} " + {{ n[1] | tojson }}, shape: "box",
+            title: "{{ n[2] }} verses",
             link: "/verse?nro={{ n[4] }}&pos={{ n[5] }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}"},
         {% endfor %}
       ]);
