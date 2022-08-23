@@ -18,13 +18,14 @@
 
 <h1><small>#{{clust_id}}</small> {{ text }}</h1>
 
-[<a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">back to cluster</a>]
-[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth +1 }}&maxnodes={{ maxnodes }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">+</a>
-/ <a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth -1 }}&maxnodes={{ maxnodes }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">-</a>
+[<a href="/verse?nro={{ nro }}&pos={{ pos }}&physics={{ physics }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">back to cluster</a>]
+[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth +1 }}&maxnodes={{ maxnodes }}{% if not physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">+</a>
+/ <a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth -1 }}&maxnodes={{ maxnodes }}{% if not physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">-</a>
 depth]
-[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes + 10 }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">+</a>
-/ <a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes -10 }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">-</a>
+[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes + 10 }}{% if not physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">+</a>
+/ <a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes -10 }}{% if not physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">-</a>
 nodes]
+[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes }}{% if physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">{% if physics %}disable{% else %}enable{% endif %} physics</a>]
 
 <h2>Neighboring clusters</h2>
 clustering: 
@@ -32,7 +33,7 @@ clustering:
 {% if clustering_id == c[0] %}
 {{ c[1] }}
 {% else %}
-<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes }}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
+<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes }}{% if not physics %}&nophysics=true{% endif %}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
 {% endif %}
 {% endfor %}
 
@@ -63,7 +64,7 @@ clustering:
         nodes: nodes,
         edges: edges,
       };
-      var options = {  };
+      var options = { physics: { enabled: {{ physics | lower }} } };
       var network = new vis.Network(container, data, options);
       network.on("doubleClick", function (params) {
         for (n of nodes.get(params.nodes)) {

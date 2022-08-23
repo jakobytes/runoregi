@@ -29,9 +29,10 @@ def show_clustnet():
     clustering = request.args.get('clustering', 0, type=int)
     maxdepth = request.args.get('maxdepth', 1, type=int)
     maxnodes = request.args.get('maxnodes', 20, type=int)
+    physics = not request.args.get('nophysics', None, type=bool)
     result = view.clustnet.render(nro=nro, pos=pos, v_id=v_id,
                                   clustering_id=clustering, maxdepth=maxdepth,
-                                  maxnodes=maxnodes)
+                                  maxnodes=maxnodes, physics=physics)
     return _compact(result)
 
 

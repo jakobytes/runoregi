@@ -54,7 +54,7 @@ def get_cluster_network(db, clust_id, clustering_id=0, maxdepth=3, maxnodes=30):
     edges = db.fetchall()
     return { 'nodes': nodes, 'edges': edges }
 
-def render(nro=None, pos=None, v_id=None, clustering_id=0, maxdepth=1, maxnodes=20):
+def render(nro=None, pos=None, v_id=None, clustering_id=0, maxdepth=1, maxnodes=20, physics=True):
     clustnet, clust_id, clusterings, text, freq = None, None, None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         db.execute(
@@ -75,4 +75,4 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, maxdepth=1, maxnodes=
                            maxdepth=maxdepth, maxnodes=maxnodes,
                            clust_id=clust_id, text=text, freq=freq,
                            clustnet=clustnet, clustering_id=clustering_id,
-                           clusterings=clusterings)
+                           clusterings=clusterings, physics=physics)
