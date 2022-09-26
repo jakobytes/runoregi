@@ -7,7 +7,8 @@ import re
 
 StructuredMetadata = \
     namedtuple('StructuredMetadata',
-               ['p_id', 'nro', 'title', 'location', 'collector', 'year', 'themes'])
+               ['p_id', 'nro', 'collection', 'title', 'location',
+                'collector', 'year', 'themes'])
 
 
 def clean_special_chars(text):
@@ -64,18 +65,22 @@ def get_structured_metadata(
         nro = None, title = True, location = True, collector = True,
         year = True, themes = True):
 
-    def _make_title(nro, osa, _id):
-        if nro.startswith('skvr'):
+    def _make_title(nro, osa, _id, collection):
+        if collection == 'skvr':
             return 'SKVR {} {}'.format(osa, _id)
-        elif nro.startswith('j'):
+        elif collection == 'erab':
+            return _id
+        elif collection == 'jr':
             return 'JR {}'.format(_id)
         elif nro.startswith('kt'):
             return 'Kanteletar {}:{}'.format(int(nro[2:4]), int(nro[4:]))
-        else:
+        elif collection == 'literary':
             return '{} {}'.format(osa, _id)
+        else:
+            return nro
 
     query_lst = [
-        'SELECT DISTINCT poems.p_id, nro,',
+        'SELECT DISTINCT poems.p_id, nro, collection,',
         ('rm_osa.value as osa, rm_id.value as id,' if title else '"", "",'),
         ('GROUP_CONCAT(DISTINCT IFNULL(CONCAT(l2.name, " — ", l.name), l.name)'
          ' SEPARATOR "; "),'\
@@ -137,12 +142,12 @@ def get_structured_metadata(
         query_lst.append('GROUP BY poems.p_id')
     db.execute(' '.join(query_lst))
     results = []
-    for p_id, nro, osa, _id, loc, col, year, themes_str in db.fetchall():
+    for p_id, nro, collection, osa, _id, loc, col, year, themes_str in db.fetchall():
         themes = sorted(
             [tuple(t.split('@')) for t in tt.split('::')] \
             for tt in themes_str.split(';;;'))
-        tit = _make_title(nro, osa, _id) if title else nro
-        results.append(StructuredMetadata(p_id, nro, tit, loc, col, year, themes))
+        tit = _make_title(nro, osa, _id, collection) if title else nro
+        results.append(StructuredMetadata(p_id, nro, collection, tit, loc, col, year, themes))
     return results
 
 
