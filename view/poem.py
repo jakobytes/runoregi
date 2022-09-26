@@ -131,11 +131,13 @@ def get_duplicates_and_parents(db, p_id):
 def get_shared_verses(db, p_id, max, thr, order, verses, clustering_id=0):
     db.execute("""SELECT DISTINCT v.v_id, p2.nro FROM verses v
                   JOIN verse_poem vp ON vp.v_id = v.v_id
+                  LEFT OUTER JOIN verses_cl vcl ON vcl.v_id = v.v_id
                   LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id AND vc.clustering_id = %s
                   LEFT OUTER JOIN v_clust vc2 ON vc2.clust_id = vc.clust_id AND vc2.clustering_id = %s
                   LEFT OUTER JOIN verse_poem vp2 ON vp2.v_id = vc2.v_id
                   LEFT OUTER JOIN poems p2 ON p2.p_id = vp2.p_id 
-                  WHERE v.type='V' AND vp.p_id=%s AND vp2.p_id!=%s;""",
+                  WHERE v.type='V' AND vp.p_id=%s AND vp2.p_id!=%s
+                        AND vcl.text IS NOT NULL AND vcl.text <> "";""",
                   (clustering_id, clustering_id, p_id, p_id))
     results = db.fetchall()
     poem_verses = defaultdict(set)
