@@ -26,7 +26,9 @@ def get_dist_mtx(db, nros):
     db.execute(q)
     for nro1, nro2, sim in db.fetchall():
         m[idx[nro1],idx[nro2]] = sim
-    return squareform(1-m)
+    d = 1-m
+    d[d < 0] = 0
+    return squareform(d)
 
 
 # TODO merge with view.poemdiff.compute_similarity()
