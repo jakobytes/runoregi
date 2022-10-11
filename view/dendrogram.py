@@ -19,7 +19,9 @@ def get_dist_mtx(db, p_ids, dist='al'):
     db.execute(q)
     for p1_id, p2_id, sim in db.fetchall():
         m[idx[p1_id],idx[p2_id]] = sim
-    return squareform(1-m)
+    d = 1-m
+    d[d < 0] = 0
+    return squareform(d)
 
 
 def get_p_ids_by_theme(db, theme_id):
