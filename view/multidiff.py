@@ -14,18 +14,24 @@ from data import Poem, render_themes_tree, render_csv
 from view.dendrogram import cluster    # TODO move it to some common place
 
 
-def get_dist_mtx(db, nros):
+def get_sim_mtx(db, nros):
     nros_str = ','.join(['"{}"'.format(nro) for nro in nros])
     idx = { nro: i for i, nro in enumerate(nros) }
     m = np.zeros(shape=(len(nros), len(nros))) + np.eye(len(nros))
-    q = 'SELECT p1.nro, p2.nro, sim_al FROM p_sim s'\
+    m_onesided = np.zeros(shape=(len(nros), len(nros))) + np.eye(len(nros))
+    q = 'SELECT p1.nro, p2.nro, sim_al, sim_al_l FROM p_sim s'\
         '  JOIN poems p1 ON p1.p_id = s.p1_id'\
         '  JOIN poems p2 ON p2.p_id = s.p2_id'\
         '  WHERE p1.nro IN ({}) AND p2.nro IN ({});'\
         .format(nros_str, nros_str)
     db.execute(q)
-    for nro1, nro2, sim in db.fetchall():
+    for nro1, nro2, sim, sim_l in db.fetchall():
         m[idx[nro1],idx[nro2]] = sim
+        m_onesided[idx[nro1],idx[nro2]] = sim_l
+    return m, m_onesided
+
+
+def sim_to_dist(m):
     d = 1-m
     d[d < 0] = 0
     return squareform(d)
@@ -85,7 +91,8 @@ def merge_alignments(poems, merges, v_sims):
 def render(nros, method='complete', threshold=0.75, fmt='html'):
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         poems = [Poem.from_db_by_nro(db, nro) for nro in nros]
-        d = get_dist_mtx(db, nros)
+        m, m_onesided = get_sim_mtx(db, nros)
+        d = sim_to_dist(m)
 
     v_sims = compute_verse_similarity(poems, threshold)
     clust, ids = None, None
@@ -113,5 +120,6 @@ def render(nros, method='complete', threshold=0.75, fmt='html'):
     else:
         return render_template('multidiff.html', nro=nros, poems=poems,
                                alignment=als, meta_keys=meta_keys,
-                               themes=themes, method=method, threshold=threshold)
+                               themes=themes, method=method, threshold=threshold,
+                               m=m, m_onesided=m_onesided)
 

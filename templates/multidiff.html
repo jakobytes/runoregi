@@ -57,4 +57,40 @@ threshold
   </tr>
   {% endfor %}
 <!-- <tr>{% for s in scores %} <td>{{ s }}</td> {% endfor %}<td></td></tr> -->
+symmetric similarities:<br/>
 </table>
+<hr>
+<small>
+<table>
+<tr>
+<td><b>symmetric similarity</b></td>
+{% for j in range(m.shape[1]) %}
+<td>{{ nro[j] }}</td>
+{% endfor %}
+</tr>
+{% for i in range(m.shape[0]) %}
+<tr>
+<td>{{ nro[i] }}</td>
+{% for j in range(m.shape[1]) %}
+<td>{{ (m[i,j]*100) | int }}%</td>
+{% endfor %}
+</tr>
+{% endfor %}
+</table>
+<table>
+<tr>
+<td><b>one-sided similarity</b></td>
+{% for j in range(m.shape[1]) %}
+<td>{{ nro[j] }}</td>
+{% endfor %}
+</tr><br><br>
+{% for i in range(m.shape[0]) %}
+<tr>
+<td>{{ nro[i] }}</td>
+{% for j in range(m.shape[1]) %}
+<td>{{ (m_onesided[i,j]*100) | int }}%</td>
+{% endfor %}
+</tr>
+{% endfor %}
+</table>
+</small>
