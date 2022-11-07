@@ -72,7 +72,7 @@ symmetric similarities:<br/>
 <tr>
 <td>{{ nro[i] }}</td>
 {% for j in range(m.shape[1]) %}
-<td>{{ (m[i,j]*100) | int }}%</td>
+<td>{% if m[i,j] > 0 %}{{ (m[i,j]*100) | int }}%{% endif %}</td>
 {% endfor %}
 </tr>
 {% endfor %}
@@ -88,7 +88,7 @@ symmetric similarities:<br/>
 <tr>
 <td>{{ nro[i] }}</td>
 {% for j in range(m.shape[1]) %}
-<td>{{ (m_onesided[i,j]*100) | int }}%</td>
+<td>{% if m_onesided[i,j] > 0 %}{{ (m_onesided[i,j]*100) | int }}%{% endif %}</td>
 {% endfor %}
 </tr>
 {% endfor %}
