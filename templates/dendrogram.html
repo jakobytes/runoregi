@@ -1,29 +1,29 @@
 <html>
 <head>
-<title>{{ name }} — Runoregi</title>
+<title>{% if source == "theme" %}{{ name }}{% else %}Denrogram{% endif %} — Runoregi</title>
 </head>
 <body>
-[<a href="/search">index</a>] &gt;
+[<a href="/search">index</a>]
+{% if source == "cluster" %}
+[<a href="/poem?nro={{ nro }}">back to poem</a>]
+{% elif source == "theme" %}
+&gt;
 {% for theme_id, name in upper %}
 <a href="/theme?id={{ theme_id }}">{{ name }}</a> &gt;
 {% endfor %}
 <h1>{{ name }}</h1>
 <p>{{ desc }}</p>
+{% endif %}
 <p>
-similarity metric:
-{% for m_abbr, m_name in [("al", "alignment"), ("cos", "cosine")] %}
-[{% if dist != m_abbr %}<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ m_abbr }}&method={{ method }}">{% endif %}{{ m_name }}{% if dist != m_abbr %}</a>{% endif %}]
-{% endfor %}
-<br/>
 linking method:
 {% for m in ["complete", "average", "single", "centroid", "ward"] %}
-[{% if method != m %}<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ dist }}&method={{ m }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}]
+[{% if method != m %}<a href="{{ links['method-'+m] }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}]
 {% endfor %}
 <br/>
 neighborhood:
-[<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ dist }}&method={{ method }}">none</a>]
-[<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ dist }}&method={{ method }}&nb={{ nb * 0.75 }}">more</a>]
-[<a href="/dendrogram?theme_id={{ theme_id }}&dist={{ dist }}&method={{ method }}&nb={{ nb / 0.75 }}">less</a>]
+[<a href="{{ links['0nb'] }}">none</a>]
+[<a href="{{ links['+nb'] }}">more</a>]
+[<a href="{{ links['-nb'] }}">less</a>]
 </p>
 
 <svg version="1.1"

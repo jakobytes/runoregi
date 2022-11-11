@@ -38,11 +38,15 @@ def show_clustnet():
 
 @application.route('/dendrogram')
 def show_dendrogram():
-    theme_id = request.args.get('theme_id', type=str)
+    source = request.args.get('source', None, type=str)
+    theme_id = request.args.get('theme_id', None, type=str)
+    nro = request.args.get('nro', None, type=str)
     method = request.args.get('method', 'complete', type=str)
     dist = request.args.get('dist', 'al', type=str)
-    nb = request.args.get('nb', type=float)
-    result = view.dendrogram.render(theme_id=theme_id, method=method, dist=dist, nb=nb)
+    nb = request.args.get('nb', 1, type=float)
+    result = view.dendrogram.render(
+        source=source, theme_id=theme_id, nro=nro,
+        method=method, dist=dist, nb=nb)
     return _compact(result)
 
 

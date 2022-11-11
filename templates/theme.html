@@ -17,7 +17,7 @@
 {% endif %}
 {% if poems %}
 <h2>Poems</h2>
-<p><small>[<a href="/dendrogram?theme_id={{ id }}">dendrogram</a>]</small></p>
+<p><small>[<a href="/dendrogram?source=theme&theme_id={{ id }}">dendrogram</a>]</small></p>
 <table>
 {% for (p_id, is_minor), smd in poems %}
 <tr>

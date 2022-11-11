@@ -9,19 +9,92 @@ import config
 from data import get_structured_metadata
 
 
-def get_dist_mtx(db, p_ids, dist='al'):
+# TODO
+# - fix links
+# - remove the "cos" distance option (not available right now)
+
+# FIXME copied from view/poem.py -- remove code duplication!!!
+DEFAULTS = {
+  'nro': None,
+  'theme_id': None,
+  'dist': 'al',
+  'nb': 1,
+  'method': 'complete',
+}
+
+
+def link(source, options, defaults):
+    'Generates a link to the same view with specified option settings.'
+
+    def _str(value):
+        if isinstance(value, list):
+            return ','.join(map(str, value))
+        elif isinstance(value, bool):
+            return str(value).lower()
+        else:
+            return str(value)
+
+    link = '/dendrogram?source={}'.format(source)
+    opt_str = '&'.join('{}={}'.format(key, _str(options[key]))
+                       for key in options if options[key] != defaults[key])
+    if opt_str:
+        return link + '&' + opt_str
+    else:
+        return link
+
+
+def generate_page_links(source, options, defaults):
+    return {
+        '-nb':
+            link(source, dict(options, nb=min(options['nb']+0.1, 1)), defaults),
+        '+nb':
+            link(source, dict(options, nb=max(options['nb']-0.1, 0)), defaults),
+        '0nb':
+            link(source, dict(options, nb=1), defaults),
+        'method-complete':
+            link(source, dict(options, method='complete'), defaults),
+        'method-average':
+            link(source, dict(options, method='average'), defaults),
+        'method-single':
+            link(source, dict(options, method='single'), defaults),
+        'method-centroid':
+            link(source, dict(options, method='centroid'), defaults),
+        'method-ward':
+            link(source, dict(options, method='ward'), defaults)
+    }
+
+# END FIXME
+
+
+def get_dist_mtx(db, p_ids):
     p_ids_str = ','.join(map(str, p_ids))
     idx = { p_id: i for i, p_id in enumerate(p_ids) }
     m = np.zeros(shape=(len(p_ids), len(p_ids))) + np.eye(len(p_ids))
-    q = 'SELECT p1_id, p2_id, sim_{} FROM p_sim'\
+    q = 'SELECT p1_id, p2_id, sim_al FROM p_sim'\
         '  WHERE p1_id IN ({}) AND p2_id IN ({});'\
-        .format(dist, p_ids_str, p_ids_str)
+        .format(p_ids_str, p_ids_str)
     db.execute(q)
     for p1_id, p2_id, sim in db.fetchall():
         m[idx[p1_id],idx[p2_id]] = sim
     d = 1-m
     d[d < 0] = 0
     return squareform(d)
+
+
+def get_p_ids_for_cluster(db, nro):
+    db.execute('SELECT pc2.p_id '
+               'FROM p_clust pc1'
+               '  JOIN poems p1 ON p1.p_id = pc1.p_id'
+               '  JOIN p_clust pc2 ON pc1.clust_id = pc2.clust_id '
+               'WHERE p1.nro = %s;', (nro,))
+    return list(map(itemgetter(0), db.fetchall()))
+
+
+def get_p_ids_by_nros(db, nros):
+    db.execute('SELECT p_id FROM poems '
+               'WHERE nro IN ({});'\
+               .format(','.join(['"{}"'.format(x) for x in nros]),))
+    return list(map(itemgetter(0), db.fetchall()))
 
 
 def get_p_ids_by_theme(db, theme_id):
@@ -31,6 +104,23 @@ def get_p_ids_by_theme(db, theme_id):
         ' WHERE theme_id = %s;',
         (theme_id,))
     return list(map(itemgetter(0), db.fetchall()))
+
+
+def get_theme_info(db, theme_id):
+    db.execute(\
+      'SELECT t4.theme_id, t4.name, t3.theme_id, t3.name,'
+      '       t2.theme_id, t2.name, t1.theme_id, t1.name,'
+      '       t1.description'
+       ' FROM themes t1'
+       '  LEFT OUTER JOIN themes t2 on t1.par_id = t2.t_id'
+       '  LEFT OUTER JOIN themes t3 on t2.par_id = t3.t_id'
+       '  LEFT OUTER JOIN themes t4 on t3.par_id = t4.t_id'
+       ' WHERE t1.theme_id = %s;', (theme_id,));
+    r = db.fetchall()[0]
+    upper = [(r[2*i], r[2*i+1]) for i in range(3) if r[2*i] is not None]
+    name = r[7]
+    desc = r[8]
+    return upper, name, desc
 
 
 def get_expanded_p_ids(db, p_ids, nb):
@@ -109,37 +199,34 @@ def transform_vert(dd, n, smd):
             result.append((x1, y1, x2, y2, x, y, nros1+nros2))
     return result
 
-def render(theme_id=None, method='complete', dist='al', nb=None):
+def render(source=None, **options):
+    links = generate_page_links(source, dict(DEFAULTS, **options), DEFAULTS) 
     p_ids, smd, nt = [], [], 0  # `nt` is the number of poems in the theme
     upper, name, desc = None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        db.execute(\
-          'SELECT t4.theme_id, t4.name, t3.theme_id, t3.name,'
-          '       t2.theme_id, t2.name, t1.theme_id, t1.name,'
-          '       t1.description'
-           ' FROM themes t1'
-           '  LEFT OUTER JOIN themes t2 on t1.par_id = t2.t_id'
-           '  LEFT OUTER JOIN themes t3 on t2.par_id = t3.t_id'
-           '  LEFT OUTER JOIN themes t4 on t3.par_id = t4.t_id'
-           ' WHERE t1.theme_id = %s;', (theme_id,));
-        r = db.fetchall()[0]
-        upper = [(r[2*i], r[2*i+1]) for i in range(3) if r[2*i] is not None]
-        name = r[7]
-        desc = r[8]
-
-        if theme_id is not None:
-            p_ids = get_p_ids_by_theme(db, theme_id)
+        if source == 'theme':
+            upper, name, desc = get_theme_info(db, options['theme_id'])
+            p_ids = get_p_ids_by_theme(db, options['theme_id'])
             thm = set(p_ids)
-        if nb is not None and nb > 0:
-            p_ids.extend(get_expanded_p_ids(db, p_ids, nb))
-            p_ids.sort()
+            if options['nb'] is not None and options['nb'] < 1:
+                p_ids.extend(get_expanded_p_ids(db, p_ids, options['nb']))
+                p_ids.sort()
+        elif source == 'cluster':
+            p_ids = get_p_ids_for_cluster(db, options['nro'])
+            thm = set(p_ids)
+        elif source == 'nros':
+            p_ids = get_p_ids_by_nros(db, options['nro'].split(','))
+            thm = set(p_ids)
         if p_ids:
             smd = get_structured_metadata(db, p_ids = p_ids)
-        d = get_dist_mtx(db, p_ids, dist=dist)
-        clust = cluster(d, method)
+        d = get_dist_mtx(db, p_ids)
+        clust = cluster(d, options['method'])
         ll = scipy.cluster.hierarchy.leaves_list(clust)
         dd = transform_vert(clust, len(p_ids), smd)
-    return render_template('dendrogram.html', theme_id=theme_id, smd=smd,
-        ll=ll, dd=dd, n=len(p_ids), thm=thm, upper=upper, name=name, desc=desc,
-        dist=dist, method=method, nb=nb if nb is not None else 1)
+    return render_template('dendrogram.html', source=source,
+        theme_id=options['theme_id'], smd=smd, ll=ll, dd=dd, n=len(p_ids), thm=thm,
+        upper=upper, name=name, desc=desc, nro=options['nro'],
+        method=options['method'],
+        links=links,
+        nb=options['nb'] if options['nb'] is not None else DEFAULTS['nb'])
 
