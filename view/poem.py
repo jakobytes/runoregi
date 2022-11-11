@@ -127,6 +127,16 @@ def get_duplicates_and_parents(db, p_id):
     return duplicates, parents
 
 
+def get_poem_cluster_info(db, p_id):
+    db.execute(
+        'SELECT clust_id, freq FROM p_clust NATURAL JOIN p_clust_freq'
+        ' WHERE p_id = %s', (p_id,))
+    result = db.fetchall()
+    if result:
+        return result[0]
+    else:
+        return (None, None)
+
 
 def get_shared_verses(db, p_id, max, thr, order, verses, clustering_id=0):
     db.execute("""SELECT DISTINCT v.v_id, p2.nro FROM verses v
@@ -214,12 +224,14 @@ def render(nro, **options):
                               poem.verses)
         verse_themes = get_verse_themes(db, poem.p_id)
         duplicates, parents = get_duplicates_and_parents(db, poem.p_id)
+        p_clust_id, p_clust_size = get_poem_cluster_info(db, poem.p_id)
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text, v.v_id))
     return render_template('poem.html', p=poem, sim_poems=sim,
                            sim_poems_left=sim_l, sim_poems_right=sim_r,
                            verses=verses, refs=refs, options=options,
+                           p_clust_id=p_clust_id, p_clust_size=p_clust_size,
                            themes=render_themes_tree(poem.smd.themes),
                            verse_poems=verse_poems,
                            linked_poems=linked_poems,

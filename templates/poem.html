@@ -64,6 +64,9 @@
 <h2>Similar poems</h2>
 <p><small>[<a href="/multidiff?nro={{ p.smd.nro }},{{ sim_poems | map(attribute=0) | map(attribute='nro') | join(',') }}">compare all</a>]
 [<a href="/poemnet?nro={{ p.smd.nro }}">network view</a>]
+{% if p_clust_id is not none and p_clust_size > 1 %}
+[<a href="/dendrogram?source=cluster&nro={{ p.smd.nro }}">cluster #{{ p_clust_id }} ({{ p_clust_size }} poems)</a>]
+{% endif %}
 </small></p>
 {% endif %}
 
