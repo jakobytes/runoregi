@@ -9,11 +9,50 @@ from shortsim.ngrcos import vectorize
 
 import config
 from data import Poem, render_csv, render_themes_tree
+from utils import link
 
+
+DEFAULTS = {
+  'nro1': None,
+  'nro2': None,
+  't': 0.75,
+  'format': 'html'
+}
 
 COLOR_NORMAL = None
 COLOR_CHARDIFF = 'blue'
 COLOR_LINEDIFF = 'grey'
+
+
+def generate_page_links(args):
+    global DEFAULTS
+
+    def pagelink(**kwargs):
+        return link('poemdiff', dict(args, **kwargs), DEFAULTS)
+
+    return {
+        'csv': pagelink(format='csv'),
+        'tsv': pagelink(format='tsv'),
+        '-t': pagelink(t=max(args['t']-0.05, 0)),
+        '+t': pagelink(t=min(args['t']+0.05, 1)),
+    }
+
+
+def get_sim_mtx(db, nros):
+    nros_str = ','.join(['"{}"'.format(nro) for nro in nros])
+    idx = { nro: i for i, nro in enumerate(nros) }
+    m = np.zeros(shape=(len(nros), len(nros))) + np.eye(len(nros))
+    m_onesided = np.zeros(shape=(len(nros), len(nros))) + np.eye(len(nros))
+    q = 'SELECT p1.nro, p2.nro, sim_al, sim_al_l FROM p_sim s'\
+        '  JOIN poems p1 ON p1.p_id = s.p1_id'\
+        '  JOIN poems p2 ON p2.p_id = s.p2_id'\
+        '  WHERE p1.nro IN ({}) AND p2.nro IN ({});'\
+        .format(nros_str, nros_str)
+    db.execute(q)
+    for nro1, nro2, sim, sim_l in db.fetchall():
+        m[idx[nro1],idx[nro2]] = sim
+        m_onesided[idx[nro1],idx[nro2]] = sim_l
+    return m, m_onesided
 
 
 def compute_similarity(text_1, text_2, threshold):
@@ -25,7 +64,7 @@ def compute_similarity(text_1, text_2, threshold):
     return v_ids, sim
 
 
-def render(nro_1, nro_2, threshold=0.75, fmt='html'):
+def render(**args):
 
     # FIXME code duplication with poem.py!
     def _makecolcomp(value):
@@ -45,11 +84,11 @@ def render(nro_1, nro_2, threshold=0.75, fmt='html'):
     # - some refactoring
     # - bold for captions
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        poem_1 = Poem.from_db_by_nro(db, nro_1)
-        poem_2 = Poem.from_db_by_nro(db, nro_2)
+        poem_1 = Poem.from_db_by_nro(db, args['nro1'])
+        poem_2 = Poem.from_db_by_nro(db, args['nro2'])
     poem_1_text = list(poem_1.text_verses())
     poem_2_text = list(poem_2.text_verses())
-    v_ids, sims = compute_similarity(poem_1_text, poem_2_text, threshold)
+    v_ids, sims = compute_similarity(poem_1_text, poem_2_text, args['t'])
     v_ids_dict = { v_id: i for i, v_id in enumerate(v_ids) }
     al = align(
         poem_1_text,
@@ -63,12 +102,12 @@ def render(nro_1, nro_2, threshold=0.75, fmt='html'):
           else 0,
         opt_fun=max,
         empty=None)
-    if fmt in ('csv', 'tsv'):
+    if args['format'] in ('csv', 'tsv'):
         return render_csv([(x.text if x is not None else None,
                             y.text if y is not None else None,
                             w) for x, y, w in al],
                           header=(poem_1.smd.nro, poem_2.smd.nro, 'sim_cos'),
-                          delimiter='\t' if fmt == 'tsv' else ',')
+                          delimiter='\t' if args['format'] == 'tsv' else ',')
 
     # render HTML
     meta_keys = sorted(list(set(poem_1.meta.keys()) | set(poem_2.meta.keys())))
@@ -114,8 +153,12 @@ def render(nro_1, nro_2, threshold=0.75, fmt='html'):
         raw_sim / len(poem_2_text),
         sum([int(w > 0) for x, y, w in al]) / len(al),
     ]
-    return render_template('poemdiff.html', p1=poem_1, p2=poem_2, threshold=threshold,
-                           meta_keys=meta_keys, alignment=alignment, scores=scores,
-                           themes_1=render_themes_tree(poem_1.smd.themes),
-                           themes_2=render_themes_tree(poem_2.smd.themes))
+    links = generate_page_links(args)
+    data = {
+        'p1': poem_1, 'p2': poem_2, 'meta_keys': meta_keys,
+        'alignment': alignment, 'scores': scores,
+        'themes_1': render_themes_tree(poem_1.smd.themes),
+        'themes_2': render_themes_tree(poem_2.smd.themes)
+    }
+    return render_template('poemdiff.html', args=args, data=data, links=links)
 

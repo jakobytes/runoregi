@@ -34,7 +34,7 @@ def get_similar_verses(db, clust_id, clustering_id=0):
     return dict(results)
 
 
-def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
+def render(**args):
 
     def _group_by_source(verses, smd, simverses):
         '''
@@ -66,7 +66,7 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
         return results
 
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        if nro is not None and pos is not None:
+        if args['nro'] is not None and args['pos'] is not None:
             db.execute(
                 'SELECT v_id, text, nro, clust_id, freq FROM verses'
                 ' NATURAL JOIN verse_poem'
@@ -74,7 +74,7 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
                 ' NATURAL JOIN v_clust'
                 ' NATURAL JOIN v_clust_freq'
                 ' WHERE nro = %s AND pos = %s AND clustering_id = %s;',
-                (nro, pos, clustering_id))
+                (args['nro'], args['pos'], args['clustering_id']))
         elif v_id is not None:
             db.execute(
                 'SELECT v_id, text, nro, clust_id, freq FROM verses'
@@ -82,9 +82,9 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
                 ' NATURAL JOIN poems'
                 ' NATURAL JOIN v_clust'
                 ' NATURAL JOIN v_clust_freq'
-                ' WHERE v_id = %s AND clustering_id = %s;', (v_id, clustering_id))
-        v_id, text, nro, clust_id, freq = db.fetchall()[0]
-        smd = { x.p_id: x for x in get_structured_metadata(db, clust_id=clust_id, clustering_id=clustering_id) }
+                ' WHERE v_id = %s AND clustering_id = %s;', (args['v_id'], args['clustering_id']))
+        args['v_id'], text, args['nro'], clust_id, freq = db.fetchall()[0]
+        smd = { x.p_id: x for x in get_structured_metadata(db, clust_id=clust_id, clustering_id=args['clustering_id']) }
         db.execute(
             'SELECT vp.p_id, vp.pos, vp.v_id, v.text'
             ' FROM v_clust vc'
@@ -92,12 +92,12 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
             '   JOIN verse_poem vp ON v.v_id = vp.v_id'
             ' WHERE vc.clust_id = %s AND clustering_id = %s'
             ' ORDER BY vp.p_id, vp.pos;',
-            (clust_id, clustering_id))
+            (clust_id, args['clustering_id']))
         verses = list(db.fetchall())
         db.execute('SELECT * FROM v_clusterings;')
         clusterings = db.fetchall()
 
-    if fmt in ('csv', 'tsv'):
+    if args['fmt'] in ('csv', 'tsv'):
         return render_csv([
             (smd[p_id].nro, pos, text, smd[p_id].location, smd[p_id].collector,
              '\n'.join(' > '.join(t[1] for t in tt if len(t) >= 2) \
@@ -106,11 +106,18 @@ def render(nro=None, pos=None, v_id=None, clustering_id=0, fmt='html'):
             header=('nro', 'pos', 'text', 'location', 'collector', 'themes'),
             delimiter='\t' if fmt == 'tsv' else ',')
     else:
-        simverses = get_similar_verses(db, clust_id, clustering_id=clustering_id)
+        simverses = get_similar_verses(db, clust_id, clustering_id=args['clustering_id'])
         verses_by_src = _group_by_source(verses, smd, simverses)
-        map_lnk = make_map_link('verse', nro=nro, pos=pos, clustering=clustering_id)
-        return render_template('verse.html', map_lnk=map_lnk, nro=nro, pos=pos,
-                               clust_id=clust_id, text=text, freq=freq,
-                               verses=verses_by_src,
-                               clustering_id=clustering_id, clusterings=clusterings)
+        links = {
+            'map': make_map_link('verse', nro=args['nro'], pos=args['pos'],
+                                 clustering=args['clustering_id'])
+        }
+        data = {
+            'clust_id': clust_id,
+            'text': text,
+            'freq': freq,
+            'verses': verses_by_src,
+            'clusterings': clusterings
+        }
+        return render_template('verse.html', args=args, data=data, links=links)
 

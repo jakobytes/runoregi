@@ -7,14 +7,11 @@ from scipy.spatial.distance import squareform
 
 import config
 from data import get_structured_metadata
+from utils import link
 
 
-# TODO
-# - fix links
-# - remove the "cos" distance option (not available right now)
-
-# FIXME copied from view/poem.py -- remove code duplication!!!
 DEFAULTS = {
+  'source': None,
   'nro': None,
   'theme_id': None,
   'dist': 'al',
@@ -23,47 +20,20 @@ DEFAULTS = {
 }
 
 
-def link(source, options, defaults):
-    'Generates a link to the same view with specified option settings.'
+def generate_page_links(args):
+    global DEFAULTS
 
-    def _str(value):
-        if isinstance(value, list):
-            return ','.join(map(str, value))
-        elif isinstance(value, bool):
-            return str(value).lower()
-        else:
-            return str(value)
+    def pagelink(**kwargs):
+        return link('dendrogram', dict(args, **kwargs), DEFAULTS)
 
-    link = '/dendrogram?source={}'.format(source)
-    opt_str = '&'.join('{}={}'.format(key, _str(options[key]))
-                       for key in options if options[key] != defaults[key])
-    if opt_str:
-        return link + '&' + opt_str
-    else:
-        return link
-
-
-def generate_page_links(source, options, defaults):
-    return {
-        '-nb':
-            link(source, dict(options, nb=min(options['nb']+0.1, 1)), defaults),
-        '+nb':
-            link(source, dict(options, nb=max(options['nb']-0.1, 0)), defaults),
-        '0nb':
-            link(source, dict(options, nb=1), defaults),
-        'method-complete':
-            link(source, dict(options, method='complete'), defaults),
-        'method-average':
-            link(source, dict(options, method='average'), defaults),
-        'method-single':
-            link(source, dict(options, method='single'), defaults),
-        'method-centroid':
-            link(source, dict(options, method='centroid'), defaults),
-        'method-ward':
-            link(source, dict(options, method='ward'), defaults)
+    result = {
+        '-nb': pagelink(nb=min(args['nb']+0.1, 1)),
+        '+nb': pagelink(nb=max(args['nb']-0.1, 0)),
+        '0nb': pagelink(nb=1),
     }
-
-# END FIXME
+    for method in ['complete', 'average', 'single', 'centroid', 'ward']:
+        result['method-{}'.format(method)] = pagelink(method=method)
+    return result
 
 
 def get_dist_mtx(db, p_ids):
@@ -199,34 +169,34 @@ def transform_vert(dd, n, smd):
             result.append((x1, y1, x2, y2, x, y, nros1+nros2))
     return result
 
-def render(source=None, **options):
-    links = generate_page_links(source, dict(DEFAULTS, **options), DEFAULTS) 
+
+def render(**args):
+    links = generate_page_links(args) 
     p_ids, smd, nt = [], [], 0  # `nt` is the number of poems in the theme
     upper, name, desc = None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        if source == 'theme':
-            upper, name, desc = get_theme_info(db, options['theme_id'])
-            p_ids = get_p_ids_by_theme(db, options['theme_id'])
+        if args['source'] == 'theme':
+            upper, name, desc = get_theme_info(db, args['theme_id'])
+            p_ids = get_p_ids_by_theme(db, args['theme_id'])
             thm = set(p_ids)
-            if options['nb'] is not None and options['nb'] < 1:
-                p_ids.extend(get_expanded_p_ids(db, p_ids, options['nb']))
+            if args['nb'] is not None and args['nb'] < 1:
+                p_ids.extend(get_expanded_p_ids(db, p_ids, args['nb']))
                 p_ids.sort()
-        elif source == 'cluster':
-            p_ids = get_p_ids_for_cluster(db, options['nro'])
+        elif args['source'] == 'cluster':
+            p_ids = get_p_ids_for_cluster(db, args['nro'])
             thm = set(p_ids)
-        elif source == 'nros':
-            p_ids = get_p_ids_by_nros(db, options['nro'].split(','))
+        elif args['source'] == 'nros':
+            p_ids = get_p_ids_by_nros(db, args['nro'].split(','))
             thm = set(p_ids)
         if p_ids:
             smd = get_structured_metadata(db, p_ids = p_ids)
         d = get_dist_mtx(db, p_ids)
-        clust = cluster(d, options['method'])
+        clust = cluster(d, args['method'])
         ll = scipy.cluster.hierarchy.leaves_list(clust)
         dd = transform_vert(clust, len(p_ids), smd)
-    return render_template('dendrogram.html', source=source,
-        theme_id=options['theme_id'], smd=smd, ll=ll, dd=dd, n=len(p_ids), thm=thm,
-        upper=upper, name=name, desc=desc, nro=options['nro'],
-        method=options['method'],
-        links=links,
-        nb=options['nb'] if options['nb'] is not None else DEFAULTS['nb'])
+    data = {
+        'smd': smd, 'll': ll, 'dd': dd, 'n': len(p_ids), 'thm': thm,
+        'upper': upper, 'name': name, 'desc': desc
+    }
+    return render_template('dendrogram.html', args=args, data=data, links=links)
 

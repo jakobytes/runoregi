@@ -1,25 +1,25 @@
 <html>
 <head>
-<title>{{ name }} — Runoregi</title>
+<title>{{ data['name'] }} — Runoregi</title>
 </head>
 <body>
 [<a href="/search">index</a>] &gt;
-{% for theme_id, name in upper %}
-<a href="/theme?id={{ theme_id }}">{{ name }}</a> &gt;
+{% for theme_id, name in data['upper'] %}
+<a href="/theme?id={{ theme_id }}">{{ data['name'] }}</a> &gt;
 {% endfor %}
-<h1>{{ name }}</h1>
-{{ desc }}
-{% if subcat %}
+<h1>{{ data['name'] }}</h1>
+{{ data['desc'] }}
+{% if data['subcat'] %}
 <h2>Subcategories</h2>
-{% for d, p, minor, t in subcat %}
+{% for d, p, minor, t in data['subcat'] %}
 {{ p | join('\u2003') }} <a href="/theme?id={{ t[0] }}">{{ t[1] }}</a><br/>
 {% endfor %}
 {% endif %}
-{% if poems %}
+{% if data['poems'] %}
 <h2>Poems</h2>
-<p><small>[<a href="/dendrogram?source=theme&theme_id={{ id }}">dendrogram</a>]</small></p>
+<p><small>[<a href="/dendrogram?source=theme&theme_id={{ args['theme_id'] }}">dendrogram</a>]</small></p>
 <table>
-{% for (p_id, is_minor), smd in poems %}
+{% for (p_id, is_minor), smd in data['poems'] %}
 <tr>
 <td><b>{% if is_minor %}*{% endif %}<a href="/poem?nro={{ smd.nro }}">{{ smd.title }}</a></b></td>
 <td><small>{{ smd.year }}</small></td>

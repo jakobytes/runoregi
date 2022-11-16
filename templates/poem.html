@@ -23,24 +23,24 @@
   .g1 { background-color: #AAAAAA }
 </style>
 [<a target="_parent" href="/">to index</a>]
-<h1>{{ p.smd.title }}</h1>
+<h1>{{ data['poem'].smd.title }}</h1>
 
-<small>{{ p.smd.nro }}</small><br/>
-{{ p.smd.location }}<br/>
-{{ p.smd.year }}&ensp;{{ p.smd.collector }}
+<small>{{ data['poem'].smd.nro }}</small><br/>
+{{ data['poem'].smd.location }}<br/>
+{{ data['poem'].smd.year }}&ensp;{{ data['poem'].smd.collector }}
 
-{% if duplicates %}
+{% if data['duplicates'] %}
 <p>
 <b>Duplicates:</b>
-{% for p in duplicates %}
+{% for p in data['duplicates'] %}
 <a href="/poem?nro={{ p.nro }}">{{ p.title }}</a>
 {% endfor %}
 </p>
 {% endif %}
-{% if parents %}
+{% if data['parents'] %}
 <p>
 <b>Duplicate of:</b>
-{% for p in parents %}
+{% for p in data['parents'] %}
 <a href="/poem?nro={{ p.nro }}">{{ p.title }}</a>
 {% endfor %}
 </p>
@@ -48,7 +48,7 @@
 
 <h2>Metadata</h2>
 <table>
-  {% for key, val in p.meta.items() %}
+  {% for key, val in data['poem'].meta.items() %}
   <tr>
     <td align="right" width="50"><b>{{ key }}&ensp;</b></td>
     <td width="350">{{ val }}</td></tr>
@@ -56,25 +56,25 @@
 </table>
 
 <h2>Themes</h2>
-{% for d, p, minor, t in themes %}
+{% for d, p, minor, t in data['themes'] %}
 {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {% if minor %}<small>{% endif %}<a href="/theme?id={{ t[0] }}">{{ t[1] }}</a>{% if minor %}</small></font>{% endif %}<br/>
 {% endfor %}
 
-{% if sim_poems %}
+{% if data['sim_poems'] %}
 <h2>Similar poems</h2>
-<p><small>[<a href="/multidiff?nro={{ p.smd.nro }},{{ sim_poems | map(attribute=0) | map(attribute='nro') | join(',') }}">compare all</a>]
-[<a href="/poemnet?nro={{ p.smd.nro }}">network view</a>]
-{% if p_clust_id is not none and p_clust_size > 1 %}
-[<a href="/dendrogram?source=cluster&nro={{ p.smd.nro }}">cluster #{{ p_clust_id }} ({{ p_clust_size }} poems)</a>]
+<p><small>[<a href="/multidiff?nro={{ data['poem'].smd.nro }},{{ sim_poems | map(attribute=0) | map(attribute='nro') | join(',') }}">compare all</a>]
+[<a href="/poemnet?nro={{ data['poem'].smd.nro }}">network view</a>]
+{% if data['p_clust_id'] is not none and data['p_clust_size'] > 1 %}
+[<a href="/dendrogram?source=cluster&nro={{ data['poem'].smd.nro }}">cluster #{{ data['p_clust_id'] }} ({{ data['p_clust_size'] }} poems)</a>]
 {% endif %}
 </small></p>
 {% endif %}
 
-<table style="user-select: none">
-{% for sp in sim_poems %}
+<table>
+{% for sp in data['sim_poems'] %}
   <tr>
-    <td align="right">
-    <a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ sp[0].nro }}">{{ sp[0].title }}</a>
+    <td align="right" class="poem_id">
+    <a href="/poemdiff?nro1={{ data['poem'].smd.nro }}&nro2={{ sp[0].nro }}">{{ sp[0].title }}</a>
       &ensp;
     </td>
     <td>
@@ -94,16 +94,16 @@
   {% endfor %}
 </table>
 
-{% if sim_poems_right %}
+{% if data['sim_poems_right'] %}
 <h2>Contains poems</h2>
-<p><small>[<a href="/multidiff?nro={{ p.smd.nro }},{{ sim_poems_right | map(attribute=0) | map(attribute='nro') | join(',') }}">compare all</a>]</small></p>
+<p><small>[<a href="/multidiff?nro={{ data['poem'].smd.nro }},{{ sim_poems_right | map(attribute=0) | map(attribute='nro') | join(',') }}">compare all</a>]</small></p>
 {% endif %}
 
 <table style="user-select: none">
-{% for sp in sim_poems_right %}
+{% for sp in data['sim_poems_right'] %}
   <tr>
     <td align="right">
-    <a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ sp[0].nro }}">{{ sp[0].title }}</a>
+    <a href="/poemdiff?nro1={{ data['poem'].smd.nro }}&nro2={{ sp[0].nro }}">{{ sp[0].title }}</a>
       &ensp;
     </td>
     <td>
@@ -124,18 +124,18 @@
 </table>
 
 
-{% if sim_poems_left %}
+{% if data['sim_poems_left'] %}
 
 <h2>Contained in poems</h2>
 
-<p><small>[<a href="/multidiff?nro={{ p.smd.nro }},{{ sim_poems_left | map(attribute=0) | map(attribute='nro') | join(',') }}">compare all</a>]</small></p>
+<p><small>[<a href="/multidiff?nro={{ data['poem'].smd.nro }},{{ sim_poems_left | map(attribute=0) | map(attribute='nro') | join(',') }}">compare all</a>]</small></p>
 {% endif %}
 
 <table style="user-select: none">
-{% for sp in sim_poems_left %}
+{% for sp in data['sim_poems_left'] %}
   <tr>
     <td align="right">
-    <a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ sp[0].nro }}">{{ sp[0].title }}</a>
+    <a href="/poemdiff?nro1={{ data['poem'].smd.nro }}&nro2={{ sp[0].nro }}">{{ sp[0].title }}</a>
       &ensp;
     </td>
     <td>
@@ -158,16 +158,16 @@
 <h2>Text</h2>
 
 <p><small>
-{% if options['show_verse_themes'] %}[<a href="{{ links['-show_verse_themes'] }}">hide verse-level themes</a>]
+{% if args['show_verse_themes'] %}[<a href="{{ links['-show_verse_themes'] }}">hide verse-level themes</a>]
 {% else %}
 [<a href="{{ links['+show_verse_themes'] }}">show verse-level themes</a>]
 {% endif %}
-{% if options['show_shared_verses'] %}[<a href="{{ links['-show_shared_verses'] }}">hide shared verses matrix</a>]
+{% if args['show_shared_verses'] %}[<a href="{{ links['-show_shared_verses'] }}">hide shared verses matrix</a>]
 {% else %}
 [<a href="{{ links['+show_shared_verses'] }}">show shared verses matrix</a>]
 {% endif %}
 </small></p>
-{% if options['show_shared_verses'] %}
+{% if args['show_shared_verses'] %}
 <p>
     Showing top {{ nr_linked_poems }}
     (<a href="{{ links['-max_similar'] }}">-10</a>/<a href="{{ links['+max_similar'] }}">+10</a>) out of {{ poems_sharing_verses }} poems sharing verses with this one based on the number of shared [
@@ -190,29 +190,29 @@
     ] verses
 </p>
 {% endif %}
-{% if options['show_verse_themes'] %}
+{% if args['show_verse_themes'] %}
 <p><b>Note:</b> Verse-level theme recognition is done using an experimental
 method and the quality of the results is not yet known.
 </p>
 {% endif %}
 <table cellspacing="0" cellpadding="2">
-  {% for v in verses %}
+  {% for v in data['verses'] %}
   <tr>
-    {% if options['show_verse_themes'] %}
-      {% if v[0]-1 in verse_themes %}
-      <td rowspan={{ verse_themes[v[0]-1][0] }} class="g{{ verse_themes[v[0]-1][2] % 2 }}">
-        {{ verse_themes[v[0]-1][1] }}
+    {% if args['show_verse_themes'] %}
+      {% if v[0]-1 in data['verse_themes'] %}
+      <td rowspan={{ data['verse_themes'][v[0]-1][0] }} class="g{{ data['verse_themes'][v[0]-1][2] % 2 }}">
+        {{ data['verse_themes'][v[0]-1][1] }}
       </td>
       {% endif %}
     {% endif %}
     {% if v[3] == "V" %}
       <td bgcolor="{{ v[2] }}">
-        <a name="{{ v[0] }}" href="/verse?nro={{ p.smd.nro }}&pos={{ v[0] }}" title="{{ v[1] }}" class="cn">&nbsp;&nbsp;&nbsp;
+        <a name="{{ v[0] }}" href="/verse?nro={{ data['poem'].smd.nro }}&pos={{ v[0] }}" title="{{ v[1] }}" class="cn">&nbsp;&nbsp;&nbsp;
         </a>
       </td>
       <td align="right" width="35" class="verse_id" id="{{ v[0] }}">&ensp;<sup><small>{{ v[0] }}</small></sup></td>
       <td width="350">
-      {% if v[0] in options['hl'] %}
+      {% if v[0] in args['hl'] %}
         <b>{{ v[4] }}</b>
       {% else %}
         {{ v[4] }}
@@ -220,7 +220,7 @@ method and the quality of the results is not yet known.
       <!-- TODO consider: showing the blue bar again on the right? -->
       <!--
       <td bgcolor="{{ v[2] }}">
-        <a name="{{ v[0] }}" href="/verse?nro={{ p.smd.nro }}&pos={{ v[0] }}" title="{{ v[1] }}" class="cn">&nbsp;&nbsp;&nbsp;
+        <a name="{{ v[0] }}" href="/verse?nro={{ data['poem'].smd.nro }}&pos={{ v[0] }}" title="{{ v[1] }}" class="cn">&nbsp;&nbsp;&nbsp;
         </a>
       </td> -->
     {% else %}
@@ -236,10 +236,10 @@ method and the quality of the results is not yet known.
       {% endif %}
     {% endif %}
     <td>
-    {% if options['show_shared_verses'] %}
-    {% for p2 in linked_poems %}
-        {% if v[5] in verse_poems and p2 in verse_poems[v[5]] %}
-            <a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ p2 }}" class="c{{ loop.index % 13}}" title="{{ p2 }}">&nbsp;&nbsp;&nbsp;</a>
+    {% if args['show_shared_verses'] %}
+    {% for p2 in data['linked_poems'] %}
+        {% if v[5] in data['verse_poems'] and p2 in data['verse_poems'][v[5]] %}
+            <a href="/poemdiff?nro1={{ data['poem'].smd.nro }}&nro2={{ p2 }}" class="c{{ loop.index % 13}}" title="{{ p2 }}">&nbsp;&nbsp;&nbsp;</a>
         {% else %}
             <span class="cn">&nbsp;&nbsp;&nbsp;</span>
         {% endif %}
@@ -252,7 +252,7 @@ method and the quality of the results is not yet known.
   <tr><td></td><td></td>
     <td colspan="3" style="word-wrap: break-word; max-width: 500px">
     <small>
-    {% for r in refs %}
+    {% for r in data['refs'] %}
     {{ r }}<br/>
     {% endfor %}
     </small>
@@ -289,7 +289,7 @@ method and the quality of the results is not yet known.
     for (const el of selected) {
       getTableCell(el).classList.remove('selected')
     }
-    window.open('/passage?nro={{ p.smd.nro }}&start=' + selected[0].id + '&end=' + selected[selected.length - 1].id,'_self')
+    window.open('/passage?nro={{ data['poem'].smd.nro }}&start=' + selected[0].id + '&end=' + selected[selected.length - 1].id,'_self')
   })
 </script>
 

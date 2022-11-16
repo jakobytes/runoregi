@@ -1,23 +1,23 @@
-[<a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ threshold }}&format=csv">CSV</a>
- / <a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ threshold }}&format=tsv">TSV</a>]
-[ <a href="/poemnet?nro={{ nro | join(',') }}">network view</a> ]
+[<a href="{{ links['csv'] }}">CSV</a>
+ / <a href="{{ links['tsv'] }}">TSV</a>]
+[ <a href="/poemnet?nro={{ args['nro'] | join(',') }}">network view</a> ]
 [ linking method:
 {% for m in ["none", "complete", "average", "single"] %}
-{% if method != m %}<a href="/multidiff?nro={{ nro | join (',') }}&method={{ m }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}
+{% if method != m %}<a href="{{ links['method-'+m] }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}
 {% endfor %}][
-<a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ [threshold-0.05, 0] | max }}">lower</a>
+<a href="{{ links['-t'] }}">lower</a>
 /
-<a href="/multidiff?nro={{ nro | join (',') }}&method={{ method }}&t={{ [threshold+0.05, 1] | min }}">higher</a>
+<a href="{{ links['+t'] }}">higher</a>
 threshold
 ]
 <table>
   <tr>
-    {% for p in poems %}
+    {% for p in data['poems'] %}
     <td width="350">
-      {% if loop.index0 > 0 %}<small>[<a href="/poemdiff?nro1={{ poems[loop.index0-1].smd.nro}}&nro2={{ p.smd.nro }}">&lt;~</a>]</small>{% endif %}
+      {% if loop.index0 > 0 %}<small>[<a href="/poemdiff?nro1={{ data['poems'][loop.index0-1].smd.nro}}&nro2={{ p.smd.nro }}">&lt;~</a>]</small>{% endif %}
       <small>[<a href="/poem?nro={{ p.smd.nro }}">to poem</a>]</small>
-      <small>[<a href="/multidiff?nro={{ poems | map(attribute='smd') | map(attribute='nro') | reject('eq', p.smd.nro) | join(',') }}">remove</a>]</small>
-      {% if loop.index0+1 < poems | length %}<small>[<a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ poems[loop.index0+1].smd.nro}}">~&gt;</a>]</small>{% endif %}
+      <small>[<a href="/multidiff?nro={{ data['poems'] | map(attribute='smd') | map(attribute='nro') | reject('eq', p.smd.nro) | join(',') }}">remove</a>]</small>
+      {% if loop.index0+1 < data['poems'] | length %}<small>[<a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ data['poems'][loop.index0+1].smd.nro}}">~&gt;</a>]</small>{% endif %}
       <h2>{{ p.smd.title }}</h2>
       <small> {{ p.smd.nro }}<br /> </small>
       <small> {{ p.smd.location }}<br /> </small>
@@ -25,9 +25,9 @@ threshold
     </td>
     {% endfor %}
   </tr>
-  {% for key in meta_keys %}
+  {% for key in data['meta_keys'] %}
   <tr>
-    {% for p in poems %}
+    {% for p in data['poems'] %}
     <td width="350">
       {% if p.meta[key] is defined %}<small><b>{{ key }}:</b> {{ p.meta[key] }}</small>{% endif %}
     </td>
@@ -35,7 +35,7 @@ threshold
   </tr>
   {% endfor %}
   <tr>
-    {% for p_themes in themes %}
+    {% for p_themes in data['themes'] %}
     <td valign="top">
       <small>
         {% for d, p, minor, t in p_themes %}
@@ -47,7 +47,7 @@ threshold
   </tr>
   <tr>
     <td colspan="3">&nbsp;</td>
-    {% for verses in alignment %}
+    {% for verses in data['alignment'] %}
   </tr>
 
   <tr>
@@ -64,15 +64,15 @@ symmetric similarities:<br/>
 <table>
 <tr>
 <td><b>symmetric similarity</b></td>
-{% for j in range(m.shape[1]) %}
-<td>{{ nro[j] }}</td>
+{% for j in range(data['m'].shape[1]) %}
+<td>{{ args['nro'][j] }}</td>
 {% endfor %}
 </tr>
-{% for i in range(m.shape[0]) %}
+{% for i in range(data['m'].shape[0]) %}
 <tr>
-<td>{{ nro[i] }}</td>
-{% for j in range(m.shape[1]) %}
-<td>{% if m[i,j] > 0 %}{{ (m[i,j]*100) | int }}%{% endif %}</td>
+<td>{{ args['nro'][i] }}</td>
+{% for j in range(data['m'].shape[1]) %}
+<td>{% if data['m'][i,j] > 0 %}{{ (data['m'][i,j]*100) | int }}%{% endif %}</td>
 {% endfor %}
 </tr>
 {% endfor %}
@@ -80,15 +80,15 @@ symmetric similarities:<br/>
 <table>
 <tr>
 <td><b>one-sided similarity</b></td>
-{% for j in range(m.shape[1]) %}
-<td>{{ nro[j] }}</td>
+{% for j in range(data['m'].shape[1]) %}
+<td>{{ args['nro'][j] }}</td>
 {% endfor %}
 </tr><br><br>
-{% for i in range(m.shape[0]) %}
+{% for i in range(data['m'].shape[0]) %}
 <tr>
-<td>{{ nro[i] }}</td>
-{% for j in range(m.shape[1]) %}
-<td>{% if m_onesided[i,j] > 0 %}{{ (m_onesided[i,j]*100) | int }}%{% endif %}</td>
+<td>{{ args['nro'][i] }}</td>
+{% for j in range(data['m'].shape[1]) %}
+<td>{% if data['m_onesided'][i,j] > 0 %}{{ (data['m_onesided'][i,j]*100) | int }}%{% endif %}</td>
 {% endfor %}
 </tr>
 {% endfor %}

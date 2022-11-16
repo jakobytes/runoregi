@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>#{{clust_id}} {{ text }}</title>
+<title>#{{ data['clust_id'] }} {{ data['text'] }}</title>
 <script
     type="text/javascript"
     src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"
@@ -16,24 +16,24 @@
 
 <body>
 
-<h1><small>#{{clust_id}}</small> {{ text }}</h1>
+<h1><small>#{{ data['clust_id'] }}</small> {{ data['text'] }}</h1>
 
-[<a href="/verse?nro={{ nro }}&pos={{ pos }}&physics={{ physics }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">back to cluster</a>]
-[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth +1 }}&maxnodes={{ maxnodes }}{% if not physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">+</a>
-/ <a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth -1 }}&maxnodes={{ maxnodes }}{% if not physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">-</a>
+[<a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">back to cluster</a>]
+[<a href="{{ links['+maxdepth'] }}">+</a>
+/ <a href="{{ links['-maxdepth'] }}">-</a>
 depth]
-[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes + 10 }}{% if not physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">+</a>
-/ <a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes -10 }}{% if not physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">-</a>
+[<a href="{{ links['+maxnodes'] }}">+</a>
+/ <a href="{{ links['-maxnodes'] }}">-</a>
 nodes]
-[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes }}{% if physics %}&nophysics=true{% endif %}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">{% if physics %}disable{% else %}enable{% endif %} physics</a>]
+[<a href="{{ links['*physics'] }}">{% if args['physics'] %}enable{% else %}disable{% endif %} physics</a>]
 
 <h2>Neighboring clusters</h2>
 clustering: 
-{% for c in clusterings %}
-{% if clustering_id == c[0] %}
+{% for c in data['clusterings'] %}
+{% if args['clustering'] == c[0] %}
 {{ c[1] }}
 {% else %}
-<a href="/clustnet?nro={{ nro }}&pos={{ pos }}&maxdepth={{ maxdepth }}&maxnodes={{ maxnodes }}{% if not physics %}&nophysics=true{% endif %}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
+<a href="{{ links['clustering-' ~ c[0]] }}">{{ c[1] }}</a>
 {% endif %}
 {% endfor %}
 
@@ -41,19 +41,20 @@ clustering:
 <script type="text/javascript">
       // create an array with nodes
       var nodes = new vis.DataSet([
-        { id: {{ clust_id }}, label: "#{{ clust_id }} " + {{ text | tojson }}, shape: "box" ,
-          color: "#FFEEAA", title: "{{ freq }} verses",
-          link: "/verse?nro={{ nro }}&pos={{ pos}}"},
-        {% for n in clustnet['nodes'] %}
+        { id: {{ data['clust_id'] }},
+          label: "#{{ data['clust_id'] }} " + {{ data['text'] | tojson }},
+          shape: "box" , color: "#FFEEAA", title: "{{ data['freq'] }} verses",
+          link: "/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}"},
+        {% for n in data['clustnet']['nodes'] %}
           { id: {{ n[0] }}, label: "#{{ n[0] }} " + {{ n[1] | tojson }}, shape: "box",
             title: "{{ n[2] }} verses",
-            link: "/verse?nro={{ n[4] }}&pos={{ n[5] }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}"},
+            link: "/verse?nro={{ n[4] }}&pos={{ n[5] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}"},
         {% endfor %}
       ]);
 
       // create an array with edges
       var edges = new vis.DataSet([
-        {% for e in clustnet['edges'] %}
+        {% for e in data['clustnet']['edges'] %}
           { from: {{ e[0] }}, to: {{ e[1] }}, value: {{ e[2] }} },
         {% endfor %}
       ]);
@@ -64,7 +65,7 @@ clustering:
         nodes: nodes,
         edges: edges,
       };
-      var options = { physics: { enabled: {{ physics | lower }} } };
+      var options = { physics: { enabled: {% if args['nophysics'] %}false{% else %}true{% endif %} }}
       var network = new vis.Network(container, data, options);
       network.on("doubleClick", function (params) {
         for (n of nodes.get(params.nodes)) {

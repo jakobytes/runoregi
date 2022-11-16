@@ -29,10 +29,10 @@ def show_clustnet():
     clustering = request.args.get('clustering', 0, type=int)
     maxdepth = request.args.get('maxdepth', 1, type=int)
     maxnodes = request.args.get('maxnodes', 20, type=int)
-    physics = not request.args.get('nophysics', None, type=bool)
+    nophysics = request.args.get('nophysics', None, type=bool)
     result = view.clustnet.render(nro=nro, pos=pos, v_id=v_id,
-                                  clustering_id=clustering, maxdepth=maxdepth,
-                                  maxnodes=maxnodes, physics=physics)
+                                  clustering=clustering, maxdepth=maxdepth,
+                                  maxnodes=maxnodes, nophysics=nophysics)
     return _compact(result)
 
 
@@ -53,17 +53,17 @@ def show_dendrogram():
 @application.route('/passage')
 def show_passage():
     nro = request.args.get('nro', type=str)
-    start_pos = request.args.get('start', 1, type=int)
-    end_pos = request.args.get('end', 1, type=int)
+    start = request.args.get('start', 1, type=int)
+    end = request.args.get('end', 1, type=int)
     clustering = request.args.get('clustering', 0, type=int)
     dist = request.args.get('dist', 2, type=int)
     context = request.args.get('context', 2, type=int)
     hitfact = request.args.get('hitfact', 0.5, type=float)
-    fmt = request.args.get('format', 'html', type=str)
+    format = request.args.get('format', 'html', type=str)
     result = view.passage.render(
-                 nro, start_pos, end_pos, clustering_id=clustering, dist=dist,
-                 context=context, hitfact=hitfact, fmt=fmt)
-    if fmt in ('csv', 'tsv'):
+                 nro=nro, start=start, end=end, clustering=clustering, dist=dist,
+                 context=context, hitfact=hitfact, format=format)
+    if format in ('csv', 'tsv'):
         return Response(result, mimetype='text/plain')
     else:
         return _compact(result)
@@ -74,18 +74,22 @@ def show_diff():
     nro_1 = request.args.get('nro1', 1, type=str)
     nro_2 = request.args.get('nro2', 1, type=str)
     t = request.args.get('t', 0.75, type=float)
-    fmt = request.args.get('format', 'html', type=str)
-    return _compact(view.poemdiff.render(nro_1, nro_2, threshold=t, fmt=fmt))
+    format = request.args.get('format', 'html', type=str)
+    result = view.poemdiff.render(nro1=nro_1, nro2=nro_2, t=t, format=format)
+    if format in ('csv', 'tsv'):
+        return Response(result, mimetype='text/plain')
+    else:
+        return _compact(result)
 
 @application.route('/multidiff')
 def show_multidiff():
     nros_str = request.args.get('nro', 1, type=str)
     nros = nros_str.split(',')
-    fmt = request.args.get('format', 'html', type=str)
+    format = request.args.get('format', 'html', type=str)
     method = request.args.get('method', 'complete', type=str)
     t = request.args.get('t', 0.75, type=float)
-    result = view.multidiff.render(nros, method=method, threshold=t, fmt=fmt)
-    if fmt in ('csv', 'tsv'):
+    result = view.multidiff.render(nro=nros, method=method, t=t, format=format)
+    if format in ('csv', 'tsv'):
         return Response(result, mimetype='text/plain')
     else:
         return _compact(result)
@@ -101,18 +105,19 @@ def show_poem():
     show_verse_themes = request.args.get('show_verse_themes', False, type=bool)
     show_shared_verses = request.args.get('show_shared_verses', False, type=bool)
     hl = list(map(int, hl_str.split(','))) if hl_str is not None else []
-    return _compact(view.poem.render(nro, hl=hl, max_similar=max_similar,
+    return _compact(view.poem.render(nro=nro, hl=hl, max_similar=max_similar,
                                      sim_thr=sim_thr, sim_order=sim_order,
                                      show_verse_themes=show_verse_themes,
                                      show_shared_verses=show_shared_verses))
 
 @application.route('/poemnet')
 def show_poemnet():
-    nro = request.args.get('nro', None, type=str)
+    nros_str = request.args.get('nro', None, type=str)
+    nro = nros_str.split(',')
     maxdepth = request.args.get('maxdepth', 1, type=int)
     maxnodes = request.args.get('maxnodes', 20, type=int)
     t = request.args.get('t', 0.1, type=float)
-    result = view.poemnet.render(nro, t=t, maxdepth=maxdepth, maxnodes=maxnodes)
+    result = view.poemnet.render(nro=nro, t=t, maxdepth=maxdepth, maxnodes=maxnodes)
     return _compact(result)
 
 
@@ -139,12 +144,12 @@ def show_search():
     themes = request.args.get('themes', False, type=bool)
     meta = request.args.get('meta', False, type=bool)
     return _compact(view.search.render(
-        q, method=method, verses=verses, themes=themes, meta=meta))
+        q=q, method=method, verses=verses, themes=themes, meta=meta))
 
 @application.route('/theme')
 def show_theme():
     theme_id = request.args.get('id', None, type=str)
-    return _compact(view.theme.render(theme_id))
+    return _compact(view.theme.render(theme_id=theme_id))
 
 @application.route('/skvr-themes')
 def show_skvr_static_index():

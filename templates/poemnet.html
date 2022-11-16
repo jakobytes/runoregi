@@ -18,9 +18,9 @@
 
 <h1>Poem network</h1>
 
-[<a href="/{% if nro | length > 1 %}multidiff{% else %}poem{% endif %}?nro={{ nro | join(',') }}">back to {% if nro | length > 1 %}alignment{% else %}poem{% endif %}</a>]
-[<a href="{{ links['+depth'] }}">+</a>
-/ <a href="{{ links['-depth'] }}">-</a>
+[<a href="/{% if args['nro'] | length > 1 %}multidiff{% else %}poem{% endif %}?nro={{ args['nro'] | join(',') }}">back to {% if args['nro'] | length > 1 %}alignment{% else %}poem{% endif %}</a>]
+[<a href="{{ links['+maxdepth'] }}">+</a>
+/ <a href="{{ links['-maxdepth'] }}">-</a>
 depth]
 [<a href="{{ links['+nodes'] }}">+</a>
 / <a href="{{ links['-nodes'] }}">-</a>
@@ -33,19 +33,19 @@ threshold]
 <script type="text/javascript">
       // create an array with nodes
       var nodes = new vis.DataSet([
-        {% for md in smd %}
+        {% for md in data['smd'] %}
           { id: {{ md.p_id }}, label: {{ md.title | tojson }},
-            title: "{{ md.location }}\n{{ md.year }} {{ md.collector }}\n" + {{ tt[md.p_id] | tojson }},
-            shape: "box", {% if md.nro in nro %}color: "#FFEEAA",{% endif %}
+            title: "{{ md.location }}\n{{ md.year }} {{ md.collector }}\n" + {{ data['tt'][md.p_id] | tojson }},
+            shape: "box", {% if md.nro in args['nro'] %}color: "#FFEEAA",{% endif %}
             link: "/poem?nro={{ md.nro }}"},
         {% endfor %}
       ]);
 
       // create an array with edges
       var edges = new vis.DataSet([
-        {% for e in poemnet['edges'] %}
+        {% for e in data['poemnet']['edges'] %}
           { from: {{ e[0] }}, to: {{ e[1] }}, value: {{ e[2] }}, title: "{{ e[2] }}",
-            link: "/poemdiff?nro1={{ nros_by_id[e[0]] }}&nro2={{ nros_by_id[e[1]] }}" },
+            link: "/poemdiff?nro1={{ data['nros_by_id'][e[0]] }}&nro2={{ data['nros_by_id'][e[1]] }}" },
         {% endfor %}
       ]);
 

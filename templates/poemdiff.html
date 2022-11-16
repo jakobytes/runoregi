@@ -1,12 +1,12 @@
 <p>
 [
-<a href="/poemdiff?nro1={{ p1.smd.nro }}&nro2={{ p2.smd.nro }}&t={{ threshold }}&format=csv">CSV</a>
+<a href="{{ links['csv'] }}">CSV</a>
 /
-<a href="/poemdiff?nro1={{ p1.smd.nro }}&nro2={{ p2.smd.nro }}&t={{ threshold }}&format=tsv">TSV</a>
+<a href="{{ links['tsv'] }}">TSV</a>
 ][
-<a href="/poemdiff?nro1={{ p1.smd.nro }}&nro2={{ p2.smd.nro }}&t={{ [threshold-0.05, 0] | max }}">lower</a>
+<a href="{{ links['-t'] }}">lower</a>
 /
-<a href="/poemdiff?nro1={{ p1.smd.nro }}&nro2={{ p2.smd.nro }}&t={{ [threshold+0.05, 1] | min }}">higher</a>
+<a href="{{ links['+t'] }}">higher</a>
 threshold
 ]
 </p>
@@ -15,30 +15,30 @@ threshold
   <tr>
     <td></td><td></td>
     <td>
-      <small>[<a href="/poem?nro={{ p1.smd.nro }}">to poem</a>]</small>
-      <h2>{{ p1.smd.title }}</h2>
-      <small> {{ p1.smd.nro }}<br /> </small>
-      <small> {{ p1.smd.location }}<br /> </small>
-      <small> {{ p1.smd.year }}&nbsp;{{ p1.smd.collector }}<br /> </small>
+      <small>[<a href="/poem?nro={{ data['p1'].smd.nro }}">to poem</a>]</small>
+      <h2>{{ data['p1'].smd.title }}</h2>
+      <small> {{ data['p1'].smd.nro }}<br /> </small>
+      <small> {{ data['p1'].smd.location }}<br /> </small>
+      <small> {{ data['p1'].smd.year }}&nbsp;{{ data['p1'].smd.collector }}<br /> </small>
     </td>
     <td width="30"></td>
     <td>
-      <small>[<a href="/poem?nro={{ p2.smd.nro }}">to poem</a>]</small>
-      <h2>{{ p2.smd.title }}</h2>
-      <small> {{ p2.smd.nro }}<br /> </small>
-      <small> {{ p2.smd.location }}<br /> </small>
-      <small> {{ p2.smd.year }}&nbsp;{{ p2.smd.collector }}<br /> </small>
+      <small>[<a href="/poem?nro={{ data['p2'].smd.nro }}">to poem</a>]</small>
+      <h2>{{ data['p2'].smd.title }}</h2>
+      <small> {{ data['p2'].smd.nro }}<br /> </small>
+      <small> {{ data['p2'].smd.location }}<br /> </small>
+      <small> {{ data['p2'].smd.year }}&nbsp;{{ data['p2'].smd.collector }}<br /> </small>
     </td>
   </tr>
-  {% for key in meta_keys %}
+  {% for key in data['meta_keys'] %}
   <tr>
     <td></td><td></td>
     <td width="350">
-      <small><b>{{ key }}:</b> {{ p1.meta[key] }}</small>
+      <small><b>{{ key }}:</b> {{ data['p1'].meta[key] }}</small>
     </td>
     <td></td>
     <td width="350">
-      <small><b>{{ key }}:</b> {{ p2.meta[key] }}</small>
+      <small><b>{{ key }}:</b> {{ data['p2'].meta[key] }}</small>
     </td>
   </tr>
   {% endfor %}
@@ -46,7 +46,7 @@ threshold
     <td></td><td></td>
     <td valign="top">
       <small>
-        {% for d, p, minor, t in themes_1 %}
+        {% for d, p, minor, t in data['themes_1'] %}
         {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t[1] }}{% if minor %}</font>{% endif %}<br/>
         {% endfor %}
       </small>
@@ -54,7 +54,7 @@ threshold
     <td></td>
     <td valign="top">
       <small>
-        {% for d, p, minor, t in themes_2 %}
+        {% for d, p, minor, t in data['themes_2'] %}
         {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t[1] }}{% if minor %}</font>{% endif %}<br/>
         {% endfor %}
       </small>
@@ -62,7 +62,7 @@ threshold
   </tr>
   <tr>
     <td colspan="5">&nbsp;</td>
-    {% for x, y, w in alignment %}
+    {% for x, y, w in data['alignment'] %}
   </tr>
 
   <tr>
@@ -87,11 +87,11 @@ threshold
     <td colspan="5">
     <hr/>
     <table border="0">
-    <tr><td align="right"><small>raw similarity:</small></td><td><small>{{ '%.1f' % scores[0] }}</small></td></tr>
-    <tr><td align="right"><small>symmetric normalized:</small></td><td><small>{{ (scores[1]*100) | int }} %</small></td></tr>
-    <tr><td align="right"><small>left-normalized:</small></td><td><small>{{ (scores[2]*100) | int }} %</small></td></tr>
-    <tr><td align="right"><small>right-normalized:</small></td><td><small>{{ (scores[3]*100) | int }} %</small></td></tr>
-    <tr><td align="right"><small>old normalization:</small></td><td><small>{{ (scores[4]*100) | int }} %</small></td></tr>
+    <tr><td align="right"><small>raw similarity:</small></td><td><small>{{ '%.1f' % data['scores'][0] }}</small></td></tr>
+    <tr><td align="right"><small>symmetric normalized:</small></td><td><small>{{ (data['scores'][1]*100) | int }} %</small></td></tr>
+    <tr><td align="right"><small>left-normalized:</small></td><td><small>{{ (data['scores'][2]*100) | int }} %</small></td></tr>
+    <tr><td align="right"><small>right-normalized:</small></td><td><small>{{ (data['scores'][3]*100) | int }} %</small></td></tr>
+    <tr><td align="right"><small>old normalization:</small></td><td><small>{{ (data['scores'][4]*100) | int }} %</small></td></tr>
     </table>
     </small>
     </td>

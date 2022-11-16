@@ -12,6 +12,32 @@ import config
 from data import Poem, render_themes_tree, render_csv
 
 from view.dendrogram import cluster    # TODO move it to some common place
+from utils import link
+
+
+DEFAULTS = {
+  'nro': None,
+  'method': 'none',
+  't': 0.75,
+  'format': 'html'
+}
+
+
+def generate_page_links(args):
+    global DEFAULTS
+
+    def pagelink(**kwargs):
+        return link('multidiff', dict(args, **kwargs), DEFAULTS)
+
+    result = {
+        'csv': pagelink(format='csv'),
+        'tsv': pagelink(format='tsv'),
+        '-t': pagelink(t=max(args['t']-0.05, 0)),
+        '+t': pagelink(t=min(args['t']+0.05, 1)),
+    }
+    for method in ['none', 'complete', 'average', 'single']:
+        result['method-{}'.format(method)] = pagelink(method=method)
+    return result
 
 
 def get_sim_mtx(db, nros):
@@ -88,15 +114,15 @@ def merge_alignments(poems, merges, v_sims):
     return alignments[-1]
 
 
-def render(nros, method='complete', threshold=0.75, fmt='html'):
+def render(**args):
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        poems = [Poem.from_db_by_nro(db, nro) for nro in nros]
-        m, m_onesided = get_sim_mtx(db, nros)
+        poems = [Poem.from_db_by_nro(db, nro) for nro in args['nro']]
+        m, m_onesided = get_sim_mtx(db, args['nro'])
         d = sim_to_dist(m)
 
-    v_sims = compute_verse_similarity(poems, threshold)
+    v_sims = compute_verse_similarity(poems, args['t'])
     clust, ids = None, None
-    if method == 'none':
+    if args['method'] == 'none':
         # align the poems from left to right, in the order given by `nros`
         clust = np.zeros(shape=(len(poems)-1, 2))
         for i in range(len(poems)-1):
@@ -105,7 +131,7 @@ def render(nros, method='complete', threshold=0.75, fmt='html'):
         ids = list(range(len(poems)))
     else:
         # arrange the poems using hierarchical clustering
-        clust = cluster(d, method)
+        clust = cluster(d, args['method'])
         ids = scipy.cluster.hierarchy.leaves_list(clust) 
 
     als = merge_alignments(poems, clust[:,:2], v_sims)
@@ -113,13 +139,15 @@ def render(nros, method='complete', threshold=0.75, fmt='html'):
     poems = [poems[i] for i in ids]
     meta_keys = sorted(set([k for p in poems for k in p.meta.keys()]))
     themes = [render_themes_tree(p.smd.themes) for p in poems]
-    if fmt in ('csv', 'tsv'):
+    if args['format'] in ('csv', 'tsv'):
         rows = [((v.text if v else '') for v in row) for row in als]
         return render_csv(rows, header=tuple(p.smd.nro for p in poems),
-                          delimiter='\t' if fmt == 'tsv' else ',')
+                          delimiter='\t' if args['format'] == 'tsv' else ',')
     else:
-        return render_template('multidiff.html', nro=nros, poems=poems,
-                               alignment=als, meta_keys=meta_keys,
-                               themes=themes, method=method, threshold=threshold,
-                               m=m, m_onesided=m_onesided)
+        data = {
+            'alignment': als, 'poems': poems, 'meta_keys': meta_keys,
+            'themes': themes, 'm': m, 'm_onesided': m_onesided
+        }
+        links = generate_page_links(args)
+        return render_template('multidiff.html', args=args, data=data, links=links)
 

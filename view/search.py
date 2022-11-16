@@ -70,19 +70,18 @@ def search_meta(q, method):
     return result
 
 
-def render(q, method='plain', verses=False, themes=False, meta=False):
-    if q is None:
+def render(**args):
+    if args['q'] is None:
         return render_template('search_idx.html', cat = get_root_categories())
     else:
         r_verses, r_themes, r_meta = [], [], []
-        if verses:
-            r_verses = search_verses(q, method)
-        if themes:
-            r_themes = search_themes(q, method)
-        if meta:
-            r_meta = search_meta(q, method)
-        return render_template(
-            'search_results.html', q = q, method = method,
-            verses = verses, themes = themes, meta = meta,
-            r_verses = r_verses, r_themes = r_themes, r_meta = r_meta,
-            limit = config.SEARCH_LIMIT)
+        if args['verses']:
+            r_verses = search_verses(args['q'], args['method'])
+        if args['themes']:
+            r_themes = search_themes(args['q'], args['method'])
+        if args['meta']:
+            r_meta = search_meta(args['q'], args['method'])
+        data = { 'r_verses': r_verses, 'r_themes': r_themes, 'r_meta': r_meta,
+                 'limit': config.SEARCH_LIMIT }
+        return render_template('search_results.html', args=args, data=data, links={})
+

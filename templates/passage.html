@@ -1,31 +1,31 @@
 <h1>Similar passages</h1>
 
-[<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&context={{ context }}&dist={{ dist+1 }}&hitfact={{ hitfact*0.8 }}">more results</a>]
-[<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&context={{ context }}&dist={{ [dist-1, 1] | max }}&hitfact={{ [hitfact*1.25, 1] | min }}">less results</a>]
-[<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&context={{ context+2 }}&dist={{ dist }}&hitfact={{ hitfact }}">more context</a>]
-[<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&context={{ [context-2, 0] | max }}&dist={{ dist }}&hitfact={{ hitfact }}">less context</a>]
-[<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">reset to defaults</a>]
-[<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&context={{ context }}&dist={{ dist }}&hitfact={{ hitfact }}&format=csv">CSV</a>
-/ <a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&context={{ context }}&dist={{ dist }}&hitfact={{ hitfact }}&format=tsv">TSV</a>]
-[<a href="{{ map_lnk }}">map</a>]<br/>
+[<a href="{{ links['+results'] }}">more results</a>]
+[<a href="{{ links['-results'] }}">less results</a>]
+[<a href="{{ links['+context'] }}">more context</a>]
+[<a href="{{ links['-context'] }}">less context</a>]
+[<a href="/passage?nro={{ args['nro'] }}&start={{ args['start'] }}&end={{ args['end'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">reset to defaults</a>]
+[<a href="{{ links['csv'] }}">CSV</a>
+/ <a href="{{ links['tsv'] }}">TSV</a>]
+[<a href="{{ links['map_lnk'] }}">map</a>]<br/>
 clustering: 
-{% for c in clusterings %}
-{% if clustering_id == c[0] %}
+{% for c in data['clusterings'] %}
+{% if args['clustering'] == c[0] %}
 {{ c[1] }}
 {% else %}
-<a href="/passage?nro={{ nro }}&start={{ start }}&end={{ end }}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
+<a href="{{ links['clustering-' ~ c[0]] }}">{{ c[1] }}</a>
 {% endif %}
 {% endfor %}
 
 <table>
   <tr><td><hr/></td></tr>
-  {% for h in hits %}
+  {% for h in data['hits'] %}
   <tr><td{% if h['hl'] %} bgcolor="FFEEAA"{% endif %}>
     <table>
     <tr>
       <td valign="top">
-        <b><a href="/poem?nro={{ smd[h['p_id']].nro }}&hl={{ h['verses'] | selectattr(3) | map(attribute=1) | join(',') }}#{{ h['verses'] | map(attribute=1) | min }}">
-	  {{ smd[h['p_id']].title }}
+        <b><a href="/poem?nro={{ data['smd'][h['p_id']].nro }}&hl={{ h['verses'] | selectattr(3) | map(attribute=1) | join(',') }}#{{ h['verses'] | map(attribute=1) | min }}">
+	  {{ data['smd'][h['p_id']].title }}
 	</a></b>
       </td>
       <td>
@@ -43,9 +43,9 @@ clustering:
     <table>
     <tr>
     <td valign="top" width="400">
-      &emsp;<small>{{ smd[h['p_id']].nro }}</small><br/>
-      &emsp;{{ smd[h['p_id']].location }}<br/>
-      &emsp;{{ smd[h['p_id']].year }}&ensp;{{ smd[h['p_id']].collector }}
+      &emsp;<small>{{ data['smd'][h['p_id']].nro }}</small><br/>
+      &emsp;{{ data['smd'][h['p_id']].location }}<br/>
+      &emsp;{{ data['smd'][h['p_id']].year }}&ensp;{{ data['smd'][h['p_id']].collector }}
     </td>
     <td valign="top" width="400">
       <small>

@@ -8,9 +8,11 @@ from collections import Counter, defaultdict
 
 import config
 from data import Poem, get_structured_metadata, render_themes_tree
+from utils import link
 
 
 DEFAULTS = {
+  'nro': None,
   'sim_order': 'consecutive_rare',
   'max_similar': 50,
   'hl': [],
@@ -19,48 +21,33 @@ DEFAULTS = {
   'show_shared_verses': False
 }
 
-def link(nro, options, defaults):
-    'Generates a link to the same view with specified option settings.'
+def generate_page_links(args):
+    global DEFAULTS
 
-    def _str(value):
-        if isinstance(value, list):
-            return ','.join(map(str, value))
-        elif isinstance(value, bool):
-            return str(value).lower()
-        else:
-            return str(value)
+    def pagelink(**kwargs):
+        return link('poem', dict(args, **kwargs), DEFAULTS)
 
-    link = '/poem?nro={}'.format(nro)
-    opt_str = '&'.join('{}={}'.format(key, _str(options[key]))
-                       for key in options if options[key] != defaults[key])
-    if opt_str:
-        return link + '&' + opt_str
-    else:
-        return link
-
-
-def generate_page_links(nro, options, defaults):
     return {
         '+show_verse_themes':
-            link(nro, dict(options, show_verse_themes=True), defaults),
+            pagelink(show_verse_themes=True),
         '-show_verse_themes':
-            link(nro, dict(options, show_verse_themes=False), defaults),
+            pagelink(show_verse_themes=False),
         '+show_shared_verses':
-            link(nro, dict(options, show_shared_verses=True), defaults),
+            pagelink(show_shared_verses=True),
         '-show_shared_verses':
-            link(nro, dict(options, show_shared_verses=False), defaults),
+            pagelink(show_shared_verses=False),
         'sim_order:consecutive_rare':
-            link(nro, dict(options, sim_order='consecutive_rare'), defaults),
+            pagelink(sim_order='consecutive_rare'),
         'sim_order:consecutive':
-            link(nro, dict(options, sim_order='consecutive'), defaults),
+            pagelink(sim_order='consecutive'),
         'sim_order:rare':
-            link(nro, dict(options, sim_order='rare'), defaults),
+            pagelink(sim_order='rare'),
         'sim_order:any':
-            link(nro, dict(options, sim_order='shared'), defaults),
+            pagelink(sim_order='shared'),
         '+max_similar':
-            link(nro, dict(options, max_similar=options['max_similar']+10), defaults),
+            pagelink(max_similar=args['max_similar']+10),
         '-max_similar':
-            link(nro, dict(options, max_similar=max(options['max_similar']-10, 0)), defaults)
+            pagelink(max_similar=max(args['max_similar']-10, 0))
     }
 
 
@@ -191,8 +178,9 @@ def get_shared_verses(db, p_id, max, thr, order, verses, clustering_id=0):
     return verse_poems, linked_poems_sorted, len(poem_versecounts)
 
 
-def render(nro, **options):
+def render(**args):
     global DEFAULTS
+    args = dict(DEFAULTS, **args)
 
     def _makecolcomp(value):
         result = hex(255-int(value*51))[2:]
@@ -208,10 +196,10 @@ def render(nro, **options):
         b = _makecolcomp(max(val_norm-5, 0))
         return '#'+rg+rg+b
 
-    links = generate_page_links(nro, options, DEFAULTS)
+    links = generate_page_links(args)
     topics, sim_poems, meta, verses, refs = [], [], [], [], []
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        poem = Poem.from_db_by_nro(db, nro)
+        poem = Poem.from_db_by_nro(db, args['nro'])
         title = poem.smd.title
         loc, col, year = poem.smd.location, poem.smd.collector, poem.smd.year
         if poem.refs is not None:
@@ -219,8 +207,8 @@ def render(nro, **options):
         topics = poem.smd.themes
         sim, sim_l, sim_r = get_similar_poems(db, poem.p_id)
         verse_poems, linked_poems, poems_sharing_verses = \
-            get_shared_verses(db, poem.p_id, options['max_similar'],
-                              options['sim_thr'], options['sim_order'],
+            get_shared_verses(db, poem.p_id, args['max_similar'],
+                              args['sim_thr'], args['sim_order'],
                               poem.verses)
         verse_themes = get_verse_themes(db, poem.p_id)
         duplicates, parents = get_duplicates_and_parents(db, poem.p_id)
@@ -228,16 +216,23 @@ def render(nro, **options):
         for i, v in enumerate(poem.verses, 1):
             verses.append((i, v.clustfreq, _makecol(v.clustfreq),
                            v.type, v.text, v.v_id))
-    return render_template('poem.html', p=poem, sim_poems=sim,
-                           sim_poems_left=sim_l, sim_poems_right=sim_r,
-                           verses=verses, refs=refs, options=options,
-                           p_clust_id=p_clust_id, p_clust_size=p_clust_size,
-                           themes=render_themes_tree(poem.smd.themes),
-                           verse_poems=verse_poems,
-                           linked_poems=linked_poems,
-                           poems_sharing_verses=poems_sharing_verses,
-                           nr_linked_poems=len(linked_poems),
-                           verse_themes=verse_themes,
-                           links=links,
-                           duplicates=duplicates, parents=parents)
+    data = {
+      'poem' : poem,
+      'sim_poems': sim,
+      'sim_poems_left': sim_l,
+      'sim_poems_right': sim_r,
+      'verses': verses,
+      'refs': refs,
+      'p_clust_id': p_clust_id,
+      'p_clust_size': p_clust_size,
+      'themes' : render_themes_tree(poem.smd.themes),
+      'verse_poems' : verse_poems,
+      'linked_poems' : linked_poems,
+      'poems_sharing_verses' : poems_sharing_verses,
+      'nr_linked_poems': len(linked_poems),
+      'verse_themes' : verse_themes,
+      'duplicates' : duplicates,
+      'parents' : parents
+    }
+    return render_template('poem.html', args=args, data=data, links=links)
 

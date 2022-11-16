@@ -7,8 +7,41 @@ from data import \
     clean_special_chars, get_structured_metadata, \
     render_themes_tree, render_csv
 from external import make_map_link
+from utils import link
 
 MAX_QUERY_LENGTH = None
+
+DEFAULTS = {
+  'nro': None,
+  'start': None,
+  'end': None,
+  'clustering': 0,
+  'context': 2,
+  'dist': 2,
+  'hitfact': 0.5,
+  'format': 'html'
+}
+
+
+def generate_page_links(args, clusterings):
+    global DEFAULTS
+
+    def pagelink(**kwargs):
+        return link('passage', dict(args, **kwargs), DEFAULTS)
+
+    map_args = { key: val for key, val in args.items() if val != DEFAULTS[key] }
+    result = {
+        'csv': pagelink(format='csv'),
+        'tsv': pagelink(format='tsv'),
+        '-context': pagelink(context=max(args['context']-2, 0)),
+        '+context': pagelink(context=args['context']+2),
+        '-results': pagelink(dist=max(args['dist']-1, 1), hitfact=args['hitfact']*1.25),
+        '+results': pagelink(dist=args['dist']+1, hitfact=args['hitfact']*0.8),
+        'map_lnk' : make_map_link('passage', **map_args)
+    }
+    for c in clusterings:
+        result['clustering-{}'.format(c[0])] = pagelink(clustering=c[0])
+    return result
 
 
 def get_hits(db, nro, start_pos, end_pos, clustering_id=0, dist=2, hitfact=0.5, context=2):
@@ -74,11 +107,11 @@ def get_verses(db, hits):
     return result
 
 
-def render(nro, start_pos, end_pos, clustering_id=0, dist=2, context=2, hitfact=0.5, fmt='html'):
-    if MAX_QUERY_LENGTH is not None and (end_pos - start_pos) > MAX_QUERY_LENGTH:
+def render(**args):
+    if MAX_QUERY_LENGTH is not None and (args['end'] - args['start']) > MAX_QUERY_LENGTH:
         return '<b>Error:</b> passage length currently limited to {} verses!'\
                .format(MAX_QUERY_LENGTH)
-    if end_pos < start_pos:
+    if args['end'] < args['start']:
         return '<b>Error:</b> passage end before the start!'
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         # db.execute(
@@ -93,8 +126,8 @@ def render(nro, start_pos, end_pos, clustering_id=0, dist=2, context=2, hitfact=
         # for i in range(len(clust_ids)):
         #     clust_succ[clust_ids[i]] = set(clust_ids[i+1:])
         hits = get_hits(
-            db, nro, start_pos, end_pos, clustering_id=clustering_id,
-            dist=dist, context=context, hitfact=hitfact)
+            db, args['nro'], args['start'], args['end'], clustering_id=args['clustering'],
+            dist=args['dist'], context=args['context'], hitfact=args['hitfact'])
         if not hits:
             return 'No matching passages found.'
         # get verse information for all relevant verses
@@ -112,12 +145,12 @@ def render(nro, start_pos, end_pos, clustering_id=0, dist=2, context=2, hitfact=
                  pos in h['matches']) \
                     for pos in range(h['interval'][0], h['interval'][1]+1) \
                     if (p_id, pos) in verses]
-            h['hl'] = smd[p_id].nro == nro and start_pos in range(*h['interval'])
+            h['hl'] = smd[p_id].nro == args['nro'] and args['start'] in range(*h['interval'])
             h['themes'] = render_themes_tree(smd[p_id].themes)
         db.execute('SELECT * FROM v_clusterings;')
         clusterings = db.fetchall()
 
-    if fmt in ('csv', 'tsv'):
+    if args['format'] in ('csv', 'tsv'):
         return render_csv([
             (smd[h['p_id']].nro, h['verses'][0][0],
              '\n'.join(map(itemgetter(2), h['verses'])),
@@ -126,14 +159,9 @@ def render(nro, start_pos, end_pos, clustering_id=0, dist=2, context=2, hitfact=
                        for tt in smd[h['p_id']].themes)) \
             for h in hits],
             header=('nro', 'pos', 'snippet', 'location', 'collector', 'themes'),
-            delimiter='\t' if fmt == 'tsv' else ',')
+            delimiter='\t' if args['format'] == 'tsv' else ',')
     else:
-        map_lnk = make_map_link(
-            'passage', nro=nro, start=start_pos, end=end_pos,
-            clustering=clustering_id, dist=dist,
-            context=context, hitfact=hitfact)
-        return render_template(
-            'passage.html', nro=nro, start=start_pos, end=end_pos, dist=dist,
-            context=context, hitfact=hitfact, hits=hits, smd=smd,
-            clustering_id=clustering_id, clusterings=clusterings, map_lnk=map_lnk)
+        links = generate_page_links(args, clusterings)
+        data = { 'smd': smd, 'hits': hits, 'clusterings': clusterings }
+        return render_template('passage.html', args=args, data=data, links=links)
 

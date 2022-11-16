@@ -1,28 +1,28 @@
 <html>
 <head>
-<title>#{{clust_id}} {{ text }}</title>
+<title>#{{ data['clust_id'] }} {{ data['text'] }}</title>
 </head>
 
 <body>
-<h1><small>#{{clust_id}}</small> {{ text }}</h1>
-[<a href="/poem?nro={{ nro }}">back to poem</a>]
-[<a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&format=csv">CSV</a>
-/ <a href="/verse?nro={{ nro }}&pos={{ pos }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}&format=tsv">TSV</a>]
-[<a href="{{ map_lnk }}">map</a>]
-[<a href="/clustnet?nro={{ nro }}&pos={{ pos }}">cluster network</a>]<br/>
+<h1><small>#{{ data['clust_id'] }}</small> {{ data['text'] }}</h1>
+[<a href="/poem?nro={{ args['nro'] }}">back to poem</a>]
+[<a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering_id'] > 0 %}&clustering={{ args['clustering_id'] }}{% endif %}&format=csv">CSV</a>
+/ <a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering_id'] > 0 %}&clustering={{ args['clustering_id'] }}{% endif %}&format=tsv">TSV</a>]
+[<a href="{{ links['map_lnk'] }}">map</a>]
+[<a href="/clustnet?nro={{ args['nro'] }}&pos={{ args['pos'] }}">cluster network</a>]<br/>
 
-<h2>Cluster ({{ freq }})</h2>
+<h2>Cluster ({{ data['freq'] }})</h2>
 clustering: 
-{% for c in clusterings %}
-{% if clustering_id == c[0] %}
+{% for c in data['clusterings'] %}
+{% if args['clustering_id'] == c[0] %}
 {{ c[1] }}
 {% else %}
-<a href="/verse?nro={{ nro }}&pos={{ pos }}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
+<a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
 {% endif %}
 {% endfor %}
 <table>
   <tr><td><hr/></td></tr>
-  {% for v in verses %}
+  {% for v in data['verses'] %}
   <tr><td{% if v[0] == nro %} bgcolor="FFEEAA"{% endif %}>
     <table>
     <tr>
@@ -63,7 +63,7 @@ clustering:
     <small>
     <b>See also: </b>
     {% for sv in v[7] %}
-    <small>#{{ sv[3] }}</small> <a href="/verse?nro={{ sv[0] }}&pos={{ sv[1] }}{% if clustering_id > 0 %}&clustering={{ clustering_id }}{% endif %}">{{ sv[2] }}</a> ({{ sv[4] }})
+    <small>#{{ sv[3] }}</small> <a href="/verse?nro={{ sv[0] }}&pos={{ sv[1] }}{% if args['clustering_id'] > 0 %}&clustering={{ args['clustering_id'] }}{% endif %}">{{ sv[2] }}</a> ({{ sv[4] }})
     {% endfor %}
     </small>
     </td></tr>
