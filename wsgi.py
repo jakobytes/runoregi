@@ -3,7 +3,6 @@ import re
 
 import view.clustnet
 import view.dendrogram
-import view.index
 import view.multidiff
 import view.passage
 import view.poem
@@ -154,8 +153,6 @@ def show_theme():
 @application.route('/skvr-themes')
 def show_skvr_static_index():
     return application.send_static_file('skvr-themes.html')
-#    q = request.args.get('q', 'a', type=str).lower()
-#    return view.index.render(q)
 
 if __name__ == '__main__':
     application.run()

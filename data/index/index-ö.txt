@@ -1,6 +1,0 @@
-t010300_2560	Öitsien pito	skvr07114800
-t020700_1770	Öitsien pito	skvr07114800
-t050400_2530	Öks, töks, törö, mörö	skvr07142130
-t050400_2540	Öntön töntön töyryn löyryn	skvr12102410,skvr12102430,skvr12102440
-t070100_3950	Öykkärit olutta juovat kelpo miehen kellarista	skvr15106000
-t080100_2300	Öntötshkä, möntötshkä	skvr07146270
