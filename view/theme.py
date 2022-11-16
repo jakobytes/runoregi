@@ -7,7 +7,7 @@ import config
 from data import get_structured_metadata, render_themes_tree
 
 
-DEFAULTS = { 'theme_id': None }
+DEFAULTS = { 'id': None }
 
 
 def render(**args):
@@ -21,7 +21,7 @@ def render(**args):
            '  LEFT OUTER JOIN themes t2 on t1.par_id = t2.t_id'
            '  LEFT OUTER JOIN themes t3 on t2.par_id = t3.t_id'
            '  LEFT OUTER JOIN themes t4 on t3.par_id = t4.t_id'
-           ' WHERE t1.theme_id = %s;', (args['theme_id'],));
+           ' WHERE t1.theme_id = %s;', (args['id'],));
         r = db.fetchall()[0]
         upper = [(r[2*i], r[2*i+1]) for i in range(3) if r[2*i] is not None]
         name = r[7]
@@ -36,7 +36,7 @@ def render(**args):
            '  LEFT OUTER JOIN themes t2 on t1.t_id = t2.par_id'
            '  LEFT OUTER JOIN themes t3 on t2.t_id = t3.par_id'
            '  LEFT OUTER JOIN themes t4 on t3.t_id = t4.par_id'
-           ' WHERE t1.theme_id = %s;', (args['theme_id'],));
+           ' WHERE t1.theme_id = %s;', (args['id'],));
         subcat_str = db.fetchall()
         if subcat_str and subcat_str[0][0]:
             subcat_lst = sorted(
@@ -47,7 +47,7 @@ def render(**args):
             'SELECT p_id, is_minor FROM poem_theme'
             ' NATURAL JOIN themes'
             ' WHERE theme_id = %s;',
-            (args['theme_id'],))
+            (args['id'],))
         poems = list(db.fetchall())
         poem_ids = list(map(itemgetter(0), poems))
         if poem_ids:

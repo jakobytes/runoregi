@@ -9,6 +9,15 @@ from data import \
 from external import make_map_link
 
 
+DEFAULTS = {
+  'format': 'html',
+  'nro': None,
+  'pos': 0,
+  'v_id': 0,
+  'clustering': 0
+}
+
+
 def get_similar_verses(db, clust_id, clustering_id=0):
     db.execute(
         'SELECT'
@@ -74,7 +83,7 @@ def render(**args):
                 ' NATURAL JOIN v_clust'
                 ' NATURAL JOIN v_clust_freq'
                 ' WHERE nro = %s AND pos = %s AND clustering_id = %s;',
-                (args['nro'], args['pos'], args['clustering_id']))
+                (args['nro'], args['pos'], args['clustering']))
         elif v_id is not None:
             db.execute(
                 'SELECT v_id, text, nro, clust_id, freq FROM verses'
@@ -82,9 +91,9 @@ def render(**args):
                 ' NATURAL JOIN poems'
                 ' NATURAL JOIN v_clust'
                 ' NATURAL JOIN v_clust_freq'
-                ' WHERE v_id = %s AND clustering_id = %s;', (args['v_id'], args['clustering_id']))
+                ' WHERE v_id = %s AND clustering_id = %s;', (args['v_id'], args['clustering']))
         args['v_id'], text, args['nro'], clust_id, freq = db.fetchall()[0]
-        smd = { x.p_id: x for x in get_structured_metadata(db, clust_id=clust_id, clustering_id=args['clustering_id']) }
+        smd = { x.p_id: x for x in get_structured_metadata(db, clust_id=clust_id, clustering_id=args['clustering']) }
         db.execute(
             'SELECT vp.p_id, vp.pos, vp.v_id, v.text'
             ' FROM v_clust vc'
@@ -92,25 +101,25 @@ def render(**args):
             '   JOIN verse_poem vp ON v.v_id = vp.v_id'
             ' WHERE vc.clust_id = %s AND clustering_id = %s'
             ' ORDER BY vp.p_id, vp.pos;',
-            (clust_id, args['clustering_id']))
+            (clust_id, args['clustering']))
         verses = list(db.fetchall())
         db.execute('SELECT * FROM v_clusterings;')
         clusterings = db.fetchall()
 
-    if args['fmt'] in ('csv', 'tsv'):
+    if args['format'] in ('csv', 'tsv'):
         return render_csv([
             (smd[p_id].nro, pos, text, smd[p_id].location, smd[p_id].collector,
              '\n'.join(' > '.join(t[1] for t in tt if len(t) >= 2) \
                        for tt in smd[p_id].themes)) \
             for p_id, pos, v_id, text in verses],
             header=('nro', 'pos', 'text', 'location', 'collector', 'themes'),
-            delimiter='\t' if fmt == 'tsv' else ',')
+            delimiter='\t' if args['format'] == 'tsv' else ',')
     else:
-        simverses = get_similar_verses(db, clust_id, clustering_id=args['clustering_id'])
+        simverses = get_similar_verses(db, clust_id, clustering_id=args['clustering'])
         verses_by_src = _group_by_source(verses, smd, simverses)
         links = {
             'map': make_map_link('verse', nro=args['nro'], pos=args['pos'],
-                                 clustering=args['clustering_id'])
+                                 clustering=args['clustering'])
         }
         data = {
             'clust_id': clust_id,

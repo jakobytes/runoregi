@@ -5,6 +5,15 @@ import pymysql
 import config
 
 
+DEFAULTS = {
+  'q': None,
+  'method': 'plain',
+  'verses': False,
+  'themes': False,
+  'meta': False,
+}
+
+
 def get_root_categories():
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         themes = defaultdict(lambda: list())

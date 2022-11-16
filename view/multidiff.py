@@ -16,7 +16,7 @@ from utils import link
 
 
 DEFAULTS = {
-  'nro': None,
+  'nro': [],
   'method': 'none',
   't': 0.75,
   'format': 'html'

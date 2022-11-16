@@ -13,8 +13,8 @@ MAX_QUERY_LENGTH = None
 
 DEFAULTS = {
   'nro': None,
-  'start': None,
-  'end': None,
+  'start': 0,
+  'end': 0,
   'clustering': 0,
   'context': 2,
   'dist': 2,

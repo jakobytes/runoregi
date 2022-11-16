@@ -8,7 +8,7 @@ from utils import link
 
 
 DEFAULTS = {
-  'nro': None,
+  'nro': [],
   'maxdepth': 1,
   'maxnodes': 20,
   't': 0.1,

@@ -12,7 +12,7 @@ from utils import link
 
 DEFAULTS = {
   'source': None,
-  'nro': None,
+  'nro': [],
   'theme_id': None,
   'dist': 'al',
   'nb': 1,
