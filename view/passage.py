@@ -114,17 +114,6 @@ def render(**args):
     if args['end'] < args['start']:
         return '<b>Error:</b> passage end before the start!'
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        # db.execute(
-        #     'SELECT clust_id FROM v_clust NATURAL JOIN verse_poem NATURAL JOIN poems'
-        #     ' WHERE nro = %s AND pos BETWEEN %s AND %s;', (nro, start_pos, end_pos))
-        # clust_ids = [r[0] for r in db.fetchall()]
-        # for v_id, clust_id in db.fetchall():
-        #     clust_ids.append(clust_id)
-        # FIXME This is not the right way to check whether the matching
-        # verses occur in the proper order. Need something like an FSA.
-        # clust_succ = {}
-        # for i in range(len(clust_ids)):
-        #     clust_succ[clust_ids[i]] = set(clust_ids[i+1:])
         hits = get_hits(
             db, args['nro'], args['start'], args['end'], clustering_id=args['clustering'],
             dist=args['dist'], context=args['context'], hitfact=args['hitfact'])
