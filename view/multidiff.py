@@ -10,7 +10,7 @@ import config
 from data.poems import Poems
 from methods.verse_sim import compute_verse_similarity
 from methods.hclust import cluster, make_sim_mtx, sim_to_dist
-from utils import link
+from utils import link, render_csv
 
 
 DEFAULTS = {
@@ -109,7 +109,7 @@ def render(**args):
     meta_keys = sorted(set([k for p in poems for k in p.meta.keys()]))
     if args['format'] in ('csv', 'tsv'):
         rows = [((v.text if v else '') for v in row) for row in als]
-        return render_csv(rows, header=tuple(p.nro for p in poems.values()),
+        return render_csv(rows, header=tuple(p.nro for p in poems),
                           delimiter='\t' if args['format'] == 'tsv' else ',')
     else:
         data = {

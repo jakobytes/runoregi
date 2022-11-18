@@ -5,7 +5,7 @@
 <body>
 [<a href="/search">index</a>]
 {% if args['source'] == "cluster" %}
-[<a href="/poem?nro={{ nro }}">back to poem</a>]
+[<a href="/poem?nro={{ args['nro'][0] }}">back to poem</a>]
 {% elif args['source'] == "theme" %}
 &gt;
 {% for type_id in data['types'][args['theme_id']].ancestors | reverse %}
