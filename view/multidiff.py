@@ -3,14 +3,13 @@ import numpy as np
 from operator import itemgetter
 import pymysql
 import scipy.cluster.hierarchy
-from scipy.spatial.distance import squareform
 
 from shortsim.align import align
-from shortsim.ngrcos import vectorize
 
 import config
 from data.poems import Poems
-from view.dendrogram import cluster    # TODO move it to some common place
+from methods.verse_sim import compute_verse_similarity
+from methods.hclust import cluster, make_sim_mtx, sim_to_dist
 from utils import link
 
 
@@ -37,37 +36,6 @@ def generate_page_links(args):
     for method in ['none', 'complete', 'average', 'single']:
         result['method-{}'.format(method)] = pagelink(method=method)
     return result
-
-
-# FIXME code duplication with views.dendrogram.make_dist_mtx()
-def make_sim_mtx(poems):
-    m = np.zeros(shape=(len(poems), len(poems))) + np.eye(len(poems))
-    m_onesided = np.zeros(shape=(len(poems), len(poems))) + np.eye(len(poems))
-    idx = { nro: i for i, nro in enumerate(poems) }
-    for nro in poems:
-        for s in poems[nro].sim_poems:
-            m[idx[nro], idx[s.nro]] = s.sim_al
-            m_onesided[idx[nro], idx[s.nro]] = s.sim_al_l
-    return m, m_onesided
-
-
-def sim_to_dist(m):
-    d = 1-m
-    d[d < 0] = 0
-    return squareform(d)
-
-
-# TODO merge with view.poemdiff.compute_similarity()
-def compute_verse_similarity(poems, threshold):
-    verses = set((v.v_id, v.text_cl if v.text_cl is not None else '') \
-                 for p in poems.values() for v in p.text if v.v_type == 'V')
-    v_ids, v_texts, ngr_ids, m = vectorize(verses)
-    sim = m.dot(m.T)
-    sim[sim < threshold] = 0
-    v_sim = {}
-    for i, j in list(zip(*sim.nonzero())):
-        v_sim[v_ids[i], v_ids[j]] = sim[i,j]
-    return v_sim
 
 
 def merge_alignments(poems, merges, v_sims):
@@ -118,7 +86,8 @@ def render(**args):
         types = poems.get_types(db)
         types.get_names(db)
 
-    m, m_onesided = make_sim_mtx(poems)
+    m = make_sim_mtx(poems)
+    m_onesided = make_sim_mtx(poems, onesided=True)
     d = sim_to_dist(m)
     v_sims = compute_verse_similarity(poems, args['t'])
     clust, ids = None, None

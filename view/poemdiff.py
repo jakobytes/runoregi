@@ -5,10 +5,10 @@ import re
 from subprocess import Popen, PIPE
 
 from shortsim.align import align
-from shortsim.ngrcos import vectorize
 
 import config
 from data.poems import Poems
+from methods.verse_sim import compute_verse_similarity
 from utils import link, render_csv
 
 
@@ -36,15 +36,6 @@ def generate_page_links(args):
         '-t': pagelink(t=max(args['t']-0.05, 0)),
         '+t': pagelink(t=min(args['t']+0.05, 1)),
     }
-
-
-def compute_similarity(text_1, text_2, threshold):
-    verses = set((v.v_id, v.text_cl if v.text_cl is not None else '') \
-                 for v in text_1 + text_2)
-    v_ids, v_texts, ngr_ids, m = vectorize(verses)
-    sim = m.dot(m.T)
-    sim[sim < threshold] = 0
-    return v_ids, sim
 
 
 def render(**args):
@@ -78,18 +69,14 @@ def render(**args):
     poem_2 = poems[args['nro2']]
     poem_1_text = [v for v in poem_1.text if v.v_type == 'V']
     poem_2_text = [v for v in poem_2.text if v.v_type == 'V']
-    v_ids, sims = compute_similarity(poem_1_text, poem_2_text, args['t'])
-    v_ids_dict = { v_id: i for i, v_id in enumerate(v_ids) }
+    sims = compute_verse_similarity(poems, args['t'])
     al = align(
         poem_1_text,
         poem_2_text,
         insdel_cost=0,
         dist_fun=lambda i, j:
-          sims[v_ids_dict[poem_1_text[i].v_id],
-               v_ids_dict[poem_2_text[j].v_id]] \
-          if poem_1_text[i].v_id in v_ids_dict and \
-             poem_2_text[j].v_id in v_ids_dict \
-          else 0,
+          sims[(poem_1_text[i].v_id, poem_2_text[j].v_id)] \
+          if (poem_1_text[i].v_id, poem_2_text[j].v_id) in sims else 0,
         opt_fun=max,
         empty=None)
     if args['format'] in ('csv', 'tsv'):

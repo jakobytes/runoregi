@@ -3,11 +3,11 @@ from operator import itemgetter
 import numpy as np
 import pymysql
 import scipy.cluster.hierarchy
-from scipy.spatial.distance import squareform
 
 import config
 from data.poems import Poems
 from data.types import Types
+from methods.hclust import cluster, make_sim_mtx, sim_to_dist
 from utils import link
 
 
@@ -35,30 +35,6 @@ def generate_page_links(args):
     for method in ['complete', 'average', 'single', 'centroid', 'ward']:
         result['method-{}'.format(method)] = pagelink(method=method)
     return result
-
-
-def make_dist_mtx(poems):
-    m = np.zeros(shape=(len(poems), len(poems))) + np.eye(len(poems))
-    idx = { nro: i for i, nro in enumerate(poems) }
-    for nro in poems:
-        for s in poems[nro].sim_poems:
-            m[idx[nro], idx[s.nro]] = s.sim_al
-    d = 1-m
-    d[d < 0] = 0
-    return squareform(d)
-
-
-def cluster(x, method):
-    if method == 'average':
-        return scipy.cluster.hierarchy.average(x)
-    elif method == 'centroid':
-        return scipy.cluster.hierarchy.centroid(x)
-    elif method == 'complete':
-        return scipy.cluster.hierarchy.complete(x)
-    elif method == 'single':
-        return scipy.cluster.hierarchy.single(x)
-    elif method == 'ward':
-        return scipy.cluster.hierarchy.ward(x)
 
 
 # transform linkages to a vertical dendrogram
@@ -116,7 +92,7 @@ def render(**args):
         poems.get_structured_metadata(db)
         poems.get_similar_poems(db, within=True)
 
-    d = make_dist_mtx(poems)
+    d = sim_to_dist(make_sim_mtx(poems))
     clust = cluster(d, args['method'])
     ll = scipy.cluster.hierarchy.leaves_list(clust)
     dd = transform_vert(clust, len(poems), list(poems))
