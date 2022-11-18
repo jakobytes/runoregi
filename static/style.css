@@ -1,0 +1,27 @@
+#clustnet, #poemnet {
+  width: 100%;
+  height: 750;
+  border: 1px solid lightgray;
+}
+
+.selected {
+  background-color: #FFEEAA
+}
+.cn, .c0, .c1, .c2, .c3, .c4, .c5, .c6, .c7, .c8, .c9, .c10, .c11, .c12 {
+    text-decoration: none
+}
+.c0 { background-color: rgb(235, 172, 35) }
+.c1 { background-color: rgb(184, 0, 88) }
+.c2 { background-color: rgb(0, 140, 249) }
+.c3 { background-color: rgb(0, 110, 0) }
+.c4 { background-color: rgb(0, 187, 173) }
+.c5 { background-color: rgb(209, 99, 230) }
+.c6 { background-color: rgb(178, 69, 2) }
+.c7 { background-color: rgb(255, 146, 135) }
+.c8 { background-color: rgb(89, 84, 214) }
+.c9 { background-color: rgb(0, 198, 248) }
+.c10 { background-color: rgb(135, 133, 0) }
+.c11 { background-color: rgb(0, 167, 108) }
+.c12 { background-color: rgb(189, 189, 189) }
+.g0 { background-color: #DDDDDD }
+.g1 { background-color: #AAAAAA }

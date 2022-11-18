@@ -1,7 +1,9 @@
 <html>
 <head>
 <title>{{ data['types'][args['id']].name }} — Runoregi</title>
+<link rel="stylesheet" href="./static/style.css">
 </head>
+
 <body>
 [<a href="/search">index</a>] &gt;
 {% for t in data['types'][args['id']].ancestors | reverse %}
