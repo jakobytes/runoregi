@@ -90,7 +90,6 @@ def show_poem():
 @application.route('/poemnet')
 def show_poemnet():
     args = getargs(request, view.poemnet.DEFAULTS)
-    print(args)
     result = view.poemnet.render(**args)
     return _compact(result)
 

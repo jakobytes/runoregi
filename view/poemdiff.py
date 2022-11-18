@@ -8,8 +8,8 @@ from shortsim.align import align
 from shortsim.ngrcos import vectorize
 
 import config
-from data import Poem, render_csv, render_themes_tree
-from utils import link
+from data.poems import Poems
+from utils import link, render_csv
 
 
 DEFAULTS = {
@@ -36,23 +36,6 @@ def generate_page_links(args):
         '-t': pagelink(t=max(args['t']-0.05, 0)),
         '+t': pagelink(t=min(args['t']+0.05, 1)),
     }
-
-
-def get_sim_mtx(db, nros):
-    nros_str = ','.join(['"{}"'.format(nro) for nro in nros])
-    idx = { nro: i for i, nro in enumerate(nros) }
-    m = np.zeros(shape=(len(nros), len(nros))) + np.eye(len(nros))
-    m_onesided = np.zeros(shape=(len(nros), len(nros))) + np.eye(len(nros))
-    q = 'SELECT p1.nro, p2.nro, sim_al, sim_al_l FROM p_sim s'\
-        '  JOIN poems p1 ON p1.p_id = s.p1_id'\
-        '  JOIN poems p2 ON p2.p_id = s.p2_id'\
-        '  WHERE p1.nro IN ({}) AND p2.nro IN ({});'\
-        .format(nros_str, nros_str)
-    db.execute(q)
-    for nro1, nro2, sim, sim_l in db.fetchall():
-        m[idx[nro1],idx[nro2]] = sim
-        m_onesided[idx[nro1],idx[nro2]] = sim_l
-    return m, m_onesided
 
 
 def compute_similarity(text_1, text_2, threshold):
@@ -83,11 +66,18 @@ def render(**args):
     # TODO
     # - some refactoring
     # - bold for captions
+    poems = Poems(nros=[args['nro1'], args['nro2']])
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        poem_1 = Poem.from_db_by_nro(db, args['nro1'])
-        poem_2 = Poem.from_db_by_nro(db, args['nro2'])
-    poem_1_text = list(poem_1.text_verses())
-    poem_2_text = list(poem_2.text_verses())
+        poems.get_raw_meta(db)
+        poems.get_structured_metadata(db)
+        poems.get_text(db)
+        types = poems.get_types(db)
+        types.get_names(db)
+
+    poem_1 = poems[args['nro1']]
+    poem_2 = poems[args['nro2']]
+    poem_1_text = [v for v in poem_1.text if v.v_type == 'V']
+    poem_2_text = [v for v in poem_2.text if v.v_type == 'V']
     v_ids, sims = compute_similarity(poem_1_text, poem_2_text, args['t'])
     v_ids_dict = { v_id: i for i, v_id in enumerate(v_ids) }
     al = align(
@@ -106,7 +96,7 @@ def render(**args):
         return render_csv([(x.text if x is not None else None,
                             y.text if y is not None else None,
                             w) for x, y, w in al],
-                          header=(poem_1.smd.nro, poem_2.smd.nro, 'sim_cos'),
+                          header=(args['nro1'], args['nro2'], 'sim_cos'),
                           delimiter='\t' if args['format'] == 'tsv' else ',')
 
     # render HTML
@@ -156,9 +146,7 @@ def render(**args):
     links = generate_page_links(args)
     data = {
         'p1': poem_1, 'p2': poem_2, 'meta_keys': meta_keys,
-        'alignment': alignment, 'scores': scores,
-        'themes_1': render_themes_tree(poem_1.smd.themes),
-        'themes_2': render_themes_tree(poem_2.smd.themes)
+        'alignment': alignment, 'scores': scores, 'types': types
     }
     return render_template('poemdiff.html', args=args, data=data, links=links)
 

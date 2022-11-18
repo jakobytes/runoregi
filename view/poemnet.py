@@ -3,7 +3,7 @@ from operator import itemgetter
 import pymysql
 
 import config
-from data import get_structured_metadata, render_themes_tree
+from data.poems import Poems
 from utils import link
 
 
@@ -37,54 +37,49 @@ def generate_page_links(args):
     }
 
 
-def get_poem_network(db, nro=None, t=0.1, maxdepth=3, maxnodes=30):
+def get_poem_network(db, poems, t=0.1, maxdepth=3, maxnodes=30):
+    poem_depth = { nro: 0 for nro in poems }
     depth = 0
-    db.execute('SELECT p_id FROM poems WHERE nro IN ({})'\
-               .format(','.join('"{}"'.format(x) for x in nro)))
-    nodes = list(map(itemgetter(0), db.fetchall()))
-    nodes_set = set(nodes)
-    while depth < maxdepth and len(nodes) < maxnodes:
+    while depth < maxdepth and len(poems) < maxnodes:
+        # get candidates for new nodes
+        poems.get_similar_poems(db, sim_thr=t)
+        sims = []
+        sims.extend([s for p in poems.values() for s in p.sim_poems \
+                           if s.nro not in poems])
+        sims.sort(reverse=True, key=lambda s: s.sim_al)
+        # for each new poem, store only the highest similarity
+        sims_dict = {}
+        for s in sims:
+            if s.nro not in sims_dict:
+                sims_dict[s.nro] = s
+        # apply the limit on the number of nodes -- choose the best new nodes
+        sims = list(sims_dict.values())[:maxnodes-len(poems)]
         depth += 1
-        nodes_str = ', '.join(map(str, nodes))
-        query = 'SELECT DISTINCT p2_id FROM p_sim s WHERE p1_id IN ({}) AND sim_al > {} ORDER BY sim_al DESC LIMIT %s;'\
-                .format(nodes_str, t)
-        db.execute(query, maxnodes)
-        for row in db.fetchall():
-            if row[0] not in nodes_set:
-                nodes_set.add(row[0])
-                nodes.append(row[0])
-    nodes_str = ', '.join(map(str, nodes))
-    query = \
-        '''SELECT
-          p1_id, p2_id, sim_al
-         FROM
-           p_sim
-         WHERE
-           p1_id IN ({})
-           AND p2_id IN ({})
-           AND sim_al > {}
-         ;'''\
-        .format(nodes_str, nodes_str, t)
-    db.execute(query)
-    edges = db.fetchall()
-    return { 'nodes': nodes, 'edges': edges }
+        for s in sims:
+            poem_depth[s.nro] = depth
+        poems = Poems(nros = list(poems) + [s.nro for s in sims])
+
+    poems.get_similar_poems(db, sim_thr=t, within=True)
+    edges = []
+    for nro, p in poems.items():
+        for s in p.sim_poems:
+            if poem_depth[nro] < poem_depth[s.nro]:
+                edges.append((nro, s.nro, s.sim_al))
+
+    return { 'nodes': poems, 'edges': edges }
 
 
 def render(**args):
     poemnet, smd = None, None
+    poems = Poems(nros=args['nro'])
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        poemnet = get_poem_network(db, **args)
-        smd = get_structured_metadata(db, p_ids=poemnet['nodes'])
-    tt = { md.p_id: '\n'.join(t[-2][1] if t[-1][0] == '*' else t[-1][1] \
-                              for t in md.themes if t != [('',)]) \
-                    for md in smd }
-    nros_by_id = { md.p_id : md.nro for md in smd }
+        poemnet = get_poem_network(
+            db, poems, t=args['t'],
+            maxdepth=args['maxdepth'], maxnodes=args['maxnodes'])
+        poemnet['nodes'].get_structured_metadata(db)
+        types = poemnet['nodes'].get_types(db)
+        types.get_names(db)
     links = generate_page_links(args)
-    data = {
-        'poemnet': poemnet,
-        'smd': smd,
-        'tt': tt,
-        'nros_by_id': nros_by_id
-    }
+    data = { 'poemnet': poemnet, 'types': types }
     return render_template('poemnet.html', args=args, data=data, links=links)
 

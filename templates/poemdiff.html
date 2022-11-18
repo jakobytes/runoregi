@@ -15,17 +15,17 @@ threshold
   <tr>
     <td></td><td></td>
     <td>
-      <small>[<a href="/poem?nro={{ data['p1'].smd.nro }}">to poem</a>]</small>
+      <small>[<a href="/poem?nro={{ data['p1'].nro }}">to poem</a>]</small>
       <h2>{{ data['p1'].smd.title }}</h2>
-      <small> {{ data['p1'].smd.nro }}<br /> </small>
+      <small> {{ data['p1'].nro }}<br /> </small>
       <small> {{ data['p1'].smd.location }}<br /> </small>
       <small> {{ data['p1'].smd.year }}&nbsp;{{ data['p1'].smd.collector }}<br /> </small>
     </td>
     <td width="30"></td>
     <td>
-      <small>[<a href="/poem?nro={{ data['p2'].smd.nro }}">to poem</a>]</small>
+      <small>[<a href="/poem?nro={{ data['p2'].nro }}">to poem</a>]</small>
       <h2>{{ data['p2'].smd.title }}</h2>
-      <small> {{ data['p2'].smd.nro }}<br /> </small>
+      <small> {{ data['p2'].nro }}<br /> </small>
       <small> {{ data['p2'].smd.location }}<br /> </small>
       <small> {{ data['p2'].smd.year }}&nbsp;{{ data['p2'].smd.collector }}<br /> </small>
     </td>
@@ -46,16 +46,16 @@ threshold
     <td></td><td></td>
     <td valign="top">
       <small>
-        {% for d, p, minor, t in data['themes_1'] %}
-        {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t[1] }}{% if minor %}</font>{% endif %}<br/>
+        {% for line in data['p1'].type_tree %}
+        {% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
         {% endfor %}
       </small>
     </td>
     <td></td>
     <td valign="top">
       <small>
-        {% for d, p, minor, t in data['themes_2'] %}
-        {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t[1] }}{% if minor %}</font>{% endif %}<br/>
+        {% for line in data['p2'].type_tree %}
+        {% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
         {% endfor %}
       </small>
     </td>

@@ -9,8 +9,7 @@ from shortsim.align import align
 from shortsim.ngrcos import vectorize
 
 import config
-from data import Poem, render_themes_tree, render_csv
-
+from data.poems import Poems
 from view.dendrogram import cluster    # TODO move it to some common place
 from utils import link
 
@@ -40,20 +39,15 @@ def generate_page_links(args):
     return result
 
 
-def get_sim_mtx(db, nros):
-    nros_str = ','.join(['"{}"'.format(nro) for nro in nros])
-    idx = { nro: i for i, nro in enumerate(nros) }
-    m = np.zeros(shape=(len(nros), len(nros))) + np.eye(len(nros))
-    m_onesided = np.zeros(shape=(len(nros), len(nros))) + np.eye(len(nros))
-    q = 'SELECT p1.nro, p2.nro, sim_al, sim_al_l FROM p_sim s'\
-        '  JOIN poems p1 ON p1.p_id = s.p1_id'\
-        '  JOIN poems p2 ON p2.p_id = s.p2_id'\
-        '  WHERE p1.nro IN ({}) AND p2.nro IN ({});'\
-        .format(nros_str, nros_str)
-    db.execute(q)
-    for nro1, nro2, sim, sim_l in db.fetchall():
-        m[idx[nro1],idx[nro2]] = sim
-        m_onesided[idx[nro1],idx[nro2]] = sim_l
+# FIXME code duplication with views.dendrogram.make_dist_mtx()
+def make_sim_mtx(poems):
+    m = np.zeros(shape=(len(poems), len(poems))) + np.eye(len(poems))
+    m_onesided = np.zeros(shape=(len(poems), len(poems))) + np.eye(len(poems))
+    idx = { nro: i for i, nro in enumerate(poems) }
+    for nro in poems:
+        for s in poems[nro].sim_poems:
+            m[idx[nro], idx[s.nro]] = s.sim_al
+            m_onesided[idx[nro], idx[s.nro]] = s.sim_al_l
     return m, m_onesided
 
 
@@ -66,7 +60,7 @@ def sim_to_dist(m):
 # TODO merge with view.poemdiff.compute_similarity()
 def compute_verse_similarity(poems, threshold):
     verses = set((v.v_id, v.text_cl if v.text_cl is not None else '') \
-                 for p in poems for v in p.text_verses())
+                 for p in poems.values() for v in p.text if v.v_type == 'V')
     v_ids, v_texts, ngr_ids, m = vectorize(verses)
     sim = m.dot(m.T)
     sim[sim < threshold] = 0
@@ -99,7 +93,7 @@ def merge_alignments(poems, merges, v_sims):
         my = (None,) * y_size if y is None else y
         return mx+my
 
-    alignments = [[(v,) for v in p.text_verses()] for p in poems]
+    alignments = [[(v,) for v in p.text if v.v_type == 'V'] for p in poems.values()]
     for i in range(merges.shape[0]):
         al_1 = alignments[int(merges[i,0])]
         al_2 = alignments[int(merges[i,1])]
@@ -115,11 +109,17 @@ def merge_alignments(poems, merges, v_sims):
 
 
 def render(**args):
+    poems = Poems(nros=args['nro'])
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        poems = [Poem.from_db_by_nro(db, nro) for nro in args['nro']]
-        m, m_onesided = get_sim_mtx(db, args['nro'])
-        d = sim_to_dist(m)
+        poems.get_raw_meta(db)
+        poems.get_structured_metadata(db)
+        poems.get_text(db)
+        poems.get_similar_poems(db, within=True)
+        types = poems.get_types(db)
+        types.get_names(db)
 
+    m, m_onesided = make_sim_mtx(poems)
+    d = sim_to_dist(m)
     v_sims = compute_verse_similarity(poems, args['t'])
     clust, ids = None, None
     if args['method'] == 'none':
@@ -136,17 +136,16 @@ def render(**args):
 
     als = merge_alignments(poems, clust[:,:2], v_sims)
 
-    poems = [poems[i] for i in ids]
+    poems = [poems[args['nro'][i]] for i in ids]
     meta_keys = sorted(set([k for p in poems for k in p.meta.keys()]))
-    themes = [render_themes_tree(p.smd.themes) for p in poems]
     if args['format'] in ('csv', 'tsv'):
         rows = [((v.text if v else '') for v in row) for row in als]
-        return render_csv(rows, header=tuple(p.smd.nro for p in poems),
+        return render_csv(rows, header=tuple(p.nro for p in poems.values()),
                           delimiter='\t' if args['format'] == 'tsv' else ',')
     else:
         data = {
             'alignment': als, 'poems': poems, 'meta_keys': meta_keys,
-            'themes': themes, 'm': m, 'm_onesided': m_onesided
+            'types': types, 'm': m, 'm_onesided': m_onesided
         }
         links = generate_page_links(args)
         return render_template('multidiff.html', args=args, data=data, links=links)

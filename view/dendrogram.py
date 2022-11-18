@@ -6,7 +6,8 @@ import scipy.cluster.hierarchy
 from scipy.spatial.distance import squareform
 
 import config
-from data import get_structured_metadata
+from data.poems import Poems
+from data.types import Types
 from utils import link
 
 
@@ -15,7 +16,7 @@ DEFAULTS = {
   'nro': [],
   'theme_id': None,
   'dist': 'al',
-  'nb': 1,
+  'nb': 1.0,
   'method': 'complete',
 }
 
@@ -36,70 +37,15 @@ def generate_page_links(args):
     return result
 
 
-def get_dist_mtx(db, p_ids):
-    p_ids_str = ','.join(map(str, p_ids))
-    idx = { p_id: i for i, p_id in enumerate(p_ids) }
-    m = np.zeros(shape=(len(p_ids), len(p_ids))) + np.eye(len(p_ids))
-    q = 'SELECT p1_id, p2_id, sim_al FROM p_sim'\
-        '  WHERE p1_id IN ({}) AND p2_id IN ({});'\
-        .format(p_ids_str, p_ids_str)
-    db.execute(q)
-    for p1_id, p2_id, sim in db.fetchall():
-        m[idx[p1_id],idx[p2_id]] = sim
+def make_dist_mtx(poems):
+    m = np.zeros(shape=(len(poems), len(poems))) + np.eye(len(poems))
+    idx = { nro: i for i, nro in enumerate(poems) }
+    for nro in poems:
+        for s in poems[nro].sim_poems:
+            m[idx[nro], idx[s.nro]] = s.sim_al
     d = 1-m
     d[d < 0] = 0
     return squareform(d)
-
-
-def get_p_ids_for_cluster(db, nro):
-    db.execute('SELECT pc2.p_id '
-               'FROM p_clust pc1'
-               '  JOIN poems p1 ON p1.p_id = pc1.p_id'
-               '  JOIN p_clust pc2 ON pc1.clust_id = pc2.clust_id '
-               'WHERE p1.nro = %s;', (nro,))
-    return list(map(itemgetter(0), db.fetchall()))
-
-
-def get_p_ids_by_nros(db, nros):
-    db.execute('SELECT p_id FROM poems '
-               'WHERE nro IN ({});'\
-               .format(','.join(['"{}"'.format(x) for x in nros]),))
-    return list(map(itemgetter(0), db.fetchall()))
-
-
-def get_p_ids_by_theme(db, theme_id):
-    db.execute(\
-        'SELECT p_id, is_minor FROM poem_theme'
-        ' NATURAL JOIN themes'
-        ' WHERE theme_id = %s;',
-        (theme_id,))
-    return list(map(itemgetter(0), db.fetchall()))
-
-
-def get_theme_info(db, theme_id):
-    db.execute(\
-      'SELECT t4.theme_id, t4.name, t3.theme_id, t3.name,'
-      '       t2.theme_id, t2.name, t1.theme_id, t1.name,'
-      '       t1.description'
-       ' FROM themes t1'
-       '  LEFT OUTER JOIN themes t2 on t1.par_id = t2.t_id'
-       '  LEFT OUTER JOIN themes t3 on t2.par_id = t3.t_id'
-       '  LEFT OUTER JOIN themes t4 on t3.par_id = t4.t_id'
-       ' WHERE t1.theme_id = %s;', (theme_id,));
-    r = db.fetchall()[0]
-    upper = [(r[2*i], r[2*i+1]) for i in range(3) if r[2*i] is not None]
-    name = r[7]
-    desc = r[8]
-    return upper, name, desc
-
-
-def get_expanded_p_ids(db, p_ids, nb):
-    p_ids_str = ','.join(map(str, p_ids))
-    q = 'SELECT DISTINCT p2_id FROM p_sim'\
-        '  WHERE p1_id IN ({}) AND p2_id NOT IN ({}) AND sim_al >= {};'\
-        .format(p_ids_str, p_ids_str, nb)
-    db.execute(q)
-    return list(map(itemgetter(0), db.fetchall()))
 
 
 def cluster(x, method):
@@ -116,7 +62,7 @@ def cluster(x, method):
 
 
 # transform linkages to a vertical dendrogram
-def transform_vert(dd, n, smd):
+def transform_vert(dd, n, nros):
 
     def tx(x):
         return int(400*(1-x)+20)
@@ -137,39 +83,50 @@ def transform_vert(dd, n, smd):
             y2 = ty(ill[int(dd[i,1])]) if dd[i,1] < n else result[int(dd[i,1])-n][5]
             x = tx(dd[i,2])
             y = (y1 + y2) // 2
-            nros1 = [smd[int(dd[i,0])].nro] if dd[i,0] < n else result[int(dd[i,0])-n][6]
-            nros2 = [smd[int(dd[i,1])].nro] if dd[i,1] < n else result[int(dd[i,1])-n][6]
+            nros1 = [nros[int(dd[i,0])]] if dd[i,0] < n else result[int(dd[i,0])-n][6]
+            nros2 = [nros[int(dd[i,1])]] if dd[i,1] < n else result[int(dd[i,1])-n][6]
             result.append((x1, y1, x2, y2, x, y, nros1+nros2))
     return result
 
 
 def render(**args):
-    links = generate_page_links(args) 
-    p_ids, smd, nt = [], [], 0  # `nt` is the number of poems in the theme
-    upper, name, desc = None, None, None
+    poems, types, inner = None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         if args['source'] == 'theme':
-            upper, name, desc = get_theme_info(db, args['theme_id'])
-            p_ids = get_p_ids_by_theme(db, args['theme_id'])
-            thm = set(p_ids)
-            if args['nb'] is not None and args['nb'] < 1:
-                p_ids.extend(get_expanded_p_ids(db, p_ids, args['nb']))
-                p_ids.sort()
+            types = Types(ids=[args['theme_id']])
+            types.get_descriptions(db)
+            nros, minor_nros = types.get_poem_ids(db, minor=True)
+            poems = Poems(nros=nros+minor_nros)
+            types.get_ancestors(db, add=True)
+            types.get_names(db)
         elif args['source'] == 'cluster':
-            p_ids = get_p_ids_for_cluster(db, args['nro'])
-            thm = set(p_ids)
+            poems = Poems(nros=[args['nro'][0]])
+            poems.get_poem_cluster_info(db)
+            poems = Poems.get_by_cluster(db, poems[args['nro'][0]].p_clust_id)
         elif args['source'] == 'nros':
-            p_ids = get_p_ids_by_nros(db, args['nro'].split(','))
-            thm = set(p_ids)
-        if p_ids:
-            smd = get_structured_metadata(db, p_ids = p_ids)
-        d = get_dist_mtx(db, p_ids)
-        clust = cluster(d, args['method'])
-        ll = scipy.cluster.hierarchy.leaves_list(clust)
-        dd = transform_vert(clust, len(p_ids), smd)
+            poems = Poems(nros=args['nro'])
+        inner = set(poems)
+        if args['nb'] is not None and args['nb'] < 1:
+            poems.get_similar_poems(db, sim_thr=args['nb'])
+            new_nros = set(poems)
+            for nro in poems:
+                for s in poems[nro].sim_poems:
+                    new_nros.add(s.nro)
+            poems = Poems(nros=new_nros)
+        poems.get_structured_metadata(db)
+        poems.get_similar_poems(db, within=True)
+
+    d = make_dist_mtx(poems)
+    clust = cluster(d, args['method'])
+    ll = scipy.cluster.hierarchy.leaves_list(clust)
+    dd = transform_vert(clust, len(poems), list(poems))
     data = {
-        'smd': smd, 'll': ll, 'dd': dd, 'n': len(p_ids), 'thm': thm,
-        'upper': upper, 'name': name, 'desc': desc
+        'poems': poems,
+        'nros': list(poems),
+        'types': types,
+        'inner': inner,
+        'll': ll, 'dd': dd, 'n': len(poems)
     }
+    links = generate_page_links(args) 
     return render_template('dendrogram.html', args=args, data=data, links=links)
 

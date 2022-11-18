@@ -14,12 +14,12 @@ threshold
   <tr>
     {% for p in data['poems'] %}
     <td width="350">
-      {% if loop.index0 > 0 %}<small>[<a href="/poemdiff?nro1={{ data['poems'][loop.index0-1].smd.nro}}&nro2={{ p.smd.nro }}">&lt;~</a>]</small>{% endif %}
-      <small>[<a href="/poem?nro={{ p.smd.nro }}">to poem</a>]</small>
-      <small>[<a href="/multidiff?nro={{ data['poems'] | map(attribute='smd') | map(attribute='nro') | reject('eq', p.smd.nro) | join(',') }}">remove</a>]</small>
-      {% if loop.index0+1 < data['poems'] | length %}<small>[<a href="/poemdiff?nro1={{ p.smd.nro }}&nro2={{ data['poems'][loop.index0+1].smd.nro}}">~&gt;</a>]</small>{% endif %}
+      {% if loop.index0 > 0 %}<small>[<a href="/poemdiff?nro1={{ data['poems'][loop.index0-1].nro}}&nro2={{ p.nro }}">&lt;~</a>]</small>{% endif %}
+      <small>[<a href="/poem?nro={{ p.nro }}">to poem</a>]</small>
+      <small>[<a href="/multidiff?nro={{ data['poems'] | map(attribute='nro') | reject('eq', p.nro) | join(',') }}">remove</a>]</small>
+      {% if loop.index0+1 < data['poems'] | length %}<small>[<a href="/poemdiff?nro1={{ p.nro }}&nro2={{ data['poems'][loop.index0+1].nro}}">~&gt;</a>]</small>{% endif %}
       <h2>{{ p.smd.title }}</h2>
-      <small> {{ p.smd.nro }}<br /> </small>
+      <small> {{ p.nro }}<br /> </small>
       <small> {{ p.smd.location }}<br /> </small>
       <small> {{ p.smd.year }}&nbsp;{{ p.smd.collector }}</small>
     </td>
@@ -35,11 +35,11 @@ threshold
   </tr>
   {% endfor %}
   <tr>
-    {% for p_themes in data['themes'] %}
+    {% for p in data['poems'] %}
     <td valign="top">
       <small>
-        {% for d, p, minor, t in p_themes %}
-        {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t[1] }}{% if minor %}</font>{% endif %}<br/>
+        {% for line in p.type_tree %}
+        {% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
         {% endfor %}
       </small>
     </td>

@@ -1,7 +1,10 @@
+from collections import defaultdict
 from flask import render_template
 import pymysql
 
 import config
+from data.verses import \
+    get_clusterings, get_verses, get_verse_cluster_neighbors
 from utils import link
 
 
@@ -38,80 +41,40 @@ def generate_page_links(args, clusterings):
         result['clustering-{}'.format(c[0])] = pagelink(clustering=c[0])
     return result
 
-# FIXME this is partially duplicate with get_similar_verses()
-# (not exactly the same, but some queries might be redundant)
 def get_cluster_network(db, clust_id, clustering_id=0, maxdepth=3, maxnodes=30):
     nodes_set = { clust_id }
     nodes = []
+    edges = defaultdict(lambda: 0)
+
     depth = 0
     while depth < maxdepth and len(nodes) < maxnodes:
+        verses = get_verse_cluster_neighbors(
+            db, clust_id=tuple(nodes_set), clustering_id=clustering_id,
+            by_cluster=True, limit=maxnodes-len(nodes_set))
+        for v1, v2, sim in verses:
+            if v2.clust_id not in nodes_set:
+                nodes_set.add(v2.clust_id)
+                nodes.append(v2)
+            edges[(v1.clust_id, v2.clust_id)] += sim
         depth += 1
-        node_ids = ', '.join(map(str, nodes_set))
-        query = \
-            '''SELECT DISTINCT vc2.clust_id, v2.text, vcf2.freq, p2.nro, vp2.pos
-             FROM
-               v_sim s
-               JOIN v_clust vc1 ON s.v1_id = vc1.v_id AND vc1.clustering_id = %s
-               JOIN verses v2 ON s.v2_id = v2.v_id
-               JOIN v_clust vc2 ON s.v2_id = vc2.v_id AND vc2.clustering_id = %s
-               JOIN v_clust_freq vcf2 ON vc2.clust_id = vcf2.clust_id AND vcf2.clustering_id = %s
-               JOIN verse_poem vp2 ON v2.v_id = vp2.v_id
-               JOIN poems p2 ON vp2.p_id = p2.p_id
-             WHERE
-               vc1.clust_id IN ({})
-               AND vc2.clust_id <> vc1.clust_id
-             GROUP BY
-               vc2.clust_id
-             ORDER BY vcf2.freq DESC
-             LIMIT %s;'''.format(node_ids)
-        db.execute(query, (clustering_id, clustering_id, clustering_id, maxnodes))
-        for c_id, text, freq, nro, pos in db.fetchall():
-            if c_id not in nodes_set:
-                nodes_set.add(c_id)
-                nodes.append((c_id, text, freq, depth, nro, pos))
-    node_ids = ', '.join(map(str, nodes_set))
-    # FIXME inserting node_ids directly to db.execute() throws an error,
-    # dunno why
-    query = \
-        '''SELECT
-          vc1.clust_id, vc2.clust_id, SUM(s.sim_cos)
-         FROM
-           v_sim s
-           JOIN v_clust vc1 ON s.v1_id = vc1.v_id AND vc1.clustering_id = %s
-           JOIN v_clust vc2 ON s.v2_id = vc2.v_id AND vc2.clustering_id = %s
-         WHERE
-           vc1.clust_id IN ({})
-           AND vc2.clust_id IN ({})
-           AND vc1.clust_id < vc2.clust_id
-         GROUP BY vc1.clust_id, vc2.clust_id;'''\
-        .format(node_ids, node_ids)
-    db.execute(query, (clustering_id, clustering_id))
-    edges = db.fetchall()
+
+    edges = [(c1_id, c2_id, sim) for (c1_id, c2_id), sim in edges.items()]
     return { 'nodes': nodes, 'edges': edges }
 
 
 def render(**args):
-    clustnet, clust_id, clusterings, text, freq = None, None, None, None, None
+    clustnet, clusterings, verse = None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        db.execute(
-            'SELECT v_id, text, nro, clust_id, freq FROM verses'
-            ' NATURAL JOIN verse_poem'
-            ' NATURAL JOIN poems'
-            ' NATURAL JOIN v_clust'
-            ' NATURAL JOIN v_clust_freq'
-            ' WHERE nro = %s AND pos = %s AND clustering_id = %s;',
-            (args['nro'], args['pos'], args['clustering']))
-        v_id, text, nro, clust_id, freq = db.fetchall()[0]
-        db.execute('SELECT * FROM v_clusterings;')
-        clusterings = db.fetchall()
-        clustnet = get_cluster_network(db, clust_id,
+        verse = get_verses(
+            db, nro=args['nro'], start_pos=args['pos'],
+            end_pos=args['pos'], clustering_id=args['clustering'])[0]
+        clusterings = get_clusterings(db)
+        clustnet = get_cluster_network(db, verse.clust_id,
                                        clustering_id=args['clustering'],
                                        maxdepth=args['maxdepth'],
                                        maxnodes=args['maxnodes'])
     data = {
-        'clust_id': clust_id,
-        'text': text,
-        'freq': freq,
+        'verse': verse,
         'clustnet': clustnet,
         'clusterings': clusterings
     }

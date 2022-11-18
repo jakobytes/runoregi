@@ -1,30 +1,30 @@
 <html>
 <head>
-<title>{{ data['name'] }} — Runoregi</title>
+<title>{{ data['types'][args['id']].name }} — Runoregi</title>
 </head>
 <body>
 [<a href="/search">index</a>] &gt;
-{% for theme_id, name in data['upper'] %}
-<a href="/theme?id={{ theme_id }}">{{ data['name'] }}</a> &gt;
+{% for t in data['types'][args['id']].ancestors | reverse %}
+<a href="/theme?id={{ t }}">{{ data['types'][t].name }}</a> &gt;
 {% endfor %}
-<h1>{{ data['name'] }}</h1>
-{{ data['desc'] }}
-{% if data['subcat'] %}
+<h1>{{ data['types'][args['id']].name }}</h1>
+{{ data['types'][args['id']].description }}
+{% if data['tree'] %}
 <h2>Subcategories</h2>
-{% for d, p, minor, t in data['subcat'] %}
-{{ p | join('\u2003') }} <a href="/theme?id={{ t[0] }}">{{ t[1] }}</a><br/>
+{% for line in data['tree'] %}
+{{ line.prefix | join('\u2003') }} <a href="/theme?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a><br/>
 {% endfor %}
 {% endif %}
 {% if data['poems'] %}
 <h2>Poems</h2>
 <p><small>[<a href="/dendrogram?source=theme&theme_id={{ args['id'] }}">dendrogram</a>]</small></p>
 <table>
-{% for (p_id, is_minor), smd in data['poems'] %}
+{% for nro in data['poems'] %}
 <tr>
-<td><b>{% if is_minor %}*{% endif %}<a href="/poem?nro={{ smd.nro }}">{{ smd.title }}</a></b></td>
-<td><small>{{ smd.year }}</small></td>
-<td><small>{{ smd.location }}</small></td>
-<td><small>{{ smd.collector }}</small></td>
+<td><b>{% if nro in data['minor'] %}*{% endif %}<a href="/poem?nro={{ nro }}">{{ data['poems'][nro].smd.title }}</a></b></td>
+<td><small>{{ data['poems'][nro].smd.year }}</small></td>
+<td><small>{{ data['poems'][nro].smd.location }}</small></td>
+<td><small>{{ data['poems'][nro].smd.collector }}</small></td>
 </tr>
 {% endfor %}
 </table>

@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>{% if args['source'] == "theme" %}{{ data['name'] }}{% else %}Denrogram{% endif %} — Runoregi</title>
+<title>{% if args['source'] == "theme" %}{{ data['types'][args['theme_id']].name }}{% else %}Denrogram{% endif %} — Runoregi</title>
 </head>
 <body>
 [<a href="/search">index</a>]
@@ -8,11 +8,11 @@
 [<a href="/poem?nro={{ nro }}">back to poem</a>]
 {% elif args['source'] == "theme" %}
 &gt;
-{% for theme_id, name in data['upper'] %}
-<a href="/theme?id={{ theme_id }}">{{ name }}</a> &gt;
+{% for type_id in data['types'][args['theme_id']].ancestors | reverse %}
+<a href="/theme?id={{ type_id }}">{{ data['types'][type_id].name }}</a> &gt;
 {% endfor %}
-<h1>{{ data['name'] }}</h1>
-<p>{{ data['desc'] }}</p>
+<h1>{{ data['types'][args['theme_id']].name }}</h1>
+<p>{{ data['types'][args['theme_id']].description }}</p>
 {% endif %}
 <p>
 linking method:
@@ -30,10 +30,10 @@ neighborhood:
      width="100%" height="{{ 70 * data['n'] + 35 }}"
      xmlns="http://www.w3.org/2000/svg">
 {% for i in data['ll'] %}
-<a href="/poem?nro={{ data['smd'][i].nro }}">
-<text x="420" y="{{ 70*loop.index0+15 }}" font-size="16" text-anchor="left"{% if data['smd'][i].p_id not in data['thm'] %} fill="red"{% endif %}>{{ data['smd'][i].title }}</text>
-<text x="420" y="{{ 70*loop.index0+30 }}" font-size="14" text-anchor="left">{{ data['smd'][i].location }}</text>
-<text x="420" y="{{ 70*loop.index0+45 }}" font-size="14" text-anchor="left">{{ data['smd'][i].year }}&nbsp;{{ data['smd'][i].collector }}</text>
+<a href="/poem?nro={{ data['nros'][i] }}">
+<text x="420" y="{{ 70*loop.index0+15 }}" font-size="16" text-anchor="left"{% if data['nros'][i] not in data['inner'] %} fill="red"{% endif %}>{{ data['poems'][data['nros'][i]].smd.title }}</text>
+<text x="420" y="{{ 70*loop.index0+30 }}" font-size="14" text-anchor="left">{{ data['poems'][data['nros'][i]].smd.location }}</text>
+<text x="420" y="{{ 70*loop.index0+45 }}" font-size="14" text-anchor="left">{{ data['poems'][data['nros'][i]].smd.year }}&nbsp;{{ data['poems'][data['nros'][i]].smd.collector }}</text>
 </a>
 {% endfor %}
 

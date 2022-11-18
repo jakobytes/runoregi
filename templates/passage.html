@@ -19,21 +19,21 @@ clustering:
 
 <table>
   <tr><td><hr/></td></tr>
-  {% for h in data['hits'] %}
-  <tr><td{% if h['hl'] %} bgcolor="FFEEAA"{% endif %}>
+  {% for pas in data['passages'] %}
+  <tr><td{% if pas['hl'] %} bgcolor="FFEEAA"{% endif %}>
     <table>
     <tr>
       <td valign="top">
-        <b><a href="/poem?nro={{ data['smd'][h['p_id']].nro }}&hl={{ h['verses'] | selectattr(3) | map(attribute=1) | join(',') }}#{{ h['verses'] | map(attribute=1) | min }}">
-	  {{ data['smd'][h['p_id']].title }}
+        <b><a href="/poem?nro={{ pas['nro'] }}&hl={{ pas['matches'] | join(',') }}#{{ pas['matches'][0] }}">
+	  {{ data['poems'][pas['nro']].smd.title }}
 	</a></b>
       </td>
       <td>
         <table border="0" cellpadding="0" cellspacing="0">
-	{% for v_id, pos, text, hl in h['verses'] %}
+    {% for v in pas['verses'] %}
 	<tr>
-          <td align="right"><sup><small>{{ pos }}</small></sup>&thinsp;</td>
-	  <td>{% if hl %}<b>{% endif %}{{ text }}{% if hl %}</b>{% endif %}</td>
+          <td align="right"><sup><small>{{ v.pos }}</small></sup>&thinsp;</td>
+      <td>{% if v.pos in pas['matches'] %}<b>{% endif %}{{ v.text }}{% if v in pas['matches'] %}</b>{% endif %}</td>
 	</tr>
 	{% endfor %}
 	</table>
@@ -43,14 +43,14 @@ clustering:
     <table>
     <tr>
     <td valign="top" width="400">
-      &emsp;<small>{{ data['smd'][h['p_id']].nro }}</small><br/>
-      &emsp;{{ data['smd'][h['p_id']].location }}<br/>
-      &emsp;{{ data['smd'][h['p_id']].year }}&ensp;{{ data['smd'][h['p_id']].collector }}
+      &emsp;<small>{{ pas['nro'] }}</small><br/>
+      &emsp;{{ data['poems'][pas['nro']].smd.location }}<br/>
+      &emsp;{{ data['poems'][pas['nro']].smd.year }}&ensp;{{ data['poems'][pas['nro']].smd.collector }}
     </td>
     <td valign="top" width="400">
       <small>
-      {% for d, p, minor, t in h['themes'] %}
-      {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t[1] }}{% if minor %}</font>{% endif %}<br/>
+      {% for line in data['poems'][pas['nro']].type_tree %}
+      {% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
       {% endfor %}
       </small>
     </td>

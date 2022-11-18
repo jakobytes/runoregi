@@ -41,15 +41,15 @@ The SKVR and ERAB indices shown below are <b>unpublished work in progress</b>
 used with permission of the authors.
 <h3>SKVR</h3>
 <ul>
-{% for theme_id, name in cat['skvr'] %}
-<li/><a href="/theme?id={{ theme_id }}">{{ name }}</a>
+{% for t in cat['skvr'] %}
+<li/><a href="/theme?id={{ t.id }}">{{ t.name }}</a>
 {% endfor %}
 </ul>
 or: <a href="/skvr-themes">Entire SKVR index on one page</a>
 <h3>ERAB</h3>
 <ul>
-{% for theme_id, name in cat['erab'] %}
-<li/><a href="/theme?id={{ theme_id }}">{{ name }}</a>
+{% for t in cat['erab'] %}
+<li/><a href="/theme?id={{ t.id }}">{{ t.name }}</a>
 {% endfor %}
 </ul>
 <h2>Additional literary works</h2>
@@ -162,8 +162,8 @@ or: <a href="/skvr-themes">Entire SKVR index on one page</a>
 </table>
 <h3>Kanteletar</h3>
 <ul>
-{% for theme_id, name in cat['kanteletar'] %}
-<li/><a href="/theme?id={{ theme_id }}">{{ name }}</a>
+{% for t in cat['kanteletar'] %}
+<li/><a href="/theme?id={{ t.id }}">{{ t.name }}</a>
 {% endfor %}
 </ul>
 <h3>Kalevipoeg</h3>

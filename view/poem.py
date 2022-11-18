@@ -7,7 +7,8 @@ import re
 from collections import Counter, defaultdict
 
 import config
-from data import Poem, get_structured_metadata, render_themes_tree
+from data.poems import Poems
+from data.verses import get_verses
 from utils import link
 
 
@@ -54,12 +55,12 @@ def generate_page_links(args):
 # TODO verse-level themes
 # data structure: list
 # - start_pos, end_pos, 
-def get_verse_themes(db, p_id):
-    db.execute('SELECT max(pos) FROM verse_poem WHERE p_id = %s', (p_id,))
+def get_verse_themes(db, nro):
+    db.execute('SELECT max(pos) FROM verse_poem NATURAL JOIN poems WHERE nro = %s', (nro,))
     n = db.fetchall()[0][0]
     db.execute('SELECT pos_start, pos_end, name '
-               ' FROM verse_theme NATURAL JOIN themes '
-               ' WHERE p_id = %s', (p_id,))
+               ' FROM verse_theme NATURAL JOIN themes NATURAL JOIN poems '
+               ' WHERE nro = %s', (nro,))
     i, last_pos = 0, 0
     results = {}
     for pos_start, pos_end, name in db.fetchall():
@@ -75,113 +76,54 @@ def get_verse_themes(db, p_id):
     return results
 
 
-def get_similar_poems(db, p_id, thr_sym=0.1, thr_left=0.5, thr_right=0.5):
-    db.execute(
-        'SELECT p2_id, sim_al, sim_al_l, sim_al_r FROM p_sim WHERE p1_id = %s'
-        ' ORDER BY sim_al DESC;', (p_id,))
-    id_sim = db.fetchall()
-    ids = [x[0] for x in id_sim]
-    result_sym, result_left, result_right = [], [], []
-    if ids:
-        smd = {x.p_id: x for x in get_structured_metadata(db, p_ids=ids)}
-        for x in id_sim:
-            if x[1] >= thr_sym:
-                result_sym.append((smd[x[0]], x[1]))
-            if x[1] < thr_sym and x[2] >= thr_left:
-                result_left.append((smd[x[0]], x[2]))
-            if x[1] < thr_sym and x[3] >= thr_right:
-                result_right.append((smd[x[0]], x[3]))
-    result_left.sort(reverse=True, key=itemgetter(1))
-    result_right.sort(reverse=True, key=itemgetter(1))
-    return result_sym, result_left, result_right
+# TODO refactor and document!
+def get_shared_verses(db, poem, max, thr, order, clustering_id=0):
+    clust_ids = set(v.clust_id for v in poem.text if v.v_type == 'V' and v.text_cl)
+    verses = get_verses(db, clust_id=tuple(clust_ids), clustering_id=clustering_id)
 
-
-def get_duplicates_and_parents(db, p_id):
-    duplicate_ids, parent_ids = [], []
-    db.execute(
-        'SELECT * FROM p_dupl WHERE p_id = %s OR master_p_id = %s;',
-        (p_id, p_id))
-    for id_1, id_2 in db.fetchall():
-        if id_1 == p_id:
-            parent_ids.append(id_2)
-        elif id_2 == p_id:
-            duplicate_ids.append(id_1)
-    duplicates, parents = [], []
-    duplicates = get_structured_metadata(db, p_ids=duplicate_ids) \
-                 if duplicate_ids else []
-    parents = get_structured_metadata(db, p_ids=parent_ids) \
-              if parent_ids else []
-    return duplicates, parents
-
-
-def get_poem_cluster_info(db, p_id):
-    db.execute(
-        'SELECT clust_id, freq FROM p_clust NATURAL JOIN p_clust_freq'
-        ' WHERE p_id = %s', (p_id,))
-    result = db.fetchall()
-    if result:
-        return result[0]
-    else:
-        return (None, None)
-
-
-def get_shared_verses(db, p_id, max, thr, order, verses, clustering_id=0):
-    db.execute("""SELECT DISTINCT v.v_id, p2.nro FROM verses v
-                  JOIN verse_poem vp ON vp.v_id = v.v_id
-                  LEFT OUTER JOIN verses_cl vcl ON vcl.v_id = v.v_id
-                  LEFT OUTER JOIN v_clust vc ON vp.v_id = vc.v_id AND vc.clustering_id = %s
-                  LEFT OUTER JOIN v_clust vc2 ON vc2.clust_id = vc.clust_id AND vc2.clustering_id = %s
-                  LEFT OUTER JOIN verse_poem vp2 ON vp2.v_id = vc2.v_id
-                  LEFT OUTER JOIN poems p2 ON p2.p_id = vp2.p_id 
-                  WHERE v.type='V' AND vp.p_id=%s AND vp2.p_id!=%s
-                        AND vcl.text IS NOT NULL AND vcl.text <> "";""",
-                  (clustering_id, clustering_id, p_id, p_id))
-    results = db.fetchall()
     poem_verses = defaultdict(set)
-    poem_versecounts = Counter([x[1] for x in results])
-    verse_poemcounts = Counter([x[0] for x in results])
-    for (verse, poem) in results:
-        poem_verses[poem].add(verse)
+    poem_versecounts = Counter([v.nro for v in verses])
+    verse_poemcounts = Counter([v.clust_id for v in verses])
+    for v in verses:
+        if v.nro != poem.nro:
+            poem_verses[v.nro].add(v.clust_id)
     poem_weights = Counter()
     if order == "rare":
-        for (poem, verses) in poem_verses.items():
-            for verse in verses:
-                poem_weights[poem] += 1.0/verse_poemcounts[verse]
+        for (nro, clust_ids) in poem_verses.items():
+            for clust_id in clust_ids:
+                poem_weights[nro] += 1.0/verse_poemcounts[clust_id]
     elif order == "consecutive" or order == "consecutive_rare":
-        poems = [poem for poem, verses in poem_verses.items()]
-        last_index = {poem: -1 for poem in poems}
-        for index, verse in enumerate(verses):
-            if verse.type == 'V':
-                current = { poem: (verse.v_id in verses)
-                            for poem, verses in poem_verses.items() }
-                for poem in poems:
-                    if current[poem]:
+        nros = [nro for nro, clust_ids in poem_verses.items()]
+        last_index = {nro: -1 for nro in nros}
+        for i, v in enumerate(poem.text):
+            if v.v_type == 'V':
+                current = { nro: (v.clust_id in clust_ids)
+                            for nro, clust_ids in poem_verses.items() }
+                for nro in nros:
+                    if current[nro]:
                         if order == "consecutive_rare":
-                            poem_weights[poem] += 1.0/(index-last_index[poem]/verse_poemcounts[verse.v_id])
+                            poem_weights[nro] += 1.0/(i-last_index[nro]/verse_poemcounts[v.clust_id])
                         else:
-                            poem_weights[poem] += 1.0/(index-last_index[poem])
-                        last_index[poem]=index
+                            poem_weights[nro] += 1.0/(i-last_index[nro])
+                        last_index[nro]=i
             else:
-                for poem in poems:
-                    last_index[poem] = index
+                for nro in nros:
+                    last_index[nro] = i
     else:  #order == "shared"
         poem_weights = poem_versecounts
     verse_poems = defaultdict(list)
     linked_poems = set()
-    top_poems = set([poem for poem, count in poem_weights.most_common(max)])
-    for (verse, poem) in results:
-        if poem in top_poems and poem_versecounts[poem] >= thr:
-            linked_poems.add(poem)
-            verse_poems[verse].append(poem)
+    top_poems = set([nro for nro, count in poem_weights.most_common(max)])
+    for v in verses:
+        if v.nro in top_poems and poem_versecounts[v.nro] >= thr:
+            linked_poems.add(v.nro)
+            verse_poems[v.clust_id].append(v.nro)
     linked_poems_sorted = sorted(linked_poems, reverse=True,
-                                 key=lambda poem: poem_weights[poem])
+                                 key=lambda nro: poem_weights[nro])
     return verse_poems, linked_poems_sorted, len(poem_versecounts)
 
 
 def render(**args):
-    global DEFAULTS
-    args = dict(DEFAULTS, **args)
-
     def _makecolcomp(value):
         result = hex(255-int(value*51))[2:]
         if len(result) == 1:
@@ -197,42 +139,51 @@ def render(**args):
         return '#'+rg+rg+b
 
     links = generate_page_links(args)
-    topics, sim_poems, meta, verses, refs = [], [], [], [], []
+    p = Poems(nros=[args['nro']])
+    sim_poems, verse_themes, types = None, None, None
+    verse_poems, linked_poems, poems_sharing_verses = None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        poem = Poem.from_db_by_nro(db, args['nro'])
-        title = poem.smd.title
-        loc, col, year = poem.smd.location, poem.smd.collector, poem.smd.year
-        if poem.refs is not None:
-            refs = re.sub('\n+', ' ', '\n'.join(poem.refs)).replace('#', '\n#').split('\n')
-        topics = poem.smd.themes
-        sim, sim_l, sim_r = get_similar_poems(db, poem.p_id)
-        verse_poems, linked_poems, poems_sharing_verses = \
-            get_shared_verses(db, poem.p_id, args['max_similar'],
-                              args['sim_thr'], args['sim_order'],
-                              poem.verses)
-        verse_themes = get_verse_themes(db, poem.p_id)
-        duplicates, parents = get_duplicates_and_parents(db, poem.p_id)
-        p_clust_id, p_clust_size = get_poem_cluster_info(db, poem.p_id)
-        for i, v in enumerate(poem.verses, 1):
-            verses.append((i, v.clustfreq, _makecol(v.clustfreq),
-                           v.type, v.text, v.v_id))
+        p.get_duplicates_and_parents(db)
+        p.get_poem_cluster_info(db)
+        p.get_raw_meta(db)
+        p.get_refs(db)
+        p.get_similar_poems(db, sim_thr=0.1, sim_onesided_thr=0.5)
+        p.get_structured_metadata(db)
+        p.get_text(db)
+        # poem types
+        types = p.get_types(db)
+        types.get_names(db)
+        # get metadata for related poems (similar, duplicates etc.)
+        related_nros = list(set([x.nro for x in p[args['nro']].sim_poems] \
+                                + p[args['nro']].duplicates + p[args['nro']].parents))
+        related = Poems(nros=related_nros)
+        if related:
+            related.get_structured_metadata(db)
+        # get verse-level types
+        if args['show_verse_themes']:
+            verse_themes = get_verse_themes(db, args['nro'])
+        # get verse clusters for the matrix view
+        if args['show_shared_verses']:
+            verse_poems, linked_poems, poems_sharing_verses = \
+                get_shared_verses(db, p[args['nro']], args['max_similar'],
+                                  args['sim_thr'], args['sim_order'])
+    poem = p[args['nro']]
     data = {
-      'poem' : poem,
-      'sim_poems': sim,
-      'sim_poems_left': sim_l,
-      'sim_poems_right': sim_r,
-      'verses': verses,
-      'refs': refs,
-      'p_clust_id': p_clust_id,
-      'p_clust_size': p_clust_size,
-      'themes' : render_themes_tree(poem.smd.themes),
-      'verse_poems' : verse_poems,
-      'linked_poems' : linked_poems,
-      'poems_sharing_verses' : poems_sharing_verses,
-      'nr_linked_poems': len(linked_poems),
-      'verse_themes' : verse_themes,
-      'duplicates' : duplicates,
-      'parents' : parents
+        'poem': poem,
+        'related': related,
+        'types': types,
+        'sim': [(x.nro, x.sim_al) for x in poem.sim_poems if x.sim_al >= 0.1],
+        'sim_left': [(x.nro, x.sim_al_l) \
+                     for x in poem.sim_poems \
+                         if x.sim_al < 0.1 and x.sim_al_l >= 0.5],
+        'sim_right': [(x.nro, x.sim_al_r) \
+                      for x in poem.sim_poems \
+                          if x.sim_al < 0.1 and x.sim_al_r >= 0.5],
+        'colors': { x: _makecol(x) for x in set(v.clust_freq for v in poem.text) },
+        'verse_themes' : verse_themes,
+        'verse_poems': verse_poems,
+        'linked_poems': linked_poems,
+        'poems_sharing_verses': poems_sharing_verses
     }
     return render_template('poem.html', args=args, data=data, links=links)
 

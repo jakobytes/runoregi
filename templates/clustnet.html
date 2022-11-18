@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>#{{ data['clust_id'] }} {{ data['text'] }}</title>
+<title>#{{ data['verse'].clust_id }} {{ data['verse'].text }}</title>
 <script
     type="text/javascript"
     src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"
@@ -16,7 +16,7 @@
 
 <body>
 
-<h1><small>#{{ data['clust_id'] }}</small> {{ data['text'] }}</h1>
+<h1><small>#{{ data['verse'].clust_id }}</small> {{ data['verse'].text }}</h1>
 
 [<a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">back to cluster</a>]
 [<a href="{{ links['+maxdepth'] }}">+</a>
@@ -41,14 +41,14 @@ clustering:
 <script type="text/javascript">
       // create an array with nodes
       var nodes = new vis.DataSet([
-        { id: {{ data['clust_id'] }},
-          label: "#{{ data['clust_id'] }} " + {{ data['text'] | tojson }},
-          shape: "box" , color: "#FFEEAA", title: "{{ data['freq'] }} verses",
+        { id: {{ data['verse'].clust_id }},
+          label: "#{{ data['verse'].clust_id }} " + {{ data['verse'].text | tojson }},
+          shape: "box" , color: "#FFEEAA", title: "{{ data['verse'].clust_freq }} verses",
           link: "/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}"},
         {% for n in data['clustnet']['nodes'] %}
-          { id: {{ n[0] }}, label: "#{{ n[0] }} " + {{ n[1] | tojson }}, shape: "box",
-            title: "{{ n[2] }} verses",
-            link: "/verse?nro={{ n[4] }}&pos={{ n[5] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}"},
+          { id: {{ n.clust_id }}, label: "#{{ n.clust_id }} " + {{ n.text | tojson }}, shape: "box",
+            title: "{{ n.clust_freq }} verses",
+            link: "/verse?nro={{ n.nro }}&pos={{ n.pos }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}"},
         {% endfor %}
       ]);
 

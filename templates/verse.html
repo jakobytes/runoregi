@@ -1,18 +1,18 @@
 <html>
 <head>
-<title>#{{ data['clust_id'] }} {{ data['text'] }}</title>
+<title>#{{ data['verse'].clust_id }} {{ data['verse'].text }}</title>
 </head>
 
 <body>
-<h1><small>#{{ data['clust_id'] }}</small> {{ data['text'] }}</h1>
+<h1><small>#{{ data['verse'].clust_id }}</small> {{ data['verse'].text }}</h1>
 [<a href="/poem?nro={{ args['nro'] }}">back to poem</a>]
 [<a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}&format=csv">CSV</a>
 / <a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}&format=tsv">TSV</a>]
 [<a href="{{ links['map_lnk'] }}">map</a>]
 [<a href="/clustnet?nro={{ args['nro'] }}&pos={{ args['pos'] }}">cluster network</a>]<br/>
 
-<h2>Cluster ({{ data['freq'] }})</h2>
-clustering: 
+<h2>Cluster ({{ data['verse'].clust_freq }})</h2>
+clustering:
 {% for c in data['clusterings'] %}
 {% if args['clustering'] == c[0] %}
 {{ c[1] }}
@@ -22,54 +22,53 @@ clustering:
 {% endfor %}
 <table>
   <tr><td><hr/></td></tr>
-  {% for v in data['verses'] %}
-  <tr><td{% if v[0] == nro %} bgcolor="FFEEAA"{% endif %}>
+  {% for nro, verses in data['verses'].items() %}
+  <tr><td{% if nro == args['nro'] %} bgcolor="FFEEAA"{% endif %}>
     <table>
     <tr>
       <td valign="top">
-        <b><a href="/poem?nro={{ v[0] }}&hl={{ v[1] | map(attribute=0) | join(',')  }}#{{ v[1] | map(attribute=0) | min }}">
-	  {{ v[2] }}
-	</a></b>
+        <b><a href="/poem?nro={{ nro }}&hl={{ verses | map(attribute='pos') | join(',')  }}#{{ verses | map(attribute='pos') | min }}">
+        {{ data['poems'][nro].smd.title }}
+        </a></b>
       </td>
       <td>
         <table border="0" cellpadding="0" cellspacing="0">
-	{% for pos, v_id, text in v[1] %}
-	<tr>
-          <td align="right"><sup><small>{{ pos }}</small></sup>&thinsp;</td>
-	  <td><b>{{ text }}</b></td>
-	</tr>
-	{% endfor %}
-	</table>
+        {% for v in verses %}
+        <tr>
+        <td align="right"><sup><small>{{ v.pos }}</small></sup>&thinsp;</td>
+        <td><b>{{ v.text }}</b></td>
+        </tr>
+        {% endfor %}
+        </table>
       </td>
     </tr>
     </table>
     <table>
     <tr>
     <td valign="top" width="400">
-      &emsp;<small>{{ v[0] }}</small><br/>
-      &emsp;{{ v[3] }}<br/>
-      &emsp;{{ v[4] }}&ensp;{{ v[5] }}
+      &emsp;<small>{{ nro }}</small><br/>
+      &emsp;{{ data['poems'][nro].smd.location }}<br/>
+      &emsp;{{ data['poems'][nro].smd.year }}&ensp;{{ data['poems'][nro].smd.collector }}
     </td>
     <td valign="top" width="400">
       <small>
-      {% for d, p, minor, t in v[6] %}
-      {% if minor %}<font color="gray">{% endif %}{{ p | join('\u2003') }} {{ t[1] }}{% if minor %}</font>{% endif %}<br/>
+      {% for line in data['poems'][nro].type_tree %}
+      {% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
       {% endfor %}
       </small>
     </td>
     </tr>
-    {% if v[7] %}
+    {% if nro in data['nbclust'] %}
     <tr><td width="800" colspan="2">
     <small>
     <b>See also: </b>
-    {% for sv in v[7] %}
-    <small>#{{ sv[3] }}</small> <a href="/verse?nro={{ sv[0] }}&pos={{ sv[1] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">{{ sv[2] }}</a> ({{ sv[4] }})
+    {% for v in data['nbclust'][nro] %}
+    <small>#{{ v.clust_id }}</small> <a href="/verse?nro={{ v.nro }}&pos={{ v.pos }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">{{ v.text }}</a> ({{ v.clust_freq }})
     {% endfor %}
     </small>
     </td></tr>
     {% endif %}
     </table>
-  </td></tr>
   <tr><td><hr/></td></tr>
   {% endfor %}
 </table>
