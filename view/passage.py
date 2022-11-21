@@ -1,10 +1,10 @@
 from flask import render_template
 import pymysql
+from urllib.parse import urlencode
 
 import config
 from data.poems import Poems
 from data.verses import get_clusterings, get_verses
-from external import make_map_link
 from utils import link, print_type_list, render_csv
 
 MAX_QUERY_LENGTH = None
@@ -27,7 +27,10 @@ def generate_page_links(args, clusterings):
     def pagelink(**kwargs):
         return link('passage', dict(args, **kwargs), DEFAULTS)
 
-    map_args = { key: val for key, val in args.items() if val != DEFAULTS[key] }
+    map_args = dict(DEFAULTS, **args)
+    map_args['format'] = 'csv'
+    del map_args['context']
+
     result = {
         'csv': pagelink(format='csv'),
         'tsv': pagelink(format='tsv'),
@@ -35,7 +38,8 @@ def generate_page_links(args, clusterings):
         '+context': pagelink(context=args['context']+2),
         '-results': pagelink(dist=max(args['dist']-1, 1), hitfact=args['hitfact']*1.25),
         '+results': pagelink(dist=args['dist']+1, hitfact=args['hitfact']*0.8),
-        'map_lnk' : make_map_link('passage', **map_args)
+        'map_lnk' : config.VISUALIZATIONS_URL + '/?vis=map_passage&' \
+                    + urlencode(map_args)
     }
     for c in clusterings:
         result['clustering-{}'.format(c[0])] = pagelink(clustering=c[0])

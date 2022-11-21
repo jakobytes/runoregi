@@ -1,12 +1,12 @@
 from collections import defaultdict, OrderedDict
 from flask import render_template
 import pymysql
+from urllib.parse import urlencode
 
 import config
 from data.poems import Poems
 from data.verses import \
     get_clusterings, get_verses, get_verse_cluster_neighbors
-from external import make_map_link
 from utils import print_type_list, render_csv
 
 
@@ -78,9 +78,11 @@ def render(**args):
             'nbclust': nbclust,
             'clusterings': clusterings
         }
+        map_args = { 'nro': args['nro'], 'pos': args['pos'],
+                     'clustering': args['clustering'], 'format': 'csv' }
         links = {
-            'map_lnk': make_map_link('verse', nro=args['nro'], pos=args['pos'],
-                                     clustering=args['clustering'])
+            'map_lnk': config.VISUALIZATIONS_URL + '/?vis=map_cluster&' \
+                       + urlencode(map_args)
         }
         return render_template('verse.html', args=args, data=data, links=links)
 
