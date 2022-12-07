@@ -30,11 +30,12 @@ def generate_page_links(args):
     result = {
         'csv': pagelink(format='csv'),
         'tsv': pagelink(format='tsv'),
-        '-t': pagelink(t=max(args['t']-0.05, 0)),
-        '+t': pagelink(t=min(args['t']+0.05, 1)),
+        't': {}, 'method': {}
     }
     for method in ['none', 'complete', 'average', 'single']:
-        result['method-{}'.format(method)] = pagelink(method=method)
+        result['method'][method] = pagelink(method=method)
+    for t in [0, 0.3, 0.4, 0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]:
+        result['t'][t] = pagelink(t=t)
     return result
 
 

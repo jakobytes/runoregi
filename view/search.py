@@ -4,7 +4,7 @@ import pymysql
 
 import config
 from data.search import search_meta, search_themes, search_verses
-from data.types import get_root_categories
+from data.types import get_nonleaf_categories, render_type_tree, Types
 
 
 DEFAULTS = {
@@ -19,17 +19,16 @@ DEFAULTS = {
 def render(**args):
     if args['q'] is None:
         with pymysql.connect(**config.MYSQL_PARAMS) as db:
-            types = get_root_categories(db)
-            types.get_names(db)
-        cat = defaultdict(list)
-        for type_id, t in types.items():
-            if type_id.startswith('skvr_'):
-                cat['skvr'].append(t)
-            elif type_id.startswith('erab_'):
-                cat['erab'].append(t)
-            elif type_id.startswith('kt_t'):
-                cat['kanteletar'].append(t)
-        return render_template('search_idx.html', cat = cat)
+            types = get_nonleaf_categories(db)
+            types_kt = Types(ids=['kt_t010000', 'kt_t020000', 'kt_t030000'])
+            types_kt.get_descendents(db, add=True)
+            types_kt.get_names(db)
+        tree = { 'skvr': [], 'erab': [] , 'kt': render_type_tree(types_kt) }
+        for line in render_type_tree(types):
+            tree[line.type_id[:line.type_id.index('_')]].append(line)
+        types = Types(types = [t for t in list(types.values()) + list(types_kt.values()) ])
+        data = { 'tree': tree, 'types': types }
+        return render_template('search_idx.html', data = data)
     else:
         r_verses, r_themes, r_meta = [], [], []
         with pymysql.connect(**config.MYSQL_PARAMS) as db:

@@ -21,20 +21,14 @@ def generate_page_links(args):
     def pagelink(**kwargs):
         return link('poemnet', dict(args, **kwargs), DEFAULTS)
 
-    return {
-        '+maxdepth':
-            pagelink(maxdepth=args['maxdepth']+1),
-        '-maxdepth':
-            pagelink(maxdepth=max(0, args['maxdepth']-1)),
-        '+nodes':
-            pagelink(maxnodes=args['maxnodes']+10),
-        '-nodes':
-            pagelink(maxnodes=max(0, args['maxnodes']-10)),
-        '+threshold':
-            pagelink(t=min(1, args['t']+0.05)),
-        '-threshold':
-            pagelink(t=max(0, args['t']-0.05)),
-    }
+    result = { 'maxdepth': {}, 'maxnodes': {}, 't': {} }
+    for val in [1, 2, 3, 4, 5, 6]:
+        result['maxdepth'][val] = pagelink(maxdepth=val)
+    for val in [10, 20, 30, 50, 70, 100, 150, 200]:
+        result['maxnodes'][val] = pagelink(maxnodes=val)
+    for val in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
+        result['t'][val] = pagelink(t=val)
+    return result
 
 
 def get_poem_network(db, poems, t=0.1, maxdepth=3, maxnodes=30):

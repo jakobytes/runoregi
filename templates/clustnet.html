@@ -1,35 +1,61 @@
 <html>
 <head>
 <title>#{{ data['verse'].clust_id }} {{ data['verse'].text }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./static/css/bootstrap.min.css">
+<link rel="stylesheet" href="./static/css/style.css">
+<script lang="javascript" src="./static/js/jquery.min.js"></script>
+<script lang="javascript" src="./static/js/bootstrap.min.js"></script>
 <script
     type="text/javascript"
     src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"
   ></script>
-<link rel="stylesheet" href="./static/style.css">
 </head>
 
 <body>
 
 <h1><small>#{{ data['verse'].clust_id }}</small> {{ data['verse'].text }}</h1>
 
-[<a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">back to cluster</a>]
-[<a href="{{ links['+maxdepth'] }}">+</a>
-/ <a href="{{ links['-maxdepth'] }}">-</a>
-depth]
-[<a href="{{ links['+maxnodes'] }}">+</a>
-/ <a href="{{ links['-maxnodes'] }}">-</a>
-nodes]
-[<a href="{{ links['*physics'] }}">{% if args['physics'] %}enable{% else %}disable{% endif %} physics</a>]
-
-<h2>Neighboring clusters</h2>
-clustering: 
-{% for c in data['clusterings'] %}
-{% if args['clustering'] == c[0] %}
-{{ c[1] }}
-{% else %}
-<a href="{{ links['clustering-' ~ c[0]] }}">{{ c[1] }}</a>
-{% endif %}
-{% endfor %}
+<ul class="nav nav-pills">
+  <li role="presentation"><a role="button" href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">
+   <span class="glyphicon glyphicon-chevron-left"></span> Back to cluster
+  </a></li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      <span class="glyphicon glyphicon-cog"></span>
+      Max. depth: {{ args['maxdepth'] }} <span class="caret"></span>
+    </a>
+   <ul class="dropdown-menu">
+    {% for val in links['maxdepth'] %}
+    <li role="presentation"><a href="{{ links['maxdepth'][val] }}">{{ val }}</a></li>
+    {% endfor %}
+   </ul>
+  </li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      <span class="glyphicon glyphicon-cog"></span>
+      Max. nodes: {{ args['maxnodes'] }} <span class="caret"></span>
+    </a>
+   <ul class="dropdown-menu">
+    {% for val in links['maxnodes'] %}
+    <li role="presentation"><a href="{{ links['maxnodes'][val] }}">{{ val }}</a></li>
+    {% endfor %}
+   </ul>
+  </li>
+  <li role="presentation"><a role="button" href="{{ links['*physics'] }}">
+   <span class="glyphicon glyphicon-cog"></span> {% if args['nophysics'] %}Enable{% else %}Disable{% endif %} physics
+  </a></li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      Clustering: {{ data['clusterings'][args['clustering']][1] }} <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+    {% for val in links['clustering'] %}
+    <li role="presentation"><a href="{{ links['clustering'][val] }}">{{ val }}</a></li>
+    {% endfor %}
+    </ul>
+  </li>
+</ul>
 
 <div id="clustnet"></div>
 <script type="text/javascript">

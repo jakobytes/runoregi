@@ -9,7 +9,7 @@ from shortsim.align import align
 import config
 from data.poems import Poems
 from methods.verse_sim import compute_verse_similarity
-from utils import link, render_csv
+from utils import link, makecol, render_csv
 
 
 DEFAULTS = {
@@ -30,12 +30,14 @@ def generate_page_links(args):
     def pagelink(**kwargs):
         return link('poemdiff', dict(args, **kwargs), DEFAULTS)
 
-    return {
+    result = {
         'csv': pagelink(format='csv'),
         'tsv': pagelink(format='tsv'),
-        '-t': pagelink(t=max(args['t']-0.05, 0)),
-        '+t': pagelink(t=min(args['t']+0.05, 1)),
+        't': {}
     }
+    for t in [0, 0.3, 0.4, 0.5, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]:
+        result['t'][t] = pagelink(t=t)
+    return result
 
 
 def render(**args):
@@ -121,7 +123,7 @@ def render(**args):
                 verse_1.append((COLOR_LINEDIFF, row[0].text))
             if row[1] is not None:
                 verse_2.append((COLOR_LINEDIFF, row[1].text))
-        alignment.append((verse_1, verse_2, (row[2], _makecol(row[2]**2))))
+        alignment.append((verse_1, verse_2, (row[2], makecol(row[2]**2, '337ab7', 1))))
     raw_sim = sum(w for x, y, w in al)
     scores = [
         raw_sim,

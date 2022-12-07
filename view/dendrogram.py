@@ -3,6 +3,7 @@ from operator import itemgetter
 import numpy as np
 import pymysql
 import scipy.cluster.hierarchy
+from urllib.parse import urlencode
 
 import config
 from data.poems import Poems
@@ -27,13 +28,26 @@ def generate_page_links(args):
     def pagelink(**kwargs):
         return link('dendrogram', dict(args, **kwargs), DEFAULTS)
 
-    result = {
-        '-nb': pagelink(nb=min(args['nb']+0.1, 1)),
-        '+nb': pagelink(nb=max(args['nb']-0.1, 0)),
-        '0nb': pagelink(nb=1),
-    }
+    result = { 'method': {}, 'nb': { 'none': pagelink(nb=1.0) } }
+    for nb in [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 ]:
+        nb_fmt = '{:.1}'.format(nb)
+        result['nb'][nb_fmt] = pagelink(nb=nb)
     for method in ['complete', 'average', 'single', 'centroid', 'ward']:
-        result['method-{}'.format(method)] = pagelink(method=method)
+        result['method'][method] = pagelink(method=method)
+    if args['source'] == 'theme' and args['nb'] == 1:
+        result['map'] = config.VISUALIZATIONS_URL \
+            + '?vis=map_type&' \
+            + urlencode({'theme_id': args['theme_id']})
+        result['types'] = config.VISUALIZATIONS_URL \
+            + '?vis=tree_type_cooc&' \
+            + urlencode({'theme_id': args['theme_id'], 'incl_erab_orig': False})
+    elif args['source'] == 'cluster' and args['nb'] == 1:
+        result['map'] = config.VISUALIZATIONS_URL \
+            + '?vis=map_poem_cluster&' \
+            + urlencode({'nro': args['nro'][0]})
+        result['types'] = config.VISUALIZATIONS_URL \
+            + '?vis=tree_poem_cluster&' \
+            + urlencode({'nro': args['nro'][0], 'incl_erab_orig': False})
     return result
 
 
@@ -79,6 +93,7 @@ def render(**args):
             poems = Poems(nros=[args['nro'][0]])
             poems.get_poem_cluster_info(db)
             poems = Poems.get_by_cluster(db, poems[args['nro'][0]].p_clust_id)
+            poems.get_poem_cluster_info(db)
         elif args['source'] == 'nros':
             poems = Poems(nros=args['nro'])
         inner = set(poems)

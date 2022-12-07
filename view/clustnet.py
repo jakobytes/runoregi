@@ -25,21 +25,16 @@ def generate_page_links(args, clusterings):
     def pagelink(**kwargs):
         return link('clustnet', dict(args, **kwargs), DEFAULTS)
 
-    result = {
-        '*physics':
-            pagelink(nophysics=not args['nophysics']),
-        '+maxdepth':
-            pagelink(maxdepth=args['maxdepth']+1),
-        '-maxdepth':
-            pagelink(maxdepth=max(args['maxdepth']-1, 0)),
-        '+maxnodes':
-            pagelink(maxnodes=args['maxnodes']+10),
-        '-maxnodes':
-            pagelink(maxnodes=max(args['maxnodes']-10, 0))
-    }
+    result = { '*physics': pagelink(nophysics=not args['nophysics']),
+               'maxdepth': {}, 'maxnodes': {}, 'clustering': {} }
+    for val in [1, 2, 3, 4, 5, 6]:
+        result['maxdepth'][val] = pagelink(maxdepth=val)
+    for val in [10, 20, 30, 50, 70, 100, 150, 200]:
+        result['maxnodes'][val] = pagelink(maxnodes=val)
     for c in clusterings:
-        result['clustering-{}'.format(c[0])] = pagelink(clustering=c[0])
+        result['clustering'][c[1]] = pagelink(clustering=c[0])
     return result
+
 
 def get_cluster_network(db, clust_id, clustering_id=0, maxdepth=3, maxnodes=30):
     nodes_set = { clust_id }

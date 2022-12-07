@@ -1,6 +1,8 @@
 <html>
 <head>
 <title>Search: {{ q }} — Runoregi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./static/css/bootstrap.min.css">
 <link rel="stylesheet" href="./static/style.css">
 </head>
 <body>
@@ -41,6 +43,11 @@
 </center>
 <hr/>
 <h1>Search results for: {{ args['q'] }}</h1>
+
+<div class="container-fluid"> 
+<div class="row">
+<div class="col-md-3"></div>
+<div class="col-md-6">
 {% if data['r_themes'] %}
 <h2>Themes</h2>
 {% if data['r_themes'] | length >= data['limit'] %}
@@ -56,6 +63,13 @@ Try to make the query more specific.
 <hr/>
 {% endfor %}
 {% endif %}
+</div>
+<div class="col-md-3"></div>
+</div>
+
+<div class="row">
+<div class="col-md-3"></div>
+<div class="col-md-6">
 {% if data['r_meta'] %}
 <h2>Metadata</h2>
 {% if data['r_meta'] | length >= data['limit'] %}
@@ -69,6 +83,13 @@ Try to make the query more specific.
 <b>{{ field }}:</b> {{ value }} <br/>
 {% endfor %}
 {% endif %}
+</div>
+<div class="col-md-3"></div>
+</div>
+
+<div class="row">
+<div class="col-md-3"></div>
+<div class="col-md-6">
 {% if data['r_verses'] %}
 <h2>Verses</h2>
 {% if r_verses | length >= data['limit'] %}
@@ -82,5 +103,10 @@ Try to make the query more specific.
 <sup><small>{{ pos }}</small></sup> {{ text }}<br/>
 {% endfor %}
 {% endif %}
+</div>
+<div class="col-md-3"></div>
+</div>
+</div>
+
 </body>
 </html>

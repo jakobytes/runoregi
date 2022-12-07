@@ -1,31 +1,98 @@
 <html>
 <head>
 <title>Multi-poem comparison — Runoregi</title>
-<link rel="stylesheet" href="./static/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./static/css/bootstrap.min.css">
+<link rel="stylesheet" href="./static/css/style.css">
+<script lang="javascript" src="./static/js/jquery.min.js"></script>
+<script lang="javascript" src="./static/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-[<a href="{{ links['csv'] }}">CSV</a>
- / <a href="{{ links['tsv'] }}">TSV</a>]
-[ <a href="/poemnet?nro={{ args['nro'] | join(',') }}">network view</a> ]
-[ linking method:
-{% for m in ["none", "complete", "average", "single"] %}
-{% if method != m %}<a href="{{ links['method-'+m] }}">{% endif %}{{ m }}{% if method != m %}</a>{% endif %}
-{% endfor %}][
-<a href="{{ links['-t'] }}">lower</a>
-/
-<a href="{{ links['+t'] }}">higher</a>
-threshold
-]
+
+{% if data['poems'] | length < 8 %}
+<div class="container-fluid">
+<div class="row">
+<div class="col-lg-{{ 4-(data['poems'] | length)//2 }}"></div>
+<div class="col-lg-{{ 4+(data['poems'] | length)//2*2 }}">
+{% endif %}
+
+<ul class="nav nav-pills">
+  <li role="presentation"><a role="button" href="/" title="to index">
+   <span class="glyphicon glyphicon-home"></span>
+  </a></li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      <span class="glyphicon glyphicon-list-alt"></span>
+      Export as <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+    <li role="presentation"><a href="{{ links['csv'] }}">CSV</a></li>
+    <li role="presentation"><a href="{{ links['tsv'] }}">TSV</a></li>
+    </ul>
+  </li>
+  <li role="presentation"><a role="button" href="/poemnet?nro={{ args['nro'] | join(',') }}">
+   <span class="glyphicon glyphicon-cloud"></span> Network view
+  </a></li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      <span class="glyphicon glyphicon-cog"></span>
+      Linking method: {{ args['method'] }} <span class="caret"></span>
+    </a>
+   <ul class="dropdown-menu">
+    {% for val in links['method'] %}
+    <li role="presentation"><a href="{{ links['method'][val] }}">{{ val }}</a></li>
+    {% endfor %}
+   </ul>
+  </li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      <span class="glyphicon glyphicon-cog"></span>
+      Threshold: {{ args['t'] }}
+      <span class="caret"></span>
+    </a>
+   <ul class="dropdown-menu">
+    {% for val in links['t'] %}
+    <li role="presentation"><a href="{{ links['t'][val] }}">{{ val }}</a></li>
+    {% endfor %}
+   </ul>
+  </li>
+</ul>
+
+<div class="panel panel-primary">
+<div class="panel-body">
+
 <table>
   <tr>
     {% for p in data['poems'] %}
-    <td width="350">
-      {% if loop.index0 > 0 %}<small>[<a href="/poemdiff?nro1={{ data['poems'][loop.index0-1].nro}}&nro2={{ p.nro }}">&lt;~</a>]</small>{% endif %}
-      <small>[<a href="/poem?nro={{ p.nro }}">to poem</a>]</small>
-      <small>[<a href="/multidiff?nro={{ data['poems'] | map(attribute='nro') | reject('eq', p.nro) | join(',') }}">remove</a>]</small>
-      {% if loop.index0+1 < data['poems'] | length %}<small>[<a href="/poemdiff?nro1={{ p.nro }}&nro2={{ data['poems'][loop.index0+1].nro}}">~&gt;</a>]</small>{% endif %}
-      <h2>{{ p.smd.title }}</h2>
+    <td width="350" align="center">
+      <ul class="nav nav-pills">
+        {% if loop.index0 > 0 %}
+        <li role="presentation">
+          <a role="button"
+             href="/poemdiff?nro1={{ data['poems'][loop.index0-1].nro}}&nro2={{ p.nro }}"
+             title="compare to the left neighbor">
+           <span class="glyphicon glyphicon-chevron-left"></span>
+          </a>
+        </li>
+        {% endif %}
+        {% if loop.index0+1 < data['poems'] | length %}
+        <li role="presentation">
+          <a role="button"
+             href="/poemdiff?nro1={{ p.nro }}&nro2={{ data['poems'][loop.index0+1].nro }}"
+             title="compare to the right neighbor">
+           <span class="glyphicon glyphicon-chevron-right"></span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </td>
+    {% endfor %}
+    </tr>
+    <tr>
+    {% for p in data['poems'] %}
+    <td>
+      <h2><a href="/poem?nro={{ p.nro }}">{{ p.smd.title }}</a></h2>
       <small> {{ p.nro }}<br /> </small>
       <small> {{ p.smd.location }}<br /> </small>
       <small> {{ p.smd.year }}&nbsp;{{ p.smd.collector }}</small>
@@ -44,11 +111,11 @@ threshold
   <tr>
     {% for p in data['poems'] %}
     <td valign="top">
-      <small>
+      <p style="line-height: 1"><small>
         {% for line in p.type_tree %}
         {% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
         {% endfor %}
-      </small>
+      </small></p>
     </td>
     {% endfor %}
   </tr>
@@ -63,12 +130,10 @@ threshold
     {% endfor %}
   </tr>
   {% endfor %}
-<!-- <tr>{% for s in scores %} <td>{{ s }}</td> {% endfor %}<td></td></tr> -->
-symmetric similarities:<br/>
 </table>
 <hr>
 <small>
-<table>
+<table class="table-condensed">
 <tr>
 <td><b>symmetric similarity</b></td>
 {% for j in range(data['m'].shape[1]) %}
@@ -84,7 +149,7 @@ symmetric similarities:<br/>
 </tr>
 {% endfor %}
 </table>
-<table>
+<table class="table-condensed">
 <tr>
 <td><b>one-sided similarity</b></td>
 {% for j in range(data['m'].shape[1]) %}
@@ -101,6 +166,16 @@ symmetric similarities:<br/>
 {% endfor %}
 </table>
 </small>
+
+</div>
+</div>
+
+{% if data['poems'] | length < 8 %}
+</div>
+<div class="col-lg-{{ 4-(data['poems'] | length)//2 }}"></div>
+</div>
+</div>
+{% endif %}
 
 </body>
 </html>

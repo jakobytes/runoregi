@@ -1,16 +1,39 @@
 <html>
 <head>
 <title>{{ data['types'][args['id']].name }} — Runoregi</title>
-<link rel="stylesheet" href="./static/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./static/css/bootstrap.min.css">
+<link rel="stylesheet" href="./static/css/style.css">
 </head>
 
 <body>
-[<a href="/search">index</a>] &gt;
+
+<ul class="nav nav-pills">
+<li role="presentation"><a role="button" href="/" title="to index">
+ <span class="glyphicon glyphicon-home"></span>
+</a></li>
 {% for t in data['types'][args['id']].ancestors | reverse %}
-<a href="/theme?id={{ t }}">{{ data['types'][t].name }}</a> &gt;
+<li role="presentation"><a role="button" href="/theme?id={{ t }}">
+ <span class="glyphicon glyphicon-chevron-right"></span>
+{{ data['types'][t].name }}
+</a></li>
 {% endfor %}
-<h1>{{ data['types'][args['id']].name }}</h1>
-{{ data['types'][args['id']].description }}
+</ul>
+
+<div class="page-header">
+<h1 style="margin-left: 20px;">{{ data['types'][args['id']].name }}</h1>
+</div>
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-2"></div>
+
+<div class="col-md-8">
+
+<div class="lead">
+<p style="margin-left: 20px;">{{ data['types'][args['id']].description }}</p>
+</div>
+
 {% if data['tree'] %}
 <h2>Subcategories</h2>
 {% for line in data['tree'] %}
@@ -18,9 +41,27 @@
 {% endfor %}
 {% endif %}
 {% if data['poems'] %}
-<h2>Poems</h2>
-<p><small>[<a href="/dendrogram?source=theme&theme_id={{ args['id'] }}">dendrogram</a>]</small></p>
-<table>
+
+<div class="panel panel-primary">
+<div class="panel-heading"><h2 class="panel-title">Poems</h2></div>
+<div class="panel-body">
+
+<ul class="nav nav-pills">
+  <li role="presentation"><a role="button" href="/dendrogram?source=theme&theme_id={{ args['id'] }}">
+   <span class="glyphicon glyphicon-tree-conifer"></span> Dendrogram
+  </a></li>
+  <li role="presentation"><a role="button" target="_blank" href="{{ links['map'] }}">
+   <span class="glyphicon glyphicon-picture"></span> Map
+  </a></li>
+  <li role="presentation"><a role="button" target="_blank" href="{{ links['cooc-types'] }}">
+   <span class="glyphicon glyphicon-th"></span> Co-occurring types
+  </a></li>
+</ul>
+
+<p></p>
+
+<div class="table-responsive">
+<table class="table">
 {% for nro in data['poems'] %}
 <tr>
 <td><b>{% if nro in data['minor'] %}*{% endif %}<a href="/poem?nro={{ nro }}">{{ data['poems'][nro].smd.title }}</a></b></td>
@@ -30,6 +71,16 @@
 </tr>
 {% endfor %}
 </table>
+</div>
+</div>
+</div>
 {% endif %}
+
+</div>
+
+<div class="col-md-2"></div>
+</div>
+</div>
+
 </body>
 </html>

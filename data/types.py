@@ -125,11 +125,33 @@ class Types:
 
 
 def get_root_categories(db):
-    #themes = defaultdict(lambda: list())
     db.execute(\
         'SELECT theme_id FROM themes'
         ' WHERE par_id = 0 AND (LENGTH(theme_id) = 8 OR theme_id LIKE "kt_t%");')
     return Types(ids=map(itemgetter(0), db.fetchall()))
+
+
+def get_nonleaf_categories(db):
+    db.execute(\
+        'SELECT '
+        '  t1.theme_id, '
+        '  t2.theme_id, t2.name, '
+        '  t3.theme_id, '
+        '  t4.theme_id '
+        'FROM themes t1 '
+        '  JOIN themes t2 ON t1.par_id = t2.t_id '
+        '  LEFT JOIN themes t3 ON t2.par_id = t3.t_id '
+        '  LEFT JOIN themes t4 ON t3.par_id = t4.t_id '
+        'WHERE t1.theme_id NOT LIKE "kt_%" '
+        '  AND t1.theme_id NOT LIKE "erab_orig%";')
+    types = Types(ids=[])
+    for t1_id, t2_id, t2_name, t3_id, t4_id in db.fetchall():
+        if t2_id not in types:
+            t = Type(id=t2_id)
+            t.name = t2_name
+            t.ancestors = [t_id for t_id in [t3_id, t4_id] if t_id is not None]
+            types.c[t2_id] = t
+    return types
 
 
 def render_type_tree(types, minor_type_ids=None):

@@ -1,78 +1,148 @@
 <html>
 <head>
 <title>#{{ data['verse'].clust_id }} {{ data['verse'].text }}</title>
-<link rel="stylesheet" href="./static/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./static/css/bootstrap.min.css">
+<link rel="stylesheet" href="./static/css/style.css">
+<script lang="javascript" src="./static/js/jquery.min.js"></script>
+<script lang="javascript" src="./static/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-<h1><small>#{{ data['verse'].clust_id }}</small> {{ data['verse'].text }}</h1>
-[<a href="/poem?nro={{ args['nro'] }}">back to poem</a>]
-[<a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}&format=csv">CSV</a>
-/ <a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}&format=tsv">TSV</a>]
-[<a href="{{ links['map_lnk'] }}">map</a>]
-[<a href="/clustnet?nro={{ args['nro'] }}&pos={{ args['pos'] }}">cluster network</a>]<br/>
 
-<h2>Cluster ({{ data['verse'].clust_freq }})</h2>
-clustering:
-{% for c in data['clusterings'] %}
-{% if args['clustering'] == c[0] %}
-{{ c[1] }}
-{% else %}
-<a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}">{{ c[1] }}</a>
-{% endif %}
-{% endfor %}
-<table>
-  <tr><td><hr/></td></tr>
-  {% for nro, verses in data['verses'].items() %}
-  <tr><td{% if nro == args['nro'] %} bgcolor="FFEEAA"{% endif %}>
-    <table>
-    <tr>
-      <td valign="top">
-        <b><a href="/poem?nro={{ nro }}&hl={{ verses | map(attribute='pos') | join(',')  }}#{{ verses | map(attribute='pos') | min }}">
-        {{ data['poems'][nro].smd.title }}
-        </a></b>
-      </td>
-      <td>
-        <table border="0" cellpadding="0" cellspacing="0">
-        {% for v in verses %}
-        <tr>
-        <td align="right"><sup><small>{{ v.pos }}</small></sup>&thinsp;</td>
-        <td><b>{{ v.text }}</b></td>
-        </tr>
-        {% endfor %}
-        </table>
-      </td>
-    </tr>
-    </table>
-    <table>
-    <tr>
-    <td valign="top" width="400">
-      &emsp;<small>{{ nro }}</small><br/>
-      &emsp;{{ data['poems'][nro].smd.location }}<br/>
-      &emsp;{{ data['poems'][nro].smd.year }}&ensp;{{ data['poems'][nro].smd.collector }}
-    </td>
-    <td valign="top" width="400">
-      <small>
-      {% for line in data['poems'][nro].type_tree %}
-      {% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
-      {% endfor %}
-      </small>
-    </td>
-    </tr>
-    {% if nro in data['nbclust'] %}
-    <tr><td width="800" colspan="2">
-    <small>
-    <b>See also: </b>
-    {% for v in data['nbclust'][nro] %}
-    <small>#{{ v.clust_id }}</small> <a href="/verse?nro={{ v.nro }}&pos={{ v.pos }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">{{ v.text }}</a> ({{ v.clust_freq }})
+<div class="container-fluid">
+<div class="row">
+<div class="col-lg-2"></div>
+<div class="col-lg-8">
+
+<ul class="nav nav-pills">
+  <li role="presentation"><a role="button" href="/poem?nro={{ args['nro'] }}">
+   <span class="glyphicon glyphicon-chevron-left"></span> Back to poem
+  </a></li>
+</ul>
+
+<h1><small>#{{ data['verse'].clust_id }}</small> {{ data['verse'].text }}</h1>
+
+<div class="panel panel-primary">
+<div class="panel-heading">
+<div class="pull-right hover-text">
+<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+<div class="tooltip-text tooltip-text-right">
+<p>The cluster groups occurrences of similar verses. The goal is to discover
+"equivalent" verses that differ only by minor variation. The clustering was
+computed automatically using the Chinese Whispers algorithm and the
+verse similarity is measured in terms of the number of character bigrams
+(pairs of adjacent letters) shared by the verses.</p>
+
+<p>For more information on the method, see
+<a target="_blank" href="https://doi.org/10.1093/llc/fqac034">Janicki et al. (2022)</a>.</p>
+</div>
+</div>
+<h2 class="panel-title">Cluster ({{ data['verse'].clust_freq }})</h2>
+</div>
+
+<div class="panel-body">
+
+<ul class="nav nav-pills">
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      <span class="glyphicon glyphicon-list-alt"></span>
+      Export as <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+    <li role="presentation"><a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}&format=csv">CSV</a></li>
+    <li role="presentation"><a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}&format=tsv">TSV</a></li>
+    </ul>
+  </li>
+  <li role="presentation"><a role="button" target="_blank" href="{{ links['map'] }}">
+   <span class="glyphicon glyphicon-picture"></span> Map
+  </a></li>
+  <li role="presentation"><a role="button" target="_blank" href="{{ links['types'] }}">
+   <span class="glyphicon glyphicon-th"></span> Type distribution
+  </a></li>
+  <li role="presentation"><a role="button" href="/clustnet?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">
+   <span class="glyphicon glyphicon-cloud"></span> Cluster network
+  </a></li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      Clustering: {{ data['clusterings'][args['clustering']][1] }} <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+    {% for c in data['clusterings'] %}
+    <li role="presentation"><a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if c[0] > 0 %}&clustering={{ c[0] }}{% endif %}" title="{{ c[2] }}">{{ c[1] }}</a></li>
     {% endfor %}
-    </small>
-    </td></tr>
-    {% endif %}
-    </table>
-  <tr><td><hr/></td></tr>
-  {% endfor %}
-</table>
+    </ul>
+  </li>
+</ul>
+
+<div class="container-fluid">
+
+{% for nro, verses in data['verses'].items() %}
+
+<div class="row">
+<div class="col-md-12">
+<hr/>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4{% if nro == args['nro'] %} selected{% endif %}">
+<b><a href="/poem?nro={{ nro }}&hl={{ verses | map(attribute='pos') | join(',')  }}#{{ verses | map(attribute='pos') | min }}">
+{{ data['poems'][nro].smd.title }}
+</a></b>
+<p>
+<span class="glyphicon glyphicon-tag" aria-hidden="true" title="poem ID"></span>
+  {{ nro }}<br/>
+{% if data['poems'][nro].smd.location is not none %}
+<span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="location"></span>
+  {{ data['poems'][nro].smd.location }}<br/>
+{% endif %}
+{% if data['poems'][nro].smd.year is not none %}
+<span class="glyphicon glyphicon-calendar" aria-hidden="true" title="year"></span>
+  {{ data['poems'][nro].smd.year }}&emsp;
+{% endif %}
+{% if data['poems'][nro].smd.collector is not none %}
+<span class="glyphicon glyphicon-user" aria-hidden="true" title="collector"></span>
+  {{ data['poems'][nro].smd.collector }}
+{% endif %}
+</p>
+</div>
+
+<div class="col-md-4">
+{% for v in verses %}
+<sup><small>{{ v.pos }}</small></sup>&thinsp;<td><b>{{ v.text }}</b></td><br/>
+{% endfor %}
+</div>
+
+<div class="col-md-4">
+<p style="line-height: 1;">
+{% for line in data['poems'][nro].type_tree %}
+{% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
+{% endfor %}
+</p>
+</div>
+</div>
+
+{% if nro in data['nbclust'] %}
+<div class="row">
+<div class="col-md-12">
+<b>See also: </b>
+{% for v in data['nbclust'][nro] %}
+<small>#{{ v.clust_id }}</small> <a href="/verse?nro={{ v.nro }}&pos={{ v.pos }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">{{ v.text }}</a> ({{ v.clust_freq }})
+{% endfor %}
+</div>
+</div>
+{% endif %}
+
+{% endfor %}
+</div>
+
+</div>
+</div>
+<div class="col-lg-2"></div>
+
+</div>
+</div>
+</div>
 
 </body>
 </html>

@@ -2,6 +2,7 @@ from collections import defaultdict
 from flask import render_template
 from operator import itemgetter
 import pymysql
+from urllib.parse import urlencode
 
 import config
 from data.poems import Poems
@@ -39,5 +40,11 @@ def render(**args):
         'poems': poems,
         'minor': set(minor_nros)
     }
-    return render_template('theme.html', args=args, data=data, links={})
+    links = {
+      'map': config.VISUALIZATIONS_URL + '/?vis=map_type&' \
+             + urlencode({'theme_id': args['id']}),
+      'cooc-types': config.VISUALIZATIONS_URL + '?vis=tree_types_cooc&' \
+             + urlencode({'theme_id': args['id'], 'include_erab_orig': False})
+    }
+    return render_template('theme.html', args=args, data=data, links=links)
 

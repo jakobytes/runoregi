@@ -1,6 +1,6 @@
 from flask import render_template
-import math
 from operator import itemgetter
+import math
 import pymysql
 import re
 
@@ -9,7 +9,7 @@ from collections import Counter, defaultdict
 import config
 from data.poems import Poems
 from data.verses import get_verses
-from utils import link
+from utils import link, makecol
 
 
 DEFAULTS = {
@@ -28,7 +28,7 @@ def generate_page_links(args):
     def pagelink(**kwargs):
         return link('poem', dict(args, **kwargs), DEFAULTS)
 
-    return {
+    result = {
         '+show_verse_themes':
             pagelink(show_verse_themes=True),
         '-show_verse_themes':
@@ -37,19 +37,13 @@ def generate_page_links(args):
             pagelink(show_shared_verses=True),
         '-show_shared_verses':
             pagelink(show_shared_verses=False),
-        'sim_order:consecutive_rare':
-            pagelink(sim_order='consecutive_rare'),
-        'sim_order:consecutive':
-            pagelink(sim_order='consecutive'),
-        'sim_order:rare':
-            pagelink(sim_order='rare'),
-        'sim_order:any':
-            pagelink(sim_order='shared'),
-        '+max_similar':
-            pagelink(max_similar=args['max_similar']+10),
-        '-max_similar':
-            pagelink(max_similar=max(args['max_similar']-10, 0))
+        'sim_order': {}, 'max_similar': {}
     }
+    for val in ['consecutive_rare', 'consecutive', 'rare', 'any']:
+        result['sim_order'][val] = pagelink(sim_order=val)
+    for val in [10, 20, 30, 40, 50, 75, 100, 150, 200]:
+        result['max_similar'][val] = pagelink(max_similar=val)
+    return result
 
 
 # TODO verse-level themes
@@ -124,20 +118,6 @@ def get_shared_verses(db, poem, max, thr, order, clustering_id=0):
 
 
 def render(**args):
-    def _makecolcomp(value):
-        result = hex(255-int(value*51))[2:]
-        if len(result) == 1:
-            result = '0'+result
-        return result
-
-    def _makecol(value):
-        if value is None:
-            value = 1
-        val_norm = min(math.log(value), 10)
-        rg = _makecolcomp(min(val_norm, 5))
-        b = _makecolcomp(max(val_norm-5, 0))
-        return '#'+rg+rg+b
-
     links = generate_page_links(args)
     p = Poems(nros=[args['nro']])
     sim_poems, verse_themes, types = None, None, None
@@ -179,7 +159,8 @@ def render(**args):
         'sim_right': [(x.nro, x.sim_al_r) \
                       for x in poem.sim_poems \
                           if x.sim_al < 0.1 and x.sim_al_r >= 0.5],
-        'colors': { x: _makecol(x) for x in set(v.clust_freq for v in poem.text) },
+        'colors': { x: makecol(math.log(x), '337ab7', math.log(5000)) \
+                    for x in set(v.clust_freq for v in poem.text) },
         'verse_themes' : verse_themes,
         'verse_poems': verse_poems,
         'linked_poems': linked_poems,

@@ -79,10 +79,12 @@ def render(**args):
             'clusterings': clusterings
         }
         map_args = { 'nro': args['nro'], 'pos': args['pos'],
-                     'clustering': args['clustering'], 'format': 'csv' }
+                     'clustering': args['clustering'] }
         links = {
-            'map_lnk': config.VISUALIZATIONS_URL + '/?vis=map_cluster&' \
-                       + urlencode(map_args)
+            'map': config.VISUALIZATIONS_URL + '/?vis=map_cluster&' \
+                   + urlencode(map_args),
+            'types': config.VISUALIZATIONS_URL + '/?vis=tree_types_cluster&' \
+                     + urlencode(dict(map_args, incl_erab_orig=False))
         }
         return render_template('verse.html', args=args, data=data, links=links)
 

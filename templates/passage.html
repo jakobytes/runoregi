@@ -1,72 +1,149 @@
 <html>
 <head>
 <title>Similar passages — Runoregi</title>
-<link rel="stylesheet" href="./static/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./static/css/bootstrap.min.css">
+<link rel="stylesheet" href="./static/css/style.css">
+<script lang="javascript" src="./static/js/jquery.min.js"></script>
+<script lang="javascript" src="./static/js/bootstrap.min.js"></script>
 </head>
 
 <body>
+
+<div class="container-fluid">
+<div class="row">
+<div class="col-lg-2"></div>
+<div class="col-lg-8">
+
+<ul class="nav nav-pills">
+  <li role="presentation"><a role="button" href="/poem?nro={{ args['nro'] }}">
+   <span class="glyphicon glyphicon-chevron-left"></span> Back to poem
+  </a></li>
+</ul>
+
 <h1>Similar passages</h1>
+<div class="panel panel-primary">
+<div class="panel-body">
 
-[<a href="{{ links['+results'] }}">more results</a>]
-[<a href="{{ links['-results'] }}">less results</a>]
-[<a href="{{ links['+context'] }}">more context</a>]
-[<a href="{{ links['-context'] }}">less context</a>]
-[<a href="/passage?nro={{ args['nro'] }}&start={{ args['start'] }}&end={{ args['end'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">reset to defaults</a>]
-[<a href="{{ links['csv'] }}">CSV</a>
-/ <a href="{{ links['tsv'] }}">TSV</a>]
-[<a href="{{ links['map_lnk'] }}">map</a>]<br/>
-clustering: 
-{% for c in data['clusterings'] %}
-{% if args['clustering'] == c[0] %}
-{{ c[1] }}
-{% else %}
-<a href="{{ links['clustering-' ~ c[0]] }}">{{ c[1] }}</a>
-{% endif %}
-{% endfor %}
-
-<table>
-  <tr><td><hr/></td></tr>
-  {% for pas in data['passages'] %}
-  <tr><td{% if pas['hl'] %} bgcolor="FFEEAA"{% endif %}>
-    <table>
-    <tr>
-      <td valign="top">
-        <b><a href="/poem?nro={{ pas['nro'] }}&hl={{ pas['matches'] | join(',') }}#{{ pas['matches'][0] }}">
-	  {{ data['poems'][pas['nro']].smd.title }}
-	</a></b>
-      </td>
-      <td>
-        <table border="0" cellpadding="0" cellspacing="0">
-    {% for v in pas['verses'] %}
-	<tr>
-          <td align="right"><sup><small>{{ v.pos }}</small></sup>&thinsp;</td>
-      <td>{% if v.pos in pas['matches'] %}<b>{% endif %}{{ v.text }}{% if v in pas['matches'] %}</b>{% endif %}</td>
-	</tr>
-	{% endfor %}
-	</table>
-      </td>
-    </tr>
-    </table>
-    <table>
-    <tr>
-    <td valign="top" width="400">
-      &emsp;<small>{{ pas['nro'] }}</small><br/>
-      &emsp;{{ data['poems'][pas['nro']].smd.location }}<br/>
-      &emsp;{{ data['poems'][pas['nro']].smd.year }}&ensp;{{ data['poems'][pas['nro']].smd.collector }}
-    </td>
-    <td valign="top" width="400">
-      <small>
-      {% for line in data['poems'][pas['nro']].type_tree %}
-      {% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
+<ul class="nav nav-pills">
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+    <span class="glyphicon glyphicon-cog"></span>
+    Max. distance: {{ args['dist'] }} <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      {% for val in links['dist'] %}
+      <li role="presentation"><a href="{{ links['dist'][val] }}">{{ val }}</a></li>
       {% endfor %}
-      </small>
-    </td>
-    </tr>
-    </table>
-  </td></tr>
-  <tr><td><hr/></td></tr>
-  {% endfor %}
-</table>
+    </ul>
+  </li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+    <span class="glyphicon glyphicon-cog"></span>
+    Min. hit proportion: {{ args['hitfact'] }} <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      {% for val in links['hitfact'] %}
+      <li role="presentation"><a href="{{ links['hitfact'][val] }}">{{ val }}</a></li>
+      {% endfor %}
+    </ul>
+  </li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+    <span class="glyphicon glyphicon-cog"></span>
+    Context: {{ args['context'] }} <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      {% for val in links['context'] %}
+      <li role="presentation"><a href="{{ links['context'][val] }}">{{ val }}</a></li>
+      {% endfor %}
+    </ul>
+  </li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      <span class="glyphicon glyphicon-list-alt"></span>
+      Export as <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+    <li role="presentation"><a href="{{ links['csv'] }}">CSV</a></li>
+    <li role="presentation"><a href="{{ links['tsv'] }}">TSV</a></li>
+    </ul>
+  </li>
+  <li role="presentation"><a role="button" target="_blank" href="{{ links['map_lnk'] }}">
+   <span class="glyphicon glyphicon-picture"></span> Map
+  </a></li>
+  <li role="presentation" class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+      Clustering: {{ data['clusterings'][args['clustering']][1] }} <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+    {% for c in data['clusterings'] %}
+    <li role="presentation"><a href="{{ links['clustering'][c[0]] }}" title="{{ c[2] }}">{{ c[1] }}</a></li>
+    {% endfor %}
+    </ul>
+  </li>
+</ul>
+
+<div class="container-fluid">
+
+{% for pas in data['passages'] %}
+
+<div class="row">
+<div class="col-md-12">
+<hr/>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4{% if pas['nro'] == args['nro'] %} selected{% endif %}">
+<b><a href="/poem?nro={{ pas['nro'] }}&hl={{ pas['matches'] | join(',') }}#{{ pas['matches'][0] }}">
+{{ data['poems'][pas['nro']].smd.title }}
+</a></b>
+
+<p>
+<span class="glyphicon glyphicon-tag" aria-hidden="true" title="poem ID"></span>
+  {{ pas['nro'] }}<br/>
+{% if data['poems'][pas['nro']].smd.location is not none %}
+<span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="location"></span>
+  {{ data['poems'][pas['nro']].smd.location }}<br/>
+{% endif %}
+{% if data['poems'][pas['nro']].smd.year is not none %}
+<span class="glyphicon glyphicon-calendar" aria-hidden="true" title="year"></span>
+  {{ data['poems'][pas['nro']].smd.year }}&emsp;
+{% endif %}
+{% if data['poems'][pas['nro']].smd.collector is not none %}
+<span class="glyphicon glyphicon-user" aria-hidden="true" title="collector"></span>
+  {{ data['poems'][pas['nro']].smd.collector }}
+{% endif %}
+</p>
+
+</div>
+<div class="col-md-4">
+{% for v in pas['verses'] %}
+<tr>
+<sup><small>{{ v.pos }}</small></sup>&thinsp;
+{% if v.pos in pas['matches'] %}<b>{% endif %}{{ v.text }}{% if v.pos in pas['matches'] %}</b>{% endif %}<br/>
+{% endfor %}
+</div>
+
+<div class="col-md-4">
+<p style="line-height: 1;">
+{% for line in data['poems'][pas['nro']].type_tree %}
+{% if line.is_minor %}<font color="gray">{% endif %}{{ line.prefix | join('\u2003') }} {{ data['types'][line.type_id].name }}{% if line.is_minor %}</font>{% endif %}<br/>
+{% endfor %}
+</p>
+</div>
+</div>
+
+{% endfor %}
+</div>
+</div>
+</div>
+<div class="col-lg-2"></div>
+
+</div>
+</div>
+</div>
 
 </body>
 </html>
+

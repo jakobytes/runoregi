@@ -34,15 +34,21 @@ def generate_page_links(args, clusterings):
     result = {
         'csv': pagelink(format='csv'),
         'tsv': pagelink(format='tsv'),
-        '-context': pagelink(context=max(args['context']-2, 0)),
-        '+context': pagelink(context=args['context']+2),
-        '-results': pagelink(dist=max(args['dist']-1, 1), hitfact=args['hitfact']*1.25),
-        '+results': pagelink(dist=args['dist']+1, hitfact=args['hitfact']*0.8),
         'map_lnk' : config.VISUALIZATIONS_URL + '/?vis=map_passage&' \
-                    + urlencode(map_args)
+                    + urlencode(map_args),
+        'dist': {}, 'hitfact': {}, 'context': {}, 'clustering': {}
     }
+    for x in range(1, 7):
+        result['dist'][x] = pagelink(dist=x)
+    for x in range(1, 11, 2):
+        result['context'][x] = pagelink(context=x)
+    x = 0.1
+    while x <= 1:
+        xf = '{:.2}'.format(x)
+        result['hitfact'][xf] = pagelink(hitfact=xf)
+        x += 0.1
     for c in clusterings:
-        result['clustering-{}'.format(c[0])] = pagelink(clustering=c[0])
+        result['clustering'][c[0]] = pagelink(clustering=c[0])
     return result
 
 
