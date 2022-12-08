@@ -470,11 +470,6 @@ $(document).ready(function() {
 
 $('#sim_poems_select_all').change(function() {
   $('input[type=checkbox]', '#similar-poems').not(this).prop('checked', this.checked);
-  if ($(this).is(':checked')) {
-    console.log('checked');
-  } else {
-    console.log('unchecked');
-  }
 });
 </script>
 
