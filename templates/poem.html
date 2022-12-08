@@ -3,8 +3,11 @@
 <title>{{ data['poem'].smd.title }} — Runoregi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="./static/css/bootstrap.min.css">
+<link rel="stylesheet" href="./static/css/jquery.dataTables.css">
 <link rel="stylesheet" href="./static/css/style.css">
+
 <script lang="javascript" src="./static/js/jquery.min.js"></script>
+<script type="text/javascript" charset="utf8" src="./static/js/jquery.dataTables.js"></script>
 <script lang="javascript" src="./static/js/bootstrap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/selection-js/dist/selection.min.js"></script>
 </head>
@@ -370,7 +373,17 @@ on sequences of verses.</p>
       </div>
       <div class="modal-body">
          <div class="table-responsive" style="max-height: 600px; overflow-y: scroll;" id="similar-poems">
-         <table class="table table-condensed">
+         <table id="sim_poems" class="table compact table-condensed table-striped" style="width: 100%;">
+         <thead>
+           <th><input type="checkbox" id="sim_poems_select_all"></th>
+           <th>poem</th>
+           <th>sim.</th>
+           <th></th>
+           <th>year</th>
+           <th>place</th>
+           <th>collector</th>
+         </thead>
+         <tbody>
          {% for nro, s in data['sim'] | sort(attribute=1, reverse=True) %}
            <tr>
              <td><input type="checkbox" value="{{ nro }}"></td>
@@ -378,18 +391,14 @@ on sequences of verses.</p>
              <a href="/poemdiff?nro1={{ data['poem'].nro }}&nro2={{ nro }}">{{ data['related'][nro].smd.title }}</a>
                &ensp;
              </td>
-             <td>{{ (s*100) | int }}&nbsp;%</td>
-             <td>
-              <div class="progress" style="width: 100px; display: inline-block">
-                <div class="progress-bar" role="progressbar" aria-valuenow="{{ (s*100) | int }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ (s*100) | int }}%;">
-                </div>
-              </div>
-             </td>
+             <td>{{ (s*100) | int }}%</td>
+             <td><div class="progress" style="width: 100px; display: inline-block"> <div class="progress-bar" role="progressbar" aria-valuenow="{{ (s*100) | int }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ (s*100) | int }}%;"></div></div></td>
              <td>{{ data['related'][nro].smd.year }}</td>
              <td>{{ data['related'][nro].smd.location }}</td>
              <td>{{ data['related'][nro].smd.collector }}</td>
            </tr>
            {% endfor %}
+         </tbody>
          </table>
          </div> <!-- table-responsive -->
       </div>
@@ -439,10 +448,32 @@ on sequences of verses.</p>
 $('#compare-selected').on('click', (e) => {
   var array = [];
   $('input[type=checkbox]:checked', '#similar-poems').each( function() {
-      array.push($(this).val());
+      if ($(this).attr('id') !== 'sim_poems_select_all') {
+          array.push($(this).val());
+      }
   });
   if (array.length > 0) {
     window.open("/multidiff?nro={{ data['poem'].nro }}," + array.join(","));
+  }
+});
+
+$(document).ready(function() {
+  $('#sim_poems').DataTable( {
+    columnDefs: [
+      { orderable: false, targets: 0 },
+      { orderable: false, targets: 3 },
+      { type: "num-fmt", "targets": 2 }
+    ],
+    order: [[2, 'desc']]
+    } );
+} );
+
+$('#sim_poems_select_all').change(function() {
+  $('input[type=checkbox]', '#similar-poems').not(this).prop('checked', this.checked);
+  if ($(this).is(':checked')) {
+    console.log('checked');
+  } else {
+    console.log('unchecked');
   }
 });
 </script>
