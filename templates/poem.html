@@ -446,12 +446,13 @@ on sequences of verses.</p>
   })
 
 $('#compare-selected').on('click', (e) => {
+  const table = $("#sim_poems").DataTable();
   var array = [];
-  $('input[type=checkbox]:checked', '#similar-poems').each( function() {
-      if ($(this).attr('id') !== 'sim_poems_select_all') {
-          array.push($(this).val());
-      }
-  });
+  table.rows().every( function(rowIdx, tableLoop, rowLoop) {
+      $("input[type=checkbox]:checked", this.node()).each( function() {
+        array.push($(this).val());
+      });
+    } );
   if (array.length > 0) {
     window.open("/multidiff?nro={{ data['poem'].nro }}," + array.join(","));
   }
