@@ -96,10 +96,24 @@
 
 
 <ul class="nav nav-pills">
-  <li role="presentation"><a role="button">
-   <span class="glyphicon glyphicon-info-sign hover-text"></span>
-   <div class="tooltip-text tooltip-text-right">
-   <p>blah </p>
+  <li role="presentation"><a role="button" class="hover-text">
+   <span class="glyphicon glyphicon-info-sign"></span>
+   <div class="tooltip-text">
+   <p>The <b>colored bar</b> next to the poem text shows the amount of similar
+   verses found in the corpus. More intensive colors represent higher
+   numbers. Click on the bar to see the verse cluster.</p>
+   <p>In the space between the colored bar and the poem text, which contains
+   verse numbers, you can select verses for <b>similar passage search</b>
+   by dragging the mouse with left button pressed. This will trigger a
+   search for similar passages, which contain verses from the same
+   clusters as the selected ones.</p>
+   <p>The <b>shared verses matrix</b> represents poems that contain
+   verses from the same clusters as the poem shown here. The columns
+   represent poems and colored cells the presence of a verse that match
+   the corresponding verse in the shown poem (not necessarily in the
+   same order). Click on the colored cells to see an alignment view.</p>
+   <p>The <b>verse-level themes</b> are an experimental feature. It is
+   not recommended to use it and it might be removed in the future.</p>
    </div>
   </a></li>
   {% if args['show_verse_themes'] %}
