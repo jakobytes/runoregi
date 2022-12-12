@@ -372,7 +372,7 @@ on sequences of verses.</p>
         <h4 class="modal-title" id="myModalLabel">Similar poems</h4>
       </div>
       <div class="modal-body">
-         <div class="table-responsive" style="max-height: 600px; overflow-y: scroll;" id="similar-poems">
+         <div class="table-responsive" style="max-height: 700px; overflow-y: scroll;" id="similar-poems">
          <table id="sim_poems" class="table compact table-condensed table-striped" style="width: 100%;">
          <thead>
            <th><input type="checkbox" id="sim_poems_select_all"></th>
@@ -404,6 +404,7 @@ on sequences of verses.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default" id="clear-selection">Clear selection</button>
         <button type="button" class="btn btn-primary" id="compare-selected">Compare selected</button>
       </div>
     </div>
@@ -445,6 +446,12 @@ on sequences of verses.</p>
     window.open('/passage?nro={{ data['poem'].nro }}&start=' + selected[0].id + '&end=' + selected[selected.length - 1].id,'_self')
   })
 
+$('#clear-selection').on('click', (e) => {
+  const table = $("#sim_poems").DataTable();
+  table.rows().every( function(rowIdx, tableLoop, rowLoop) {
+      $("input[type=checkbox]", this.node()).prop('checked', false);
+    } );
+});
 $('#compare-selected').on('click', (e) => {
   const table = $("#sim_poems").DataTable();
   var array = [];
@@ -471,6 +478,7 @@ $(document).ready(function() {
 
 $('#sim_poems_select_all').change(function() {
   $('input[type=checkbox]', '#similar-poems').not(this).prop('checked', this.checked);
+  $('#sim_poems_select_all').prop('checked', false);
 });
 </script>
 
