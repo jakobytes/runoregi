@@ -160,7 +160,8 @@ def render(**args):
                       for x in poem.sim_poems \
                           if x.sim_al < 0.1 and x.sim_al_r >= 0.5],
         'colors': { x: makecol(math.log(x), '337ab7', math.log(5000)) \
-                    for x in set(v.clust_freq for v in poem.text) },
+                    for x in set(v.clust_freq for v in poem.text) \
+                    if x is not None},
         'verse_themes' : verse_themes,
         'verse_poems': verse_poems,
         'linked_poems': linked_poems,
