@@ -21,6 +21,8 @@ DEFAULTS = {
   'method': 'complete',
 }
 
+MAX_TYPE_STYLES = 8
+
 
 def generate_page_links(args):
     global DEFAULTS
@@ -58,7 +60,7 @@ def transform_vert(dd, n, nros):
         return int(400*(1-x)+20)
 
     def ty(y):
-        return int(70*y+25)
+        return int(70*y+35)
 
     result = []
     ill = np.zeros(n, dtype=np.uint16)   # inverse leaves list -- positions of leaf nodes
@@ -80,15 +82,15 @@ def transform_vert(dd, n, nros):
 
 
 def render(**args):
-    poems, types, inner = None, None, None
+    poems, types, target_type, inner = None, None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         if args['source'] == 'theme':
-            types = Types(ids=[args['theme_id']])
-            types.get_descriptions(db)
-            nros, minor_nros = types.get_poem_ids(db, minor=True)
+            target_type = Types(ids=[args['theme_id']])
+            target_type.get_descriptions(db)
+            nros, minor_nros = target_type.get_poem_ids(db, minor=True)
             poems = Poems(nros=nros+minor_nros)
-            types.get_ancestors(db, add=True)
-            types.get_names(db)
+            target_type.get_ancestors(db, add=True)
+            target_type.get_names(db)
         elif args['source'] == 'cluster':
             poems = Poems(nros=[args['nro'][0]])
             poems.get_poem_cluster_info(db)
@@ -106,15 +108,25 @@ def render(**args):
             poems = Poems(nros=new_nros)
         poems.get_structured_metadata(db)
         poems.get_similar_poems(db, within=True)
+        types = poems.get_types(db)
+        types.get_names(db)
 
     d = sim_to_dist(make_sim_mtx(poems))
     clust = cluster(d, args['method'])
     ll = scipy.cluster.hierarchy.leaves_list(clust)
     dd = transform_vert(clust, len(poems), list(poems))
+    type_styles = {}
+    for p in poems:
+        for t in poems[p].type_ids + poems[p].minor_type_ids:
+            if t not in type_styles:
+                type_styles[t] = len(type_styles) % MAX_TYPE_STYLES
     data = {
         'poems': poems,
         'nros': list(poems),
         'types': types,
+        'target_type': target_type,
+        'type_styles': type_styles,
+        'max_type_styles': MAX_TYPE_STYLES,
         'inner': inner,
         'll': ll, 'dd': dd, 'n': len(poems)
     }

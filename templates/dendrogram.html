@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>{% if args['source'] == "theme" %}{{ data['types'][args['theme_id']].name }}{% else %}Denrogram{% endif %} — Runoregi</title>
+<title>{% if args['source'] == "theme" %}{{ data['target_type'][args['theme_id']].name }}{% else %}Denrogram{% endif %} — Runoregi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="./static/css/bootstrap.min.css">
 <link rel="stylesheet" href="./static/css/style.css">
@@ -22,19 +22,19 @@
    Back to poem
   </a></li>
   {% elif args['source'] == "theme" %}
-    {% for type_id in data['types'][args['theme_id']].ancestors | reverse %}
+    {% for type_id in data['target_type'][args['theme_id']].ancestors | reverse %}
   <li role="presentation"><a role="button" href="/theme?id={{ type_id }}">
    <span class="glyphicon glyphicon-chevron-right"></span>
-   {{ data['types'][type_id].name }}
+   {{ data['target_type'][type_id].name }}
   </a></li>
     {% endfor %}
   {% endif %}
 
 {% if args['source'] == "theme" %}
 </ul>
-<h1 style="margin-left: 20px;">{{ data['types'][args['theme_id']].name }}</h1>
+<h1 style="margin-left: 20px;">{{ data['target_type'][args['theme_id']].name }}</h1>
 <div class="lead">
-<p style="margin-left: 20px;">{{ data['types'][args['theme_id']].description }}</p>
+<p style="margin-left: 20px;">{{ data['target_type'][args['theme_id']].description }}</p>
 </div>
 <ul class="nav nav-pills">
 {% elif args['source'] == "cluster" %}
@@ -99,6 +99,8 @@ var leaves = [
   location: {% if data['poems'][data['nros'][i]].smd.location is not none %}{{ data['poems'][data['nros'][i]].smd.location | tojson }}{% else %}""{% endif %},
   collector: {% if data['poems'][data['nros'][i]].smd.collector is not none %}{{ data['poems'][data['nros'][i]].smd.collector | tojson }}{% else %}""{% endif %},
   year: {% if data['poems'][data['nros'][i]].smd.year is not none %}{{ data['poems'][data['nros'][i]].smd.year | tojson }}{% else %}""{% endif %},
+  types: [ {% for type_id in data['poems'][data['nros'][i]].type_ids %}{% if loop.index0 > 0 %},{% endif %}"{{ data['types'][type_id].name }}"{% endfor %} ],
+  type_styles: [ {% for type_id in data['poems'][data['nros'][i]].type_ids %}{% if loop.index0 > 0 %},{% endif %}"{{ data['type_styles'][type_id] }}"{% endfor %} ],
   inner: {{ (data['nros'][i] in data['inner']) | tojson }}
 },  
 {% endfor %}
@@ -150,6 +152,19 @@ function draw_dendrogram() {
     col_year.setAttribute("class", "dendrogram-leaf");
     col_year.appendChild(document.createTextNode(leaves[i].year + " " + leaves[i].collector));
     d.appendChild(col_year);
+    for (j = 0; j < leaves[i].types.length; j++) {
+      var t_sq = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      t_sq.setAttribute("x", leaf_x + j*15);
+      t_sq.setAttribute("y", i*70+50);
+      t_sq.setAttribute("width", 10);
+      t_sq.setAttribute("height", 10);
+      t_sq.setAttribute("title", leaves[i].types[j]);
+      t_sq.setAttribute("class", "c"+leaves[i].type_styles[j]);
+      var t_sq_tit = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      t_sq_tit.appendChild(document.createTextNode(leaves[i].types[j]));
+	  t_sq.appendChild(t_sq_tit);
+      d.appendChild(t_sq);
+    }
   }
   for (i = 0; i < dd.length; i++) {
     var line_1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
