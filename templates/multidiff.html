@@ -8,6 +8,15 @@
 <script lang="javascript" src="./static/js/bootstrap.min.js"></script>
 </head>
 
+<style>
+.fold_label {
+  text-align: center;
+  font-size: 10pt;
+  color: #888888;
+  cursor: pointer;
+}
+</style>
+
 <body>
 
 {% if data['poems'] | length < 8 %}
@@ -76,6 +85,11 @@
           </a>
         </li>
         {% endif %}
+        <li class="btn-focus-column" role="presentation" title="focus">
+           <a role="button" onclick="fold_focus_column({{ loop.index0 }});">
+             <span class="glyphicon glyphicon-screenshot"></span>
+           </a>
+        </li>
         {% if loop.index0+1 < data['poems'] | length %}
         <li role="presentation">
           <a role="button"
@@ -121,12 +135,12 @@
   </tr>
   <tr>
     <td colspan="3">&nbsp;</td>
-    {% for verses in data['alignment'] %}
   </tr>
+    {% for verses in data['alignment'] %}
 
-  <tr>
+  <tr class="line">
     {% for v in verses %}
-    <td>{% if v is defined %}{{ v.text }}{% endif %}</td>
+    <td {% if v is not defined or not v.text %}onclick="fold(this);"{% endif %}>{% if v is defined %}{{ v.text }}{% endif %}</td>
     {% endfor %}
   </tr>
   {% endfor %}
@@ -176,6 +190,187 @@
 </div>
 </div>
 {% endif %}
+
+<script>
+
+var focus_col = -1;
+
+function get_column(node) {
+  let result = 0;
+  while (node.previousElementSibling != null) {
+    result++;
+    node = node.previousElementSibling;
+  }
+  return result;
+}
+
+function make_fold_row(n_folded) {
+  let fold_row = document.createElement("tr");
+  fold_row.className = "fold";
+  for (k = 0; k < n_folded.length; k++) {
+    let cell = document.createElement("td");
+    if (n_folded[k] > 0) {
+      let text = "--- (" + n_folded[k] + ") ---";
+      cell.appendChild(document.createTextNode(text));
+      cell.setAttribute("data-column", k);
+      cell.classList.add("fold_label");
+      cell.addEventListener("click", function(e) { unfold(e.target); });
+     }
+     fold_row.appendChild(cell);
+   }
+   return fold_row;
+}
+
+function fold(node) {
+  set_focus_column(-1);
+  let j = get_column(node);
+  if (node.textContent != "") { return; }
+
+  // determine the row from which to start folding
+  let n = node.parentNode;
+  while ((n.previousElementSibling != null) &&
+         (n.previousElementSibling.className == "line" ||
+          n.previousElementSibling.className == "fold") &&
+         (n.hidden || n.children[j].textContent == "")) {
+    n = n.previousElementSibling;
+  }
+  if (n.children[j].textContent != "") {
+    n = n.nextElementSibling;
+  }
+
+  // fold from that row
+  let n_folded = [];
+  for (let k = 0; k < n.children.length; k++) {
+    n_folded[k] = 0;
+  }
+  while (n.nextElementSibling != null) {
+    if (n.classList.contains("line")) {
+      if (n.children[j].textContent == "") {
+        n.hidden = true;
+      }
+      if (n.hidden) {
+        for (k = 0; k < n.children.length; k++) {
+          if (n.children[k].textContent != "") {
+            n_folded[k]++;
+          }
+        }
+        n = n.nextElementSibling;
+      } else {
+        break;
+      }
+    } else if (n.classList.contains("fold")) {
+      n = n.nextElementSibling;
+      n.parentNode.removeChild(n.previousElementSibling);
+    }
+  }
+  // process the last line if it needs to be folded
+  if (n.nextElementSibling == null) {
+    if ((n.className == "line") && (n.children[j].textContent = "") ) {
+      n.hidden = true;
+      for (k = 0; k < n.children.length; k++) {
+        if (n.children[k].textContent != "") {
+          n_folded[k]++;
+        }
+      }
+    } else if (n.className == "fold") {
+      n = n.previousSibling;
+      n.parentNode.removeChild(n.nextSibling);
+    }
+  } else {
+    n = n.previousSibling;
+  }
+
+  let fold_row = make_fold_row(n_folded);
+  if (n.nextSibling != null) {
+    n.parentNode.insertBefore(fold_row, n.nextSibling);
+  } else {
+    n.parentNode.appendChild(fold_row);
+  }
+}
+
+function unfold(node) {
+  set_focus_column(-1);
+  let j = get_column(node);
+  let start = node.parentNode.previousElementSibling;
+  while ((start.previousElementSibling != null) &&
+         (start.previousElementSibling.hidden)) {
+    start = start.previousElementSibling;
+  }
+  end = node.parentNode.nextElementSibling;
+  node.parentNode.remove();
+
+  let n_folded = [];
+  let lines_folded = 0;
+  for (let k = 0; k < start.children.length; k++) {
+    n_folded[k] = 0;
+  }
+
+  let n = start;
+  while (n != end) {
+    if (n.children[j].textContent != "") {
+      n.hidden = false;
+      if (lines_folded > 0) {
+        let fold_row = make_fold_row(n_folded);
+        n.parentNode.insertBefore(fold_row, n);
+        n = fold_row;
+
+        lines_folded = 0;
+        for (let k = 0; k < n_folded.length; k++) {
+          n_folded[k] = 0;
+        }
+      }
+    } else {
+      lines_folded++;
+      for (let k = 0; k < n_folded.length; k++) {
+        if (n.children[k].textContent != "") {
+          n_folded[k]++;
+        }
+      }
+    }
+    n = n.nextElementSibling;
+  }
+  if (lines_folded > 0) {
+    let fold_row = make_fold_row(n_folded);
+    if (end != null) {
+      end.parentNode.insertBefore(fold_row, end);
+    } else {
+      end.parentNode.appendChild(fold_row);
+    }
+  }
+}
+
+function unfold_all() {
+  set_focus_column(-1);
+  document.querySelectorAll(".line").forEach(n => { n.hidden = false; });
+  document.querySelectorAll(".fold").forEach(n => { n.remove(); });
+}
+
+function set_focus_column(j) {
+  if (focus_col > -1) {
+    document.getElementsByClassName("btn-focus-column")[focus_col]
+      .classList.remove("active");
+  }
+  if (j > -1) {
+    document.getElementsByClassName("btn-focus-column")[j]
+      .classList.add("active");
+  }
+  focus_col = j;
+}
+
+function fold_focus_column(j) {
+  let prev_focus_col = focus_col;
+  unfold_all();
+  if (prev_focus_col != j) {
+    document.querySelectorAll(".line").forEach(n => {
+      if ((!n.hidden) && (n.children[j].textContent == "")) {
+        fold(n.children[j]);
+      }
+    });
+    set_focus_column(j);
+  }
+}
+
+</script>
 
 </body>
 </html>
