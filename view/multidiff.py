@@ -49,8 +49,8 @@ def merge_alignments(poems, merges, v_sims):
     def _agr_sim(x, y):
         x_ids = [vx.v_id for vx in x if vx is not None]
         y_ids = [vy.v_id for vy in y if vy is not None]
-        sims = [-1] + [v_sims[(i, j)] \
-                       for i in x_ids for j in y_ids if (i, j) in v_sims]
+        sims = [-1] + [v_sims[i][j] \
+                       for i in x_ids for j in y_ids if j in v_sims[i]]
         return max(sims)
 
     # FIXME passing x_size and y_size here is slow and clumsy!
@@ -117,7 +117,8 @@ def render(**args):
     else:
         data = {
             'alignment': als, 'poems': poems, 'meta_keys': meta_keys,
-            'types': types, 'm': m, 'm_onesided': m_onesided
+            'types': types, 'm': m, 'm_onesided': m_onesided,
+            'v_sims': v_sims
         }
         links = generate_page_links(args)
         return render_template('multidiff.html', args=args, data=data, links=links)

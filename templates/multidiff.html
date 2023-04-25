@@ -140,7 +140,7 @@
 
   <tr class="line">
     {% for v in verses %}
-    <td {% if v is not defined or not v.text %}onclick="fold(this);"{% endif %}>{% if v is defined %}{{ v.text }}{% endif %}</td>
+    <td {% if v is not defined or not v.text %}onclick="fold(this);"{% else %}onclick="toggle_highlight(this);" data-v_id="{{ v.v_id }}"{% endif %}>{% if v is defined %}{{ v.text }}{% endif %}</td>
     {% endfor %}
   </tr>
   {% endfor %}
@@ -193,7 +193,48 @@
 
 <script>
 
+var v_sims = {{ data['v_sims'] | tojson }};
+
 var focus_col = -1;
+
+function toggle_highlight(node) {
+  if (node.hasAttribute("hl")) {
+    remove_highlight(node);
+  } else {
+    add_highlight(node);
+  }
+}
+
+function add_highlight(node) {
+  document.querySelectorAll("[hl]").forEach(n => { remove_highlight(n); });
+  node.setAttribute("hl", 1);
+  node.setAttribute("title", "1.0")
+  node.style.backgroundColor = "rgba(135, 166, 255, 1)";
+  v_id = node.getAttribute("data-v_id");
+  document.querySelectorAll("[data-v_id]").forEach(n => {
+    v_id_2 = n.getAttribute("data-v_id");
+    if (v_id_2 in v_sims[v_id]) {
+      s = (v_sims[v_id][v_id_2]-{{ args['t'] }}) / (1-{{ args['t'] }});
+      n.style.backgroundColor = "rgba(91, 155, 219, " + s  + ")";
+      n.setAttribute("title", ""+v_sims[v_id][v_id_2].toFixed(2));
+    }
+  });
+  console.log(node);
+}
+
+function remove_highlight(node) {
+  node.removeAttribute("hl");
+  node.removeAttribute("style");
+  node.removeAttribute("title");
+  document.querySelectorAll("[data-v_id]").forEach(n => {
+    v_id_2 = n.getAttribute("data-v_id");
+    if (v_id_2 in v_sims[v_id]) {
+      n.removeAttribute("style");
+      n.removeAttribute("title");
+    }
+  });
+  console.log(node);
+}
 
 function get_column(node) {
   let result = 0;

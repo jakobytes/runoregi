@@ -79,8 +79,8 @@ def render(**args):
         poem_2_text,
         insdel_cost=0,
         dist_fun=lambda i, j:
-          sims[(poem_1_text[i].v_id, poem_2_text[j].v_id)] \
-          if (poem_1_text[i].v_id, poem_2_text[j].v_id) in sims else 0,
+          sims[poem_1_text[i].v_id][poem_2_text[j].v_id] \
+          if poem_2_text[j].v_id in sims[poem_1_text[i].v_id] else 0,
         opt_fun=max,
         empty=None)
     if args['format'] in ('csv', 'tsv'):
