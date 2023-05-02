@@ -119,11 +119,6 @@ def show_theme():
     return _compact(result)
 
 
-@application.route('/skvr-themes')
-def show_skvr_static_index():
-    return application.send_static_file('skvr-themes.html')
-
-
 if __name__ == '__main__':
     application.run()
 
