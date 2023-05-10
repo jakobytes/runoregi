@@ -3,6 +3,7 @@ from flask import render_template
 import pymysql
 
 import config
+from data.logging import profile
 from data.search import search_meta, search_themes, search_verses
 from data.types import get_nonleaf_categories, render_type_tree, Types
 
@@ -16,6 +17,7 @@ DEFAULTS = {
 }
 
 
+@profile
 def render(**args):
     if args['q'] is None:
         with pymysql.connect(**config.MYSQL_PARAMS) as db:

@@ -3,6 +3,7 @@ import pymysql
 from urllib.parse import urlencode
 
 import config
+from data.logging import profile
 from data.poems import Poems
 from data.verses import get_clusterings, get_verses
 from utils import link, print_type_list, render_csv
@@ -70,6 +71,7 @@ def filter_hits(verses, dist=2, min_hit_length=1):
     return hits
 
 
+@profile
 def render(**args):
     if MAX_QUERY_LENGTH is not None and (args['end'] - args['start']) > MAX_QUERY_LENGTH:
         return '<b>Error:</b> passage length currently limited to {} verses!'\

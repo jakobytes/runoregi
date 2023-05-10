@@ -6,6 +6,7 @@ import scipy.cluster.hierarchy
 from urllib.parse import urlencode
 
 import config
+from data.logging import profile
 from data.poems import Poems
 from data.types import Types
 from methods.hclust import cluster, make_sim_mtx, sim_to_dist
@@ -81,6 +82,7 @@ def transform_vert(dd, n, nros):
     return result
 
 
+@profile
 def render(**args):
     poems, types, target_type, inner = None, None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:

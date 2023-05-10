@@ -7,6 +7,7 @@ import re
 from collections import Counter, defaultdict
 
 import config
+from data.logging import profile
 from data.poems import Poems
 from data.verses import get_verses
 from utils import link, makecol
@@ -117,6 +118,7 @@ def get_shared_verses(db, poem, max, thr, order, clustering_id=0):
     return verse_poems, linked_poems_sorted, len(poem_versecounts)
 
 
+@profile
 def render(**args):
     links = generate_page_links(args)
     p = Poems(nros=[args['nro']])

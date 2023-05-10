@@ -13,3 +13,5 @@ BASE_URL = 'http://runoregi.rahtiapp.fi'
 VISUALIZATIONS_URL = 'https://filter-visualizations.rahtiapp.fi'
 
 SEARCH_LIMIT = 1000
+ENABLE_LOGGING_TO_DB = not not os.getenv('DB_LOGGING')
+LOGGING_TABLE_NAME = 'runoregi_log'

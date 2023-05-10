@@ -3,6 +3,7 @@ from flask import render_template
 import pymysql
 
 import config
+from data.logging import profile
 from data.verses import \
     get_clusterings, get_verses, get_verse_cluster_neighbors
 from utils import link
@@ -57,6 +58,7 @@ def get_cluster_network(db, clust_id, clustering_id=0, maxdepth=3, maxnodes=30):
     return { 'nodes': nodes, 'edges': edges }
 
 
+@profile
 def render(**args):
     clustnet, clusterings, verse = None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:

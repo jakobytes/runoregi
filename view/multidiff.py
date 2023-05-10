@@ -7,6 +7,7 @@ import scipy.cluster.hierarchy
 from shortsim.align import align
 
 import config
+from data.logging import profile
 from data.poems import Poems
 from methods.verse_sim import compute_verse_similarity
 from methods.hclust import cluster, make_sim_mtx, sim_to_dist
@@ -77,6 +78,7 @@ def merge_alignments(poems, merges, v_sims):
     return alignments[-1]
 
 
+@profile
 def render(**args):
     poems = Poems(nros=args['nro'])
     with pymysql.connect(**config.MYSQL_PARAMS) as db:

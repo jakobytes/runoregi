@@ -7,6 +7,7 @@ from subprocess import Popen, PIPE
 from shortsim.align import align
 
 import config
+from data.logging import profile
 from data.poems import Poems
 from methods.verse_sim import compute_verse_similarity
 from utils import link, makecol, render_csv
@@ -40,6 +41,7 @@ def generate_page_links(args):
     return result
 
 
+@profile
 def render(**args):
 
     # FIXME code duplication with poem.py!

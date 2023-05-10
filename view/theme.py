@@ -5,6 +5,7 @@ import pymysql
 from urllib.parse import urlencode
 
 import config
+from data.logging import profile
 from data.poems import Poems
 from data.types import Types, render_type_tree
 
@@ -12,6 +13,7 @@ from data.types import Types, render_type_tree
 DEFAULTS = { 'id': None }
 
 
+@profile
 def render(**args):
     upper = Types(ids=[args['id']])
     poems = None

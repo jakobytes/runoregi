@@ -4,6 +4,7 @@ import pymysql
 from urllib.parse import urlencode
 
 import config
+from data.logging import profile
 from data.poems import Poems
 from data.verses import \
     get_clusterings, get_verses, get_verse_cluster_neighbors
@@ -19,6 +20,7 @@ DEFAULTS = {
 }
 
 
+@profile
 def render(**args):
 
     def _group_by_source(verses):

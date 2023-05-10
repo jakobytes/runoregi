@@ -3,6 +3,7 @@ from operator import itemgetter
 import pymysql
 
 import config
+from data.logging import profile
 from data.poems import Poems
 from utils import link
 
@@ -63,6 +64,7 @@ def get_poem_network(db, poems, t=0.1, maxdepth=3, maxnodes=30):
     return { 'nodes': poems, 'edges': edges }
 
 
+@profile
 def render(**args):
     poemnet, smd = None, None
     poems = Poems(nros=args['nro'])
