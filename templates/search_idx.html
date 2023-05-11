@@ -31,32 +31,8 @@ For more advanced searches, consider using
 <div class="panel-body">
 <center>
 <form method="GET" action="/search">
-<table border="0">
-<tr>
-<td colspan="2" align="center">
 <input type="text" name="q" size="30"/>
 <input type="submit" value="Search"/>
-</td>
-</tr>
-<tr>
-<td>
-<b>Method:</b><br/>
-<input type="radio" id="fulltext" name="method" value="plain" checked="">
-<label for="fulltext">Plain text</label><br/>
-<input type="radio" id="regex" name="method" value="regex">
-<label for="regex">Regular expression</label>
-</td>
-<td>
-<b>Search in:</b><br/>
-<input type="checkbox" id="themes" name="themes" value="true" checked="">
-<label for="themes">Theme index</label><br/>
-<input type="checkbox" id="meta" name="meta" value="true">
-<label for="meta">Poem metadata</label><br/>
-<input type="checkbox" id="verses" name="verses" value="true" checked="">
-<label for="verses">Poem text (verses)</label><br/>
-</td>
-</tr>
-</table>
 </form>
 </center>
 </div>

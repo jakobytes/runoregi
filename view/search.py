@@ -34,15 +34,9 @@ def render(**args):
     else:
         r_verses, r_themes, r_meta = [], [], []
         with pymysql.connect(**config.MYSQL_PARAMS) as db:
-            if args['verses']:
-                r_verses = search_verses(db, args['q'], args['method'],
-                                         config.SEARCH_LIMIT)
-            if args['themes']:
-                r_themes = search_themes(db, args['q'], args['method'],
-                                         config.SEARCH_LIMIT)
-            if args['meta']:
-                r_meta = search_meta(db, args['q'], args['method'],
-                                     config.SEARCH_LIMIT)
+            r_themes = search_themes(db, args['q'])
+            r_meta = search_meta(db, args['q'])
+            r_verses = search_verses(db, args['q'])
         data = { 'r_verses': r_verses, 'r_themes': r_themes, 'r_meta': r_meta,
                  'limit': config.SEARCH_LIMIT }
         return render_template('search_results.html', args=args, data=data, links={})

@@ -6,41 +6,26 @@
 <link rel="stylesheet" href="./static/style.css">
 </head>
 <body>
-<center>
-<form method="GET" action="/search">
-<table border="0">
+
+<table width="100%">
 <tr>
-<td rowspan="2">
+<td width="50">
+<ul class="nav nav-pills">
+  <li role="presentation"><a role="button" href="/" title="to index">
+   <span class="glyphicon glyphicon-home"></span>
+  </a></li>
+</ul>
+</td>
+<td align="center">
+<br/>
+<form method="GET" action="/search">
 <input type="text" name="q" size="50" value="{{ args['q'] }}"/>
 <input type="submit" value="Search"/>
+</form>
 </td>
-<td width="30" rowspan="2"/>
-<td>
-<small>
-<b>Method:</b>
-<input type="radio" id="fulltext" name="method" value="plain"{% if args['method'] == "plain" %} checked=""{% endif %}>
-<label for="fulltext">Plain text</label>
-<input type="radio" id="regex" name="method" value="regex"{% if args['method'] == "regex" %} checked=""{% endif %}>
-<label for="regex">Regular expression</label>
-</small>
-</td>
-</tr>
-<tr>
-<td>
-<small>
-<b>Search in:</b>
-<input type="checkbox" id="themes" name="themes" value="true"{% if args['themes'] %} checked=""{% endif %}>
-<label for="themes">Theme index</label>
-<input type="checkbox" id="meta" name="meta" value="true"{% if args['meta'] %} checked=""{% endif %}>
-<label for="meta">Poem metadata</label>
-<input type="checkbox" id="verses" name="verses" value="true"{% if args['verses'] %} checked=""{% endif %}>
-<label for="verses">Poem text (verses)</label>
-</small>
-</td>
+<td width="50"></td>
 </tr>
 </table>
-</form>
-</center>
 <hr/>
 <h1>Search results for: {{ args['q'] }}</h1>
 
