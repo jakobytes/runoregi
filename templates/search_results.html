@@ -4,6 +4,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="./static/css/bootstrap.min.css">
 <link rel="stylesheet" href="./static/style.css">
+<script lang="javascript" src="./static/js/jquery.min.js"></script>
+<script lang="javascript" src="./static/js/bootstrap.min.js"></script>
 </head>
 <body>
 
@@ -33,14 +35,23 @@
 <div class="row">
 <div class="col-md-3"></div>
 <div class="col-md-6">
+
+<ul class="nav nav-tabs">
+  <li role="presentation" class="nav-item{% if data['r_themes'] %} active{% else %} disabled{% endif %}">
+    <a class="nav-link"{% if data['r_themes'] %} data-toggle="tab" href="#themes"{% endif %}>Themes</a>
+  </li>
+  <li class="nav-item{% if data['r_meta'] and not data['r_themes'] %} active{% elif not data['r_meta'] %} disabled{% endif %}">
+    <a class="nav-link"{% if data['r_meta'] %} data-toggle="tab" href="#metadata"{% endif %}>Metadata</a>
+  </li>
+  <li class="nav-item{% if data['r_verses'] and not data['r_meta'] and not data['r_themes'] %} active{% elif not data['r_verses'] %} disabled{% endif %}">
+    <a class="nav-link"{% if data['r_verses'] %} data-toggle="tab" href="#verses"{% endif %}>Verses</a>
+  </li>
+</ul>
+
+<div class="tab-content">
+<div class="tab-pane container {% if data['r_themes'] %}active{% else %}fade{% endif %}" id="themes">
 {% if data['r_themes'] %}
-<h2>Themes</h2>
-{% if data['r_themes'] | length >= data['limit'] %}
-<p><b><font color="red">
-Limit of {{ data['limit'] }} results exceeded!
-Try to make the query more specific.
-</font></b></p>
-{% endif %}
+<hr/>
 {% for theme_id, name, desc, upper in data['r_themes'] %}
 <h4>{{ upper | join(" > ") }} &gt;
 <a href="/theme?id={{ theme_id }}">{{ name }}</a></h4>
@@ -49,47 +60,33 @@ Try to make the query more specific.
 {% endfor %}
 {% endif %}
 </div>
-<div class="col-md-3"></div>
-</div>
 
-<div class="row">
-<div class="col-md-3"></div>
-<div class="col-md-6">
+<div class="tab-pane container {% if data['r_meta'] and not data['r_themes'] %}active{% else %}fade{% endif %}" id="metadata">
 {% if data['r_meta'] %}
-<h2>Metadata</h2>
-{% if data['r_meta'] | length >= data['limit'] %}
-<p><b><font color="red">
-Limit of {{ data['limit'] }} results exceeded!
-Try to make the query more specific.
-</font></b></p>
-{% endif %}
+<hr/>
 {% for nro, field, value in data['r_meta'] %}
 <a href="/poem?nro={{ nro }}">{{ nro }}</a>
 <b>{{ field }}:</b> {{ value }} <br/>
 {% endfor %}
 {% endif %}
 </div>
-<div class="col-md-3"></div>
-</div>
 
-<div class="row">
-<div class="col-md-3"></div>
-<div class="col-md-6">
+<div class="tab-pane container {% if data['r_verses'] and not data['r_meta'] and not data['r_themes'] %}active{% else %}fade{% endif %}" id="verses">
 {% if data['r_verses'] %}
-<h2>Verses</h2>
-{% if r_verses | length >= data['limit'] %}
-<p><b><font color="red">
-Limit of {{ limit }} results exceeded!
-Try to make the query more specific.
-</font></b></p>
-{% endif %}
+<hr/>
 {% for nro, pos, text in data['r_verses'] %}
 <a href="/poem?nro={{ nro }}&hl={{ pos }}#{{ pos }}">{{ nro }}</a>
 <sup><small>{{ pos }}</small></sup> {{ text }}<br/>
 {% endfor %}
 {% endif %}
 </div>
+
+</div>
+
+</div>
+
 <div class="col-md-3"></div>
+
 </div>
 </div>
 
