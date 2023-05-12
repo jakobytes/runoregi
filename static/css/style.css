@@ -59,7 +59,7 @@
 .tooltip-text {
   visibility: hidden;
   position: absolute;
-  z-index: 1;
+  z-index: 5;
   width: 300px;
   color: black;
   font-size: 12px;

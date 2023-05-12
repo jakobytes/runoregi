@@ -21,8 +21,12 @@
 <td align="center">
 <br/>
 <form method="GET" action="/search">
-<input type="text" name="q" size="50" value="{{ args['q'] }}"/>
-<input type="submit" value="Search"/>
+<div class="input-group" style="max-width: 800px">
+  <input type="text" class="form-control" name="q">
+  <span class="input-group-btn">
+    <button class="btn btn-default" type="button submit">Search</button>
+  </span>
+</div>
 </form>
 </td>
 <td width="50"></td>
