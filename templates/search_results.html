@@ -22,7 +22,7 @@
 <br/>
 <form method="GET" action="/search">
 <div class="input-group" style="max-width: 800px">
-  <input type="text" class="form-control" name="q">
+  <input type="text" class="form-control" name="q" value="{{ args['q'] }}">
   <span class="input-group-btn">
     <button class="btn btn-default" type="button submit">Search</button>
   </span>
