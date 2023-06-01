@@ -406,6 +406,21 @@ Humanities</i>. <a href="https://doi.org/10.1093/llc/fqac034">https://doi.org/10
 <li><a href="https://www.etis.ee/CV/Mari_Sarv/eng">Mari Sarv</a>, Estonian Literary Museum (Estonian collections)
 </ul></p>
 
+<h3>Privacy policy</h3>
+
+<p>Runoregi <b>does not use cookies</b> or store any data on the user's computer.</p>
+
+{% if data['logging_enabled'] %}
+<p>
+This instance collects <b>anonymous</b> usage data for diagnostic purposes.
+The collected data includes the address of the requested page
+and information about the user's browser and operating system (but
+<b>not</b> IP address).
+</p>
+{% else %}
+<p>This instance <b>does not collect</b> any usage-related data.</p>
+{% endif %}
+
 </div>
 </div>
 

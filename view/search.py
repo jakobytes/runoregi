@@ -29,7 +29,8 @@ def render(**args):
         for line in render_type_tree(types):
             tree[line.type_id[:line.type_id.index('_')]].append(line)
         types = Types(types = [t for t in list(types.values()) + list(types_kt.values()) ])
-        data = { 'tree': tree, 'types': types }
+        data = { 'tree': tree, 'types': types,
+                 'logging_enabled': config.ENABLE_LOGGING_TO_DB }
         return render_template('search_idx.html', data = data)
     else:
         r_verses, r_themes, r_meta = [], [], []
