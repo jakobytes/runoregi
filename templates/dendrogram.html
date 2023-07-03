@@ -67,13 +67,17 @@
    </ul>
   </li>
   {% if args['source'] != "nros" and args['nb'] == 1 %}
-  <li role="presentation"><a role="button" target="_blank" href="{{ links['map'] }}">
-   <span class="glyphicon glyphicon-picture"></span> Map
-  </a></li>
-  <li role="presentation"><a role="button" target="_blank" href="{{ links['types'] }}">
-   <span class="glyphicon glyphicon-th"></span>
-   {% if args['source'] == "theme" %}Co-occurring types{% else %}Type distribution{% endif %}
-  </a></li>
+    {% if links['map'] %}
+    <li role="presentation"><a role="button" target="_blank" href="{{ links['map'] }}">
+     <span class="glyphicon glyphicon-picture"></span> Map
+    </a></li>
+    {% endif %}
+    {% if links['types'] %}
+    <li role="presentation"><a role="button" target="_blank" href="{{ links['types'] }}">
+     <span class="glyphicon glyphicon-th"></span>
+     {% if args['source'] == "theme" %}Co-occurring types{% else %}Type distribution{% endif %}
+    </a></li>
+    {% endif %}
   {% endif %}
 </ul>
 

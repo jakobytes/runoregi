@@ -84,9 +84,11 @@ def render(**args):
                      'clustering': args['clustering'] }
         links = {
             'map': config.VISUALIZATIONS_URL + '/?vis=map_cluster&' \
-                   + urlencode(map_args),
+                   + urlencode(map_args) \
+                   if config.VISUALIZATIONS_URL else None,
             'types': config.VISUALIZATIONS_URL + '/?vis=tree_types_cluster&' \
-                     + urlencode(dict(map_args, incl_erab_orig=False))
+                     + urlencode(dict(map_args, incl_erab_orig=False)) \
+                     if config.VISUALIZATIONS_URL else None
         }
         return render_template('verse.html', args=args, data=data, links=links)
 

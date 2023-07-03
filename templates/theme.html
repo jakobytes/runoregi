@@ -50,12 +50,16 @@
   <li role="presentation"><a role="button" href="/dendrogram?source=theme&theme_id={{ args['id'] }}">
    <span class="glyphicon glyphicon-tree-conifer"></span> Dendrogram
   </a></li>
+  {% if links['map'] %}
   <li role="presentation"><a role="button" target="_blank" href="{{ links['map'] }}">
    <span class="glyphicon glyphicon-picture"></span> Map
   </a></li>
+  {% endif %}
+  {% if links['cooc-types'] %}
   <li role="presentation"><a role="button" target="_blank" href="{{ links['cooc-types'] }}">
    <span class="glyphicon glyphicon-th"></span> Co-occurring types
   </a></li>
+  {% endif %}
 </ul>
 
 <p></p>

@@ -54,12 +54,16 @@ verse similarity is measured in terms of the number of character bigrams
     <li role="presentation"><a href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}&format=tsv">TSV</a></li>
     </ul>
   </li>
+  {% if links['map'] %}
   <li role="presentation"><a role="button" target="_blank" href="{{ links['map'] }}">
    <span class="glyphicon glyphicon-picture"></span> Map
   </a></li>
+  {% endif %}
+  {% if links['types'] %}
   <li role="presentation"><a role="button" target="_blank" href="{{ links['types'] }}">
    <span class="glyphicon glyphicon-th"></span> Type distribution
   </a></li>
+  {% endif %}
   <li role="presentation"><a role="button" href="/clustnet?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">
    <span class="glyphicon glyphicon-cloud"></span> Cluster network
   </a></li>

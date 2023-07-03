@@ -10,7 +10,7 @@ MYSQL_PARAMS = {
 }
 
 BASE_URL = 'http://runoregi.rahtiapp.fi'
-VISUALIZATIONS_URL = 'https://filter-visualizations.rahtiapp.fi'
+VISUALIZATIONS_URL = os.getenv('VISUALIZATIONS_URL')
 
 SEARCH_LIMIT = 1000
 ENABLE_LOGGING_TO_DB = not not os.getenv('DB_LOGGING')

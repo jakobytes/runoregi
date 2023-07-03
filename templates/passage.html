@@ -84,9 +84,11 @@
     <li role="presentation"><a href="{{ links['tsv'] }}">TSV</a></li>
     </ul>
   </li>
+  {% if links['map_lnk'] %}
   <li role="presentation"><a role="button" target="_blank" href="{{ links['map_lnk'] }}">
    <span class="glyphicon glyphicon-picture"></span> Map
   </a></li>
+  {% endif %}
   <li role="presentation" class="dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
       Clustering: {{ data['clusterings'][args['clustering']][1] }} <span class="caret"></span>

@@ -40,17 +40,21 @@ def generate_page_links(args):
     if args['source'] == 'theme' and args['nb'] == 1:
         result['map'] = config.VISUALIZATIONS_URL \
             + '?vis=map_type&' \
-            + urlencode({'theme_id': args['theme_id']})
+            + urlencode({'theme_id': args['theme_id']}) \
+            if config.VISUALIZATIONS_URL else None
         result['types'] = config.VISUALIZATIONS_URL \
             + '?vis=tree_type_cooc&' \
-            + urlencode({'theme_id': args['theme_id'], 'incl_erab_orig': False})
+            + urlencode({'theme_id': args['theme_id'], 'incl_erab_orig': False}) \
+            if config.VISUALIZATIONS_URL else None
     elif args['source'] == 'cluster' and args['nb'] == 1:
         result['map'] = config.VISUALIZATIONS_URL \
             + '?vis=map_poem_cluster&' \
-            + urlencode({'nro': args['nro'][0]})
+            + urlencode({'nro': args['nro'][0]}) \
+            if config.VISUALIZATIONS_URL else None
         result['types'] = config.VISUALIZATIONS_URL \
             + '?vis=tree_poem_cluster&' \
-            + urlencode({'nro': args['nro'][0], 'incl_erab_orig': False})
+            + urlencode({'nro': args['nro'][0], 'incl_erab_orig': False}) \
+            if config.VISUALIZATIONS_URL else None
     return result
 
 

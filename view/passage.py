@@ -36,7 +36,8 @@ def generate_page_links(args, clusterings):
         'csv': pagelink(format='csv'),
         'tsv': pagelink(format='tsv'),
         'map_lnk' : config.VISUALIZATIONS_URL + '/?vis=map_passage&' \
-                    + urlencode(map_args),
+                    + urlencode(map_args) \
+                    if config.VISUALIZATIONS_URL else None,
         'dist': {}, 'hitfact': {}, 'context': {}, 'clustering': {}
     }
     for x in range(1, 7):

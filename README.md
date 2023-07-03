@@ -25,6 +25,10 @@ available in
 [hsci-r/filter-db](https://github.com/hsci-r/filter-db) (currently
 not public).
 
+In addition to the database access, the following further environment
+variables can be configured:
+* `VISUALIZATIONS_URL` -- the base URL of the [visualizations application](https://filter-visualizations.rahtiapp.fi) -- needed for the links to the visualizations (maps, type treemaps)!
+
 ## Running
 
 For all the commands listed below, remember to set the environment
