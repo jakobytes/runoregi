@@ -9,7 +9,6 @@ MYSQL_PARAMS = {
     'database' : os.getenv('DB_NAME')
 }
 
-BASE_URL = 'http://runoregi.rahtiapp.fi'
 VISUALIZATIONS_URL = os.getenv('VISUALIZATIONS_URL')
 
 SEARCH_LIMIT = 1000
