@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /clustnet
+Disallow: /dendrogram
+Disallow: /multidiff
+Disallow: /passage
+Disallow: /poemdiff
+Disallow: /poemnet
+Disallow: /search
+Disallow: /verse

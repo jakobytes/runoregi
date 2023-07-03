@@ -118,6 +118,10 @@ def show_theme():
     result = view.theme.render(**args)
     return _compact(result)
 
+@application.route('/robots.txt')
+def show_robots_txt():
+    return application.send_static_file('robots.txt')
+
 
 if __name__ == '__main__':
     application.run()
