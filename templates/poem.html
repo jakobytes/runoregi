@@ -115,21 +115,8 @@
    represent poems and colored cells the presence of a verse that match
    the corresponding verse in the shown poem (not necessarily in the
    same order). Click on the colored cells to see an alignment view.</p>
-   <p>The <b>verse-level themes</b> are an experimental feature. It is
-   not recommended to use it and it might be removed in the future.</p>
    </div>
   </a></li>
-  {% if args['show_verse_themes'] %}
-  <li role="presentation"><a role="button" href="{{ links['-show_verse_themes'] }}" title="to index">
-   <span class="glyphicon glyphicon-cog"></span>
-   Hide verse-level themes
-  </a></li>
-  {% else %}
-  <li role="presentation"><a role="button" href="{{ links['+show_verse_themes'] }}" title="to index">
-   <span class="glyphicon glyphicon-cog"></span>
-   Show verse-level themes
-  </a></li>
-  {% endif %}
   {% if args['show_shared_verses'] %}
   <li role="presentation"><a role="button" href="{{ links['-show_shared_verses'] }}" title="to index">
    <span class="glyphicon glyphicon-cog"></span>
@@ -165,23 +152,10 @@
   {% endif %}
 </ul>
 
-{% if args['show_verse_themes'] %}
-<p><b>Note:</b> Verse-level theme recognition is done using an experimental
-method and the quality of the results is not yet known.
-</p>
-{% endif %}
-
 <div style="max-width: 100%; overflow-x: scroll;">
 <table>
   {% for v in data['poem'].text %}
   <tr>
-    {% if args['show_verse_themes'] %}
-      {% if v.pos-1 in data['verse_themes'] %}
-      <td rowspan={{ data['verse_themes'][v.pos-1][0] }} class="g{{ data['verse_themes'][v.pos-1][2] % 2 }}">
-        {{ data['verse_themes'][v.pos-1][1] }}
-      </td>
-      {% endif %}
-    {% endif %}
     {% if v.v_type == "V" %}
       <td{%if args['show_shared_verses'] %} class="poem-view-freqbar"{% endif %} bgcolor="{{ data['colors'][v.clust_freq] }}">
         <a name="{{ v.pos }}" href="/verse?nro={{ data['poem'].nro }}&pos={{ v.pos }}" title="{{ v.clust_freq }}" class="cn">&nbsp;&nbsp;&nbsp;

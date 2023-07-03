@@ -19,7 +19,6 @@ DEFAULTS = {
   'max_similar': 50,
   'hl': [],
   'sim_thr': 1,
-  'show_verse_themes': False,
   'show_shared_verses': False
 }
 
@@ -30,10 +29,6 @@ def generate_page_links(args):
         return link('poem', dict(args, **kwargs), DEFAULTS)
 
     result = {
-        '+show_verse_themes':
-            pagelink(show_verse_themes=True),
-        '-show_verse_themes':
-            pagelink(show_verse_themes=False),
         '+show_shared_verses':
             pagelink(show_shared_verses=True),
         '-show_shared_verses':
@@ -45,30 +40,6 @@ def generate_page_links(args):
     for val in [10, 20, 30, 40, 50, 75, 100, 150, 200]:
         result['max_similar'][val] = pagelink(max_similar=val)
     return result
-
-
-# TODO verse-level themes
-# data structure: list
-# - start_pos, end_pos, 
-def get_verse_themes(db, nro):
-    db.execute('SELECT max(pos) FROM verse_poem NATURAL JOIN poems WHERE nro = %s', (nro,))
-    n = db.fetchall()[0][0]
-    db.execute('SELECT pos_start, pos_end, name '
-               ' FROM verse_theme NATURAL JOIN themes NATURAL JOIN poems '
-               ' WHERE nro = %s', (nro,))
-    i, last_pos = 0, 0
-    results = {}
-    for pos_start, pos_end, name in db.fetchall():
-        if pos_start > last_pos:
-            results[last_pos] = (pos_start-last_pos, '<unknown>', i)
-            i += 1
-        results[pos_start] = (pos_end-pos_start, name, i)
-        i += 1
-        last_pos = pos_end
-    if n is not None and last_pos < n:
-        results[last_pos] = (n-last_pos, '<unknown>', i)
-        i += 1
-    return results
 
 
 # TODO refactor and document!
@@ -141,9 +112,6 @@ def render(**args):
         related = Poems(nros=related_nros)
         if related:
             related.get_structured_metadata(db)
-        # get verse-level types
-        if args['show_verse_themes']:
-            verse_themes = get_verse_themes(db, args['nro'])
         # get verse clusters for the matrix view
         if args['show_shared_verses']:
             verse_poems, linked_poems, poems_sharing_verses = \
@@ -164,7 +132,6 @@ def render(**args):
         'colors': { x: makecol(math.log(x), '337ab7', math.log(5000)) \
                     for x in set(v.clust_freq for v in poem.text) \
                     if x is not None},
-        'verse_themes' : verse_themes,
         'verse_poems': verse_poems,
         'linked_poems': linked_poems,
         'poems_sharing_verses': poems_sharing_verses
