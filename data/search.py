@@ -1,3 +1,6 @@
+import config
+
+
 def search_verses(db, q):
     result = []
     db.execute(\
@@ -11,6 +14,9 @@ def search_verses(db, q):
 
 def search_themes(db, q):
     result = []
+    # ignore if the table is not available
+    if not config.TABLES['themes']:
+        return result
     db.execute(\
       'SELECT t4.name, t3.name, t2.name, t1.theme_id, t1.name,'
       '       t1.description'
@@ -27,6 +33,9 @@ def search_themes(db, q):
 
 def search_meta(db, q):
     result = []
+    # ignore if the table is not available
+    if not config.TABLES['raw_meta']:
+        return result
     db.execute(\
         'SELECT nro, field, value FROM raw_meta'
         ' NATURAL JOIN poems'

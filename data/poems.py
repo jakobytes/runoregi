@@ -2,6 +2,7 @@ from collections import namedtuple, OrderedDict
 from operator import itemgetter
 import re
 
+import config
 from .types import Types, render_type_tree
 from .verses import get_verses
 
@@ -16,18 +17,18 @@ StructuredMetadata = \
 class Poem:
     def __init__(self, nro):
         self.nro = nro
-        self.meta = None
+        self.meta = {}
         self.smd = None
         self.text = None
         self.type_ids = None
         self.minor_type_ids = None
         self.type_tree = None
-        self.refs = None
-        self.sim_poems = None
+        self.refs = []
+        self.sim_poems = []
         self.p_clust_id = None
         self.p_clust_size = None
-        self.duplicates = None
-        self.parents = None
+        self.duplicates = []
+        self.parents = []
 
 
 class Poems:
@@ -59,6 +60,8 @@ class Poems:
 
     def get_duplicates_and_parents(self, db):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['p_dupl']: return
         db.execute(
             'SELECT p.nro, mp.nro '
             'FROM p_dupl d '
@@ -77,6 +80,9 @@ class Poems:
 
     def get_poem_cluster_info(self, db):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['p_clust'] or not config.TABLES['p_clust_freq']:
+            return
         db.execute(
             'SELECT nro, clust_id, freq '
             'FROM poems NATURAL JOIN p_clust NATURAL JOIN p_clust_freq '
@@ -87,6 +93,8 @@ class Poems:
 
     def get_raw_meta(self, db):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['raw_meta']: return
         db.execute(
             'SELECT nro, field, value '
             'FROM poems NATURAL JOIN raw_meta '
@@ -99,6 +107,8 @@ class Poems:
 
     def get_refs(self, db):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['refs']: return
         for nro in self:
             self[nro].refs = []
         db.execute(
@@ -113,6 +123,8 @@ class Poems:
 
     def get_similar_poems(self, db, within=False, sim_thr=None, sim_onesided_thr=None):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['p_sim']: return
         query_args = [tuple(self)]
         query_lst = [
             'SELECT ',
@@ -145,64 +157,66 @@ class Poems:
             self[nro_1].sim_poems.append(
                 SimilarPoemLink(nro_2, sim_al, sim_al_l, sim_al_r))
 
-    def get_structured_metadata(
-            self, db, title = True, location = True,
-            collector = True, year = True):
+    def get_structured_metadata(self, db):
 
         def _make_title(nro, osa, _id, collection):
-            if collection == 'skvr':
+            if collection == 'skvr' and osa and _id:
                 return 'SKVR {} {}'.format(osa, _id)
-            elif collection == 'erab':
+            elif collection == 'erab' and _id:
                 return _id
-            elif collection == 'jr':
+            elif collection == 'jr' and _id:
                 return 'JR {}'.format(_id)
             elif nro.startswith('kt'):
                 return 'Kanteletar {}:{}'.format(int(nro[2:4]), int(nro[4:]))
-            elif collection == 'literary':
+            elif collection == 'literary' and osa and _id:
                 return '{} {}'.format(osa, _id)
             else:
                 return nro
 
         if not self: return    # empty set? -> do nothing
+        get_collector = config.TABLES['collectors'] and config.TABLES['p_col']
+        get_location = config.TABLES['locations'] and config.TABLES['p_loc']
         query_lst = [
             'SELECT poems.nro, collection,',
-            ('rm_osa.value as osa, rm_id.value as id,' if title else '"", "",'),
+            ('rm_osa.value as osa, rm_id.value as id,' \
+             if config.TABLES['raw_meta'] else 'NULL, NULL,'),
             ('GROUP_CONCAT(DISTINCT IFNULL(CONCAT(l2.name, " — ", l.name), l.name)'
              ' SEPARATOR "; "),'\
-             if location else '"no location",'),
+             if get_location else 'NULL,'),
             ('GROUP_CONCAT(DISTINCT c.name SEPARATOR "; "),'\
-             if collector else '"no collector",'),
-            ('year' if year else '"no year"'),
+             if get_collector else 'NULL,'),
+            ('year' if config.TABLES['p_year'] else 'NULL'),
             'FROM poems']
-        if title:
+        if config.TABLES['raw_meta']:
             query_lst.extend([
               'LEFT OUTER JOIN raw_meta rm_osa'
               '  ON poems.p_id = rm_osa.p_id AND rm_osa.field = "OSA"',
               'LEFT OUTER JOIN raw_meta rm_id'
               '  ON poems.p_id = rm_id.p_id AND rm_id.field = "ID"',
             ])
-        if location:
+        if get_location:
             query_lst.extend([
               'LEFT OUTER JOIN p_loc ON poems.p_id = p_loc.p_id',
               'LEFT OUTER JOIN locations l ON p_loc.loc_id = l.loc_id',
               'LEFT OUTER JOIN locations l2 ON l.par_id = l2.loc_id'
             ])
-        if collector:
+        if get_collector:
             query_lst.extend([
               'LEFT OUTER JOIN p_col ON poems.p_id = p_col.p_id',
               'LEFT OUTER JOIN collectors c ON p_col.col_id = c.col_id'
             ])
-        if year:
+        if config.TABLES['p_year']:
             query_lst.append('LEFT OUTER JOIN p_year ON poems.p_id = p_year.p_id')
         query_lst.append('WHERE poems.nro IN %s')
-        if location or collector or themes:
+        # if GROUP_CONCATs present -- return one row per poem
+        if get_location or get_collector:
             query_lst.append('GROUP BY poems.p_id')
         query_lst.append(';')
         db.execute(' '.join(query_lst), (tuple(self),))
         #print(db._executed)
         results = []
         for nro, collection, osa, _id, loc, col, year in db.fetchall():
-            tit = _make_title(nro, osa, _id, collection) if title else nro
+            tit = _make_title(nro, osa, _id, collection)
             self[nro].smd = StructuredMetadata(collection, tit, loc, col, year)
 
     def get_text(self, db, clustering_id=0):
@@ -214,6 +228,9 @@ class Poems:
 
     def get_types(self, db):
         if not self: return Types(ids=[])    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['poem_theme'] or not config.TABLES['themes']:
+            return Types(ids=[])
         db.execute(
             'SELECT nro, theme_id, is_minor '
             'FROM poems NATURAL JOIN poem_theme NATURAL JOIN themes '
@@ -241,6 +258,11 @@ class Poems:
 
     @staticmethod
     def get_by_cluster(db, clust_id):
+        # ignore if the table is not available
+        if not config.TABLES['p_clust']:
+            warnings.warn('Poem clustering not available. This function '
+                          'should not have been called.')
+            return Poems(nros=[])
         db.execute(
             'SELECT p.nro '
             'FROM p_clust pc '

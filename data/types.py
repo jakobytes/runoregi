@@ -1,6 +1,7 @@
+from collections import namedtuple, OrderedDict
 from operator import itemgetter
 
-from collections import namedtuple, OrderedDict
+import config
 
 
 TypeTreeLine = \
@@ -46,6 +47,8 @@ class Types:
 
     def get_ancestors(self, db, add=False):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['themes']: return
         db.execute(
             'SELECT t1.theme_id, t2.theme_id, t3.theme_id, t4.theme_id '
             'FROM themes t1'
@@ -66,6 +69,8 @@ class Types:
 
     def get_descendents(self, db, add=False):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['themes']: return
         db.execute(
             'SELECT t1.theme_id, t2.theme_id, t3.theme_id, t4.theme_id '
             'FROM themes t1'
@@ -89,6 +94,8 @@ class Types:
 
     def get_descriptions(self, db):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['themes']: return
         db.execute(
             'SELECT theme_id, description FROM themes '
             'WHERE theme_id IN %s', (tuple(self),))
@@ -97,6 +104,8 @@ class Types:
 
     def get_names(self, db):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['themes']: return
         db.execute(
             'SELECT theme_id, name FROM themes '
             'WHERE theme_id IN %s', (tuple(self),))
@@ -105,6 +114,9 @@ class Types:
 
     def get_poem_ids(self, db, minor=True):
         if not self: return    # empty set? -> do nothing
+        # ignore if the table is not available
+        if not config.TABLES['themes'] or not config.TABLES['poem_theme']:
+            return
         query_lst = [
             'SELECT nro, is_minor ',
             'FROM poems ',
@@ -125,6 +137,8 @@ class Types:
 
 
 def get_root_categories(db):
+    # ignore if the table is not available
+    if not config.TABLES['themes']: return Types(ids=[])
     db.execute(\
         'SELECT theme_id FROM themes'
         ' WHERE par_id = 0 AND (LENGTH(theme_id) = 8 OR theme_id LIKE "kt_t%");')
@@ -132,6 +146,8 @@ def get_root_categories(db):
 
 
 def get_nonleaf_categories(db):
+    types = Types(ids=[])
+    if not config.TABLES['themes']: return types
     db.execute(\
         'SELECT '
         '  t1.theme_id, '
@@ -144,7 +160,6 @@ def get_nonleaf_categories(db):
         '  LEFT JOIN themes t4 ON t3.par_id = t4.t_id '
         'WHERE t1.theme_id NOT LIKE "kt_%" '
         '  AND t1.theme_id NOT LIKE "erab_orig%";')
-    types = Types(ids=[])
     for t1_id, t2_id, t2_name, t3_id, t4_id in db.fetchall():
         if t2_id not in types:
             t = Type(id=t2_id)

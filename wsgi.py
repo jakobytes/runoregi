@@ -1,6 +1,7 @@
 from flask import Flask, Response, request
 import re
 
+import config
 import view.clustnet
 import view.dendrogram
 import view.multidiff
@@ -14,6 +15,7 @@ import view.verse
 
 
 application = Flask(__name__)
+config.setup_tables()
 
 
 def _compact(string):

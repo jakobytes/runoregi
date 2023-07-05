@@ -22,9 +22,14 @@ def render(**args):
     if args['q'] is None:
         with pymysql.connect(**config.MYSQL_PARAMS) as db:
             types = get_nonleaf_categories(db)
-            types_kt = Types(ids=['kt_t010000', 'kt_t020000', 'kt_t030000'])
-            types_kt.get_descendents(db, add=True)
-            types_kt.get_names(db)
+            # FIXME hardcoding Kanteletar's table of contents for now,
+            # should be handled more flexibly later
+            if config.TABLES['themes']:
+                types_kt = Types(ids=['kt_t010000', 'kt_t020000', 'kt_t030000'])
+                types_kt.get_descendents(db, add=True)
+                types_kt.get_names(db)
+            else:
+                types_kt = Types(ids=[])
         tree = { 'skvr': [], 'erab': [] , 'kt': render_type_tree(types_kt) }
         for line in render_type_tree(types):
             tree[line.type_id[:line.type_id.index('_')]].append(line)
