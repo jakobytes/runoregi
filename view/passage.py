@@ -114,7 +114,7 @@ def render(**args):
     if args['format'] in ('csv', 'tsv'):
         return render_csv([
             (pas['nro'], pas['verses'][0].pos,
-             '\n'.join([v.text for v in pas['verses']]),
+             '\n'.join([v.text_norm for v in pas['verses']]),
              poems[pas['nro']].smd.location, poems[pas['nro']].smd.collector,
             print_type_list(poems[pas['nro']], types)) \
             for pas in passages],

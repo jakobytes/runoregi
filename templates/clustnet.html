@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>#{{ data['verse'].clust_id }} {{ data['verse'].text }}</title>
+<title>#{{ data['verse'].clust_id }} {{ data['verse'].text_norm }}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="./static/css/bootstrap.min.css">
 <link rel="stylesheet" href="./static/css/style.css">
@@ -21,7 +21,7 @@ function properly.
 </div>
 {% endif %}
 
-<h1><small>#{{ data['verse'].clust_id }}</small> {{ data['verse'].text }}</h1>
+<h1><small>#{{ data['verse'].clust_id }}</small> {{ data['verse'].text_norm }}</h1>
 
 <ul class="nav nav-pills">
   <li role="presentation"><a role="button" href="/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}">
@@ -69,11 +69,11 @@ function properly.
       // create an array with nodes
       var nodes = new vis.DataSet([
         { id: {{ data['verse'].clust_id }},
-          label: "#{{ data['verse'].clust_id }} " + {{ data['verse'].text | tojson }},
+          label: "#{{ data['verse'].clust_id }} " + {{ data['verse'].text_norm | tojson }},
           shape: "box" , color: "#FFEEAA", title: "{{ data['verse'].clust_freq }} verses",
           link: "/verse?nro={{ args['nro'] }}&pos={{ args['pos'] }}"},
         {% for n in data['clustnet']['nodes'] %}
-          { id: {{ n.clust_id }}, label: "#{{ n.clust_id }} " + {{ n.text | tojson }}, shape: "box",
+          { id: {{ n.clust_id }}, label: "#{{ n.clust_id }} " + {{ n.text_norm | tojson }}, shape: "box",
             title: "{{ n.clust_freq }} verses",
             link: "/verse?nro={{ n.nro }}&pos={{ n.pos }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}"},
         {% endfor %}

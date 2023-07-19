@@ -1,5 +1,6 @@
 from collections import namedtuple
-from utils import clean_special_chars as csc
+import lxml.etree as ET
+from utils import render_xml, remove_xml
 
 import config
 
@@ -8,6 +9,26 @@ Verse = \
     namedtuple('Verse',
                ['nro', 'pos', 'v_id', 'v_type', 'text', 'text_cl',
                 'clust_id', 'clust_freq'])
+
+class Verse:
+    def __init__(self, nro, pos, v_id, v_type, text, text_cl, clust_id, clust_freq):
+        self.nro = nro
+        self.pos = pos
+        self.v_id = v_id
+        self.v_type = v_type
+        self.text = text
+        self.text_cl = text_cl
+        self.clust_id = clust_id
+        self.clust_freq = clust_freq
+        self.text_norm = None
+        self.text_rendered = None
+        self.render_text_norm()
+
+    def render_text(self, refs):
+        self.text_rendered = render_xml(self.text, refs, tag=self.v_type)
+
+    def render_text_norm(self):
+        self.text_norm = remove_xml(self.text, tag=self.v_type)
 
 
 def get_clusterings(db):
@@ -72,7 +93,7 @@ def get_verses(db, nro=None, start_pos=None, end_pos=None,
     for nro, pos, v_id, v_type, v_text, \
             v_text_cl, clust_id, clust_freq in db.fetchall():
         result.append(Verse(
-            nro, pos, v_id, v_type, csc(v_text), v_text_cl, clust_id, clust_freq))
+            nro, pos, v_id, v_type, v_text, v_text_cl, clust_id, clust_freq))
     return result
 
 
@@ -143,10 +164,8 @@ def get_verse_cluster_neighbors(
     db.execute(' '.join(query_lst), tuple(query_args))
     for row in db.fetchall():
         if by_cluster:
-            result.append((Verse(*row[:4], csc(row[4]), *row[5:8]),
-                           Verse(*row[8:12], csc(row[12]), *row[13:16]),
-                           row[16]))
+            result.append((Verse(*row[:8]), Verse(*row[8:16]), row[16]))
         else:
-            result.append((row[0], Verse(*row[1:5], csc(row[5]), *row[6:-1]), row[-1]))
+            result.append((row[0], Verse(*row[1:-1]), row[-1]))
     return result
 

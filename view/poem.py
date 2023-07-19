@@ -1,4 +1,5 @@
 from flask import render_template
+import lxml.etree as ET
 from operator import itemgetter
 import math
 import pymysql
@@ -10,7 +11,7 @@ import config
 from data.logging import profile
 from data.poems import Poems
 from data.verses import get_verses
-from utils import link, makecol
+from utils import link, makecol, render_xml
 
 
 DEFAULTS = {
@@ -117,7 +118,16 @@ def render(**args):
             verse_poems, linked_poems, poems_sharing_verses = \
                 get_shared_verses(db, p[args['nro']], args['max_similar'],
                                   args['sim_thr'], args['sim_order'])
+
+    # render the XML-containing text
     poem = p[args['nro']]
+    for v in poem.text:
+        v.render_text(poem.refs)
+
+    # render the XML in the raw metadata
+    for key, val in p[args['nro']].meta.items():
+        p[args['nro']].meta[key] = render_xml(val, poem.refs, tag=key)
+
     data = {
         'poem': poem,
         'related': related,

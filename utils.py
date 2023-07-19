@@ -1,5 +1,6 @@
 import csv
 from io import StringIO
+import lxml.etree as ET
 from operator import itemgetter
 import re
 
@@ -33,6 +34,62 @@ def render_csv(rows, header=None, delimiter=','):
         writer.writerow(header)
     writer.writerows(rows)
     return stream.getvalue()
+
+
+def render_xml(string, refs=None, tag='ROOT'):
+
+    def render_xml_node(node, ref_dict):
+        text = [node.text] if node.text is not None else []
+        for c in node:
+            if c.tag in ('I', 'U', 'SUP', 'SUB'):
+                text.append('<{}>{}</{}>'.format(c.tag, render_xml_node(c, ref_dict), c.tag))
+            elif c.tag == 'KA':
+                content = render_xml_node(c, ref_dict)
+                text.append(content[0] + '\u035c' + content[1:])
+            elif c.tag == 'SMALLCAPS':
+                text.append('<SMALL>{}</SMALL>'.format(c.text.upper()))
+            elif c.tag in ('H', 'FR'):
+                text.append(c.text)
+            elif c.tag == 'REFNR':
+                reflinks = []
+                for refnr in c.text.split(','):
+                    if int(refnr) in ref_dict:
+                        tooltip = ref_dict[int(refnr)]
+                        reflinks.append('<a class="hover-text">'
+                                        '<sup><small>{}</small></sup>'
+                                        '<div class="tooltip-text" style="width: 200">{}</div>'
+                                        '</a>'\
+                                        .format(refnr, tooltip))
+                text.append('<sup>,</sup>'.join(reflinks))
+            elif c.tag == 'REFR':
+                text.append('<span class="refrain">{}</span>'.format(c.text))
+            elif c.tag in ('O', 'PAG'):
+                # skip the tag together with its content
+                pass
+            if c.tail is not None:
+                text.append(c.tail)
+        return ''.join(text)
+
+    ref_dict = { r.num: r.text for r in refs } if refs is not None else {}
+    node = ET.XML('<{}>{}</{}>'.format(tag, string, tag))
+    return render_xml_node(node, ref_dict)
+
+
+def remove_xml(string, tag='ROOT'):
+
+    def remove_xml_node(node):
+        text = [node.text] if node.text is not None else []
+        for c in node:
+            if c.tag in ('I', 'U', 'SUP', 'SUB', 'KA', 'SMALLCAPS', 'H', 'FR'):
+                text.append(remove_xml_node(c))
+            else:
+                pass
+            if c.tail is not None:
+                text.append(c.tail)
+        return ''.join(text)
+
+    node = ET.XML('<{}>{}</{}>'.format(tag, string, tag))
+    return remove_xml_node(node)
 
 
 def print_type_list(poem, types):

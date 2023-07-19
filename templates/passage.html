@@ -145,7 +145,7 @@ function properly.
 {% for v in pas['verses'] %}
 <tr>
 <sup><small>{{ v.pos }}</small></sup>&thinsp;
-{% if v.pos in pas['matches'] %}<b>{% endif %}{{ v.text }}{% if v.pos in pas['matches'] %}</b>{% endif %}<br/>
+{% if v.pos in pas['matches'] %}<b>{% endif %}{{ v.text_norm }}{% if v.pos in pas['matches'] %}</b>{% endif %}<br/>
 {% endfor %}
 </div>
 

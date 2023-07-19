@@ -7,6 +7,7 @@ from .types import Types, render_type_tree
 from .verses import get_verses
 
 
+Reference = namedtuple('Reference', ['num', 'type', 'text'])
 SimilarPoemLink = \
     namedtuple('SimilarPoemLink', ['nro', 'sim_al', 'sim_al_l', 'sim_al_r'])
 StructuredMetadata = \
@@ -112,14 +113,10 @@ class Poems:
         for nro in self:
             self[nro].refs = []
         db.execute(
-            'SELECT nro, text FROM poems NATURAL JOIN refs '
+            'SELECT nro, num, type, text FROM poems NATURAL JOIN refs '
             'WHERE nro IN %s;', (tuple(self),))
-        for nro, text in db.fetchall():
-            self[nro].refs.append(text)
-        # fix: break refs on "#" (relevant for SKVR)
-        for nro in self:
-            self[nro].refs = re.sub('\n+', ' ', '\n'.join(self[nro].refs))\
-                             .replace('#', '\n#').split('\n')
+        for nro, num, type_, text in db.fetchall():
+            self[nro].refs.append(Reference(num, type_, text))
 
     def get_similar_poems(self, db, within=False, sim_thr=None, sim_onesided_thr=None):
         if not self: return    # empty set? -> do nothing

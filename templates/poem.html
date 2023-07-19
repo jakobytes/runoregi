@@ -92,7 +92,7 @@ function properly.
 <div class="panel-heading"><h2 class="panel-title">Metadata</h2></div>
 <div class="panel-body">
 {% for key, val in data['poem'].meta.items() %}
-<b>{{ key }}:</b> {{ val }}<br/>
+<b>{{ key }}:</b> {{ val | safe }}<br/>
 {% endfor %}
 </div>
 </div>
@@ -173,18 +173,18 @@ function properly.
       <td align="right" class="verse_id{%if args['show_shared_verses'] %} poem-view-linenumber{% endif %}" id="{{ v.pos }}">&ensp;<sup><small>{{ v.pos }}&ensp;</small></sup></td>
       <td{%if args['show_shared_verses'] %}  class="poem-view-text"{% endif %}>
       {% if v.pos in args['hl'] %}
-        <b>{{ v.text }}</b>
+        <b>{{ v.text_rendered | safe }}</b>
       {% else %}
-        {{ v.text }}
+        {{ v.text_rendered | safe }}
       {% endif %}</td>
     {% else %}
       {% if v.v_type == "L" %}
-      <td></td><td></td><td{%if args['show_shared_verses'] %} class="poem-view-text"{% endif %}><small><i>{{ v.text }}</i></small></td>
+      <td></td><td></td><td{%if args['show_shared_verses'] %} class="poem-view-text"{% endif %}><small><i>{{ v.text_rendered | safe }}</i></small></td>
       {% elif v.v_type == "K" %}
-      <td></td><td></td><td{%if args['show_shared_verses'] %} class="poem-view-text"{% endif %}><small>{{ v.text }}</small></td>
+      <td></td><td></td><td{%if args['show_shared_verses'] %} class="poem-view-text"{% endif %}><small>{{ v.text_rendered | safe }}</small></td>
       {% elif v.v_type == "CPT" %}
       <td></td><td></td><td{%if args['show_shared_verses'] %} class="poem-view-text"{% endif %} align="center">
-        <h3>{{ v.text }}</h3>
+        <h3>{{ v.text_rendered | safe }}</h3>
       </td>
       {% endif %}
     {% endif %}
@@ -206,7 +206,10 @@ function properly.
     <td colspan="3" style="word-wrap: break-word; max-width: 500px">
     <small>
     {% for r in data['poem'].refs %}
-    {{ r }}<br/>
+    {% if r.num is not none and r.num > 0 %}
+    <a name="fn-{{ r.num }}"><sup>{{ r.num }}</sup></a>
+    {% endif %}
+    {{ r.text | safe }}<br/>
     {% endfor %}
     </small>
   </td></tr>

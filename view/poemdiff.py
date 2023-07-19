@@ -10,7 +10,7 @@ import config
 from data.logging import profile
 from data.poems import Poems
 from methods.verse_sim import compute_verse_similarity
-from utils import link, makecol, render_csv
+from utils import link, makecol, render_csv, remove_xml
 
 
 DEFAULTS = {
@@ -84,8 +84,8 @@ def render(**args):
         opt_fun=max,
         empty=None)
     if args['format'] in ('csv', 'tsv'):
-        return render_csv([(x.text if x is not None else None,
-                            y.text if y is not None else None,
+        return render_csv([(x.text_norm if x is not None else None,
+                            y.text_norm if y is not None else None,
                             w) for x, y, w in al],
                           header=(args['nro1'], args['nro2'], 'sim_cos'),
                           delimiter='\t' if args['format'] == 'tsv' else ',')
@@ -94,14 +94,14 @@ def render(**args):
     meta_keys = sorted(list(set(poem_1.meta.keys()) | set(poem_2.meta.keys())))
     meta_1, meta_2 = {}, {}
     for key in meta_keys:
-        meta_1[key] = poem_1.meta[key] if key in poem_1.meta else ''
-        meta_2[key] = poem_2.meta[key] if key in poem_2.meta else ''
+        meta_1[key] = remove_xml(poem_1.meta[key], tag=key) if key in poem_1.meta else ''
+        meta_2[key] = remove_xml(poem_2.meta[key], tag=key) if key in poem_2.meta else ''
     alignment = []
     # TODO rendering the verse-level alignments - ugly code, refactor this!
     for row in al:
         verse_1, verse_2 = [], []
         if row[2] > 0:
-            v_al = align(row[0].text, row[1].text)
+            v_al = align(row[0].text_norm, row[1].text_norm)
             chunk_1, chunk_2, different, col = [], [], False, COLOR_NORMAL
             for x, y, c in v_al:
                 if (x != y) != different:
@@ -122,9 +122,9 @@ def render(**args):
                 verse_2.append((col, ''.join(chunk_2)))
         else:
             if row[0] is not None:
-                verse_1.append((COLOR_LINEDIFF, row[0].text))
+                verse_1.append((COLOR_LINEDIFF, row[0].text_norm))
             if row[1] is not None:
-                verse_2.append((COLOR_LINEDIFF, row[1].text))
+                verse_2.append((COLOR_LINEDIFF, row[1].text_norm))
         alignment.append((verse_1, verse_2, (row[2], makecol(row[2]**2, '337ab7', 1))))
     raw_sim = sum(w for x, y, w in al)
     scores = [
@@ -136,7 +136,8 @@ def render(**args):
     ]
     links = generate_page_links(args)
     data = {
-        'p1': poem_1, 'p2': poem_2, 'meta_keys': meta_keys,
+        'p1': poem_1, 'p2': poem_2,
+        'meta_1': meta_1, 'meta_2': meta_2, 'meta_keys': meta_keys,
         'alignment': alignment, 'scores': scores, 'types': types,
         'maintenance': config.check_maintenance()
     }

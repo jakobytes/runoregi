@@ -11,7 +11,7 @@ from data.logging import profile
 from data.poems import Poems
 from methods.verse_sim import compute_verse_similarity
 from methods.hclust import cluster, make_sim_mtx, sim_to_dist
-from utils import link, render_csv
+from utils import link, render_csv, remove_xml
 
 
 DEFAULTS = {
@@ -110,6 +110,12 @@ def render(**args):
 
     poems = [poems[args['nro'][i]] for i in ids]
     meta_keys = sorted(set([k for p in poems for k in p.meta.keys()]))
+    meta = {}
+    for p in poems:
+        meta[p.nro] = {}
+        for key in meta_keys:
+            if key in p.meta:
+                meta[p.nro][key] = remove_xml(p.meta[key], tag=key)
     if args['format'] in ('csv', 'tsv'):
         rows = [((v.text if v else '') for v in row) for row in als]
         return render_csv(rows, header=tuple(p.nro for p in poems),
@@ -117,7 +123,7 @@ def render(**args):
     else:
         data = {
             'alignment': als, 'poems': poems, 'meta_keys': meta_keys,
-            'types': types, 'm': m, 'm_onesided': m_onesided,
+            'meta': meta, 'types': types, 'm': m, 'm_onesided': m_onesided,
             'v_sims': v_sims, 'maintenance': config.check_maintenance()
         }
         links = generate_page_links(args)

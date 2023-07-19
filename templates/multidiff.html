@@ -124,7 +124,7 @@ function properly.
   <tr>
     {% for p in data['poems'] %}
     <td width="350">
-      {% if p.meta[key] is defined %}<small><b>{{ key }}:</b> {{ p.meta[key] }}</small>{% endif %}
+      {% if data['meta'][p.nro][key] is defined %}<small><b>{{ key }}:</b> {{ data['meta'][p.nro][key] }}</small>{% endif %}
     </td>
     {% endfor %}
   </tr>
@@ -147,7 +147,7 @@ function properly.
 
   <tr class="line">
     {% for v in verses %}
-    <td {% if v is not defined or not v.text %}onclick="fold(this);"{% endif %}>{% if v is defined and v.text %}<span onclick="toggle_highlight(this);" data-v_id="{{ v.v_id }}">{{ v.text }}</span>{% endif %}</td>
+    <td {% if v is not defined or not v.text_norm %}onclick="fold(this);"{% endif %}>{% if v is defined and v.text_norm %}<span onclick="toggle_highlight(this);" data-v_id="{{ v.v_id }}">{{ v.text_norm }}</span>{% endif %}</td>
     {% endfor %}
   </tr>
   {% endfor %}

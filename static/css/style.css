@@ -33,6 +33,10 @@
   max-width: 15;
 }
 
+.refrain {
+  color: #777777;
+}
+
 .selected {
   background-color: #FFEEAA;
 }
@@ -59,6 +63,7 @@
 .tooltip-text {
   visibility: hidden;
   position: absolute;
+  text-align: left;
   z-index: 5;
   width: 300px;
   color: black;
@@ -83,6 +88,7 @@
 
 .hover-text {
   position: relative;
+  cursor: pointer;
 }
 
 .hover-text:hover .tooltip-text {
