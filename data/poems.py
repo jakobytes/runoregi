@@ -22,7 +22,7 @@ class Poem:
         self.text = None
         self.type_ids = None
         self.minor_type_ids = None
-        self.type_tree = None
+        self.type_tree = []
         self.refs = []
         self.sim_poems = []
         self.p_clust_id = None
