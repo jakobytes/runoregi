@@ -20,8 +20,8 @@ class Poem:
         self.meta = {}
         self.smd = None
         self.text = None
-        self.type_ids = None
-        self.minor_type_ids = None
+        self.type_ids = []
+        self.minor_type_ids = []
         self.type_tree = []
         self.refs = []
         self.sim_poems = []
