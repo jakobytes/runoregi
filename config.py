@@ -92,3 +92,9 @@ def setup_tables():
                 warnings.warn('Table `{}` not found. {}'\
                               .format(tbl, TABLE_ERRMSG[tbl]))
 
+def check_maintenance():
+    with pymysql.connect(**MYSQL_PARAMS) as db:
+        db.execute('SELECT SUM(ready != 1) FROM dbmeta;')
+        result = db.fetchall()
+        return result[0][0] > 0
+

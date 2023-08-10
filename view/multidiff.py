@@ -118,7 +118,7 @@ def render(**args):
         data = {
             'alignment': als, 'poems': poems, 'meta_keys': meta_keys,
             'types': types, 'm': m, 'm_onesided': m_onesided,
-            'v_sims': v_sims
+            'v_sims': v_sims, 'maintenance': config.check_maintenance()
         }
         links = generate_page_links(args)
         return render_template('multidiff.html', args=args, data=data, links=links)

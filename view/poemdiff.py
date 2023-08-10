@@ -137,7 +137,8 @@ def render(**args):
     links = generate_page_links(args)
     data = {
         'p1': poem_1, 'p2': poem_2, 'meta_keys': meta_keys,
-        'alignment': alignment, 'scores': scores, 'types': types
+        'alignment': alignment, 'scores': scores, 'types': types,
+        'maintenance': config.check_maintenance()
     }
     return render_template('poemdiff.html', args=args, data=data, links=links)
 

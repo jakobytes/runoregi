@@ -134,7 +134,8 @@ def render(**args):
         'type_styles': type_styles,
         'max_type_styles': MAX_TYPE_STYLES,
         'inner': inner,
-        'll': ll, 'dd': dd, 'n': len(poems)
+        'll': ll, 'dd': dd, 'n': len(poems),
+        'maintenance': config.check_maintenance()
     }
     links = generate_page_links(args) 
     return render_template('dendrogram.html', args=args, data=data, links=links)

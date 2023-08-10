@@ -73,7 +73,8 @@ def render(**args):
     data = {
         'verse': verse,
         'clustnet': clustnet,
-        'clusterings': clusterings
+        'clusterings': clusterings,
+        'maintenance': config.check_maintenance()
     }
     links = generate_page_links(args, clusterings)
     return render_template('clustnet.html', args=args, data=data, links=links)

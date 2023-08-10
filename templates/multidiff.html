@@ -19,6 +19,13 @@
 
 <body>
 
+{% if data['maintenance'] %}
+<div class="alert alert-warning" role="alert">
+<b>Warning!</b> A database update is ongoing. Some pages might not
+function properly.
+</div>
+{% endif %}
+
 {% if data['poems'] | length < 8 %}
 <div class="container-fluid">
 <div class="row">

@@ -123,6 +123,7 @@ def render(**args):
     else:
         links = generate_page_links(args, clusterings)
         data = { 'passages': passages, 'poems': poems, 'types': types,
-                 'clusterings': clusterings }
+                 'clusterings': clusterings,
+                 'maintenance': config.check_maintenance() }
         return render_template('passage.html', args=args, data=data, links=links)
 

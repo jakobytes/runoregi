@@ -40,7 +40,8 @@ def render(**args):
                              [subcat[t] for t in subcat if t != args['id']]),
         'tree': tree,
         'poems': poems,
-        'minor': set(minor_nros)
+        'minor': set(minor_nros),
+        'maintenance': config.check_maintenance()
     }
     links = {
       'map': config.VISUALIZATIONS_URL + '/?vis=map_type&' \

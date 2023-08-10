@@ -14,6 +14,13 @@
 
 <body>
 
+{% if data['maintenance'] %}
+<div class="alert alert-warning" role="alert">
+<b>Warning!</b> A database update is ongoing. Some pages might not
+function properly.
+</div>
+{% endif %}
+
 <ul class="nav nav-pills">
   <li role="presentation"><a role="button" href="/" title="to index">
    <span class="glyphicon glyphicon-home"></span>

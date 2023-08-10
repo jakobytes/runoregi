@@ -19,6 +19,7 @@ DEFAULTS = {
 
 @profile
 def render(**args):
+    maintenance = config.check_maintenance()
     if args['q'] is None:
         with pymysql.connect(**config.MYSQL_PARAMS) as db:
             types = get_nonleaf_categories(db)
@@ -35,7 +36,8 @@ def render(**args):
             tree[line.type_id[:line.type_id.index('_')]].append(line)
         types = Types(types = [t for t in list(types.values()) + list(types_kt.values()) ])
         data = { 'tree': tree, 'types': types,
-                 'logging_enabled': config.ENABLE_LOGGING_TO_DB }
+                 'logging_enabled': config.ENABLE_LOGGING_TO_DB,
+                 'maintenance': maintenance }
         return render_template('search_idx.html', data = data)
     else:
         r_verses, r_themes, r_meta = [], [], []
@@ -44,6 +46,6 @@ def render(**args):
             r_meta = search_meta(db, args['q'])
             r_verses = search_verses(db, args['q'])
         data = { 'r_verses': r_verses, 'r_themes': r_themes, 'r_meta': r_meta,
-                 'limit': config.SEARCH_LIMIT }
+                 'limit': config.SEARCH_LIMIT, 'maintenance': maintenance }
         return render_template('search_results.html', args=args, data=data, links={})
 

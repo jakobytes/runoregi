@@ -134,7 +134,8 @@ def render(**args):
                     if x is not None},
         'verse_poems': verse_poems,
         'linked_poems': linked_poems,
-        'poems_sharing_verses': poems_sharing_verses
+        'poems_sharing_verses': poems_sharing_verses,
+        'maintenance': config.check_maintenance()
     }
     return render_template('poem.html', args=args, data=data, links=links)
 

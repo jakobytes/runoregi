@@ -9,6 +9,13 @@
 </head>
 <body>
 
+{% if data['maintenance'] %}
+<div class="alert alert-warning" role="alert">
+<b>Warning!</b> A database update is ongoing. Some pages might not
+function properly.
+</div>
+{% endif %}
+
 <table width="100%">
 <tr>
 <td width="50">
