@@ -107,7 +107,7 @@ var leaves = [
 {% for i in data['ll'] %}
 { nro: {{ data['nros'][i] | tojson }},
   title: {{ data['poems'][data['nros'][i]].smd.title | tojson }},
-  location: {% if data['poems'][data['nros'][i]].smd.location is not none %}{{ data['poems'][data['nros'][i]].smd.location | tojson }}{% else %}""{% endif %},
+  place: {% if data['poems'][data['nros'][i]].smd.place is not none %}{{ data['poems'][data['nros'][i]].smd.place | tojson }}{% else %}""{% endif %},
   collector: {% if data['poems'][data['nros'][i]].smd.collector is not none %}{{ data['poems'][data['nros'][i]].smd.collector | tojson }}{% else %}""{% endif %},
   year: {% if data['poems'][data['nros'][i]].smd.year is not none %}{{ data['poems'][data['nros'][i]].smd.year | tojson }}{% else %}""{% endif %},
   types: [ {% for type_id in data['poems'][data['nros'][i]].type_ids %}{% if loop.index0 > 0 %},{% endif %}"{{ data['types'][type_id].name }}"{% endfor %} ],
@@ -147,14 +147,14 @@ function draw_dendrogram() {
     title.appendChild(document.createTextNode(leaves[i].title));
     title_link.appendChild(title);
     d.appendChild(title_link);
-    var location = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    location.setAttribute("x", leaf_x);
-    location.setAttribute("y", i*70 + 30);
-    location.setAttribute("font-size", 14);
-    location.setAttribute("text-anchor", "left");
-    location.setAttribute("class", "dendrogram-leaf");
-    location.appendChild(document.createTextNode(leaves[i].location));
-    d.appendChild(location);
+    var place = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    place.setAttribute("x", leaf_x);
+    place.setAttribute("y", i*70 + 30);
+    place.setAttribute("font-size", 14);
+    place.setAttribute("text-anchor", "left");
+    place.setAttribute("class", "dendrogram-leaf");
+    place.appendChild(document.createTextNode(leaves[i].place));
+    d.appendChild(place);
     var col_year = document.createElementNS("http://www.w3.org/2000/svg", "text");
     col_year.setAttribute("x", leaf_x);
     col_year.setAttribute("y", i*70 + 45);

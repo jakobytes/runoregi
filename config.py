@@ -21,14 +21,14 @@ LOGGING_TABLE_NAME = 'runoregi_log'
 # Info on whether the tables were found in the DB. Set on startup.
 TABLES = {
   'collectors'    : False,
-  'locations'     : False,
   'p_clust'       : False,
   'p_clust_freq'  : False,
   'p_col'         : False,
   'p_dupl'        : False,
-  'p_loc'         : False,
+  'p_pl'          : False,
   'p_sim'         : False,
   'p_year'        : False,
+  'places'        : False,
   'poem_theme'    : False,
   'poems'         : False,
   'raw_meta'      : False,
@@ -49,14 +49,14 @@ ESSENTIAL_TABLES = { 'poems', 'verse_poem', 'verses' }
 # Error messages to print if a table is not found.
 TABLE_ERRMSG = {
   'collectors'    : 'The collector information will not be available.',
-  'locations'     : 'The place information will not be available.',
   'p_clust'       : 'The poem clustering will not be available.',
   'p_clust_freq'  : 'The poem clustering will not be available.',
   'p_col'         : 'The collector information will not be available.',
   'p_dupl'        : 'The poem duplicate information will not be available.',
-  'p_loc'         : 'The place information will not be available.',
+  'p_pl'          : 'The place information will not be available.',
   'p_sim'         : 'The poem similarities will not be available.',
   'p_year'        : 'The year information will not be available.',
+  'places'        : 'The place information will not be available.',
   'poem_theme'    : 'The type indices will not be available.',
   'poems'         : 'Terminating.',
   'raw_meta'      : 'The unstructured metadata will not be available.',

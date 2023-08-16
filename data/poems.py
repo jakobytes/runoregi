@@ -12,7 +12,7 @@ SimilarPoemLink = \
     namedtuple('SimilarPoemLink', ['nro', 'sim_al', 'sim_al_l', 'sim_al_r'])
 StructuredMetadata = \
     namedtuple('StructuredMetadata',
-               ['collection', 'title', 'location', 'collector', 'year'])
+               ['collection', 'title', 'place', 'collector', 'year'])
 
 
 class Poem:
@@ -172,14 +172,14 @@ class Poems:
 
         if not self: return    # empty set? -> do nothing
         get_collector = config.TABLES['collectors'] and config.TABLES['p_col']
-        get_location = config.TABLES['locations'] and config.TABLES['p_loc']
+        get_place = config.TABLES['places'] and config.TABLES['p_pl']
         query_lst = [
             'SELECT poems.nro, collection,',
             ('rm_osa.value as osa, rm_id.value as id,' \
              if config.TABLES['raw_meta'] else 'NULL, NULL,'),
-            ('GROUP_CONCAT(DISTINCT IFNULL(CONCAT(l2.name, " — ", l.name), l.name)'
+            ('GROUP_CONCAT(DISTINCT IFNULL(CONCAT(pl2.name, " — ", pl.name), pl.name)'
              ' SEPARATOR "; "),'\
-             if get_location else 'NULL,'),
+             if get_place else 'NULL,'),
             ('GROUP_CONCAT(DISTINCT c.name SEPARATOR "; "),'\
              if get_collector else 'NULL,'),
             ('year' if config.TABLES['p_year'] else 'NULL'),
@@ -191,11 +191,11 @@ class Poems:
               'LEFT OUTER JOIN raw_meta rm_id'
               '  ON poems.p_id = rm_id.p_id AND rm_id.field = "ID"',
             ])
-        if get_location:
+        if get_place:
             query_lst.extend([
-              'LEFT OUTER JOIN p_loc ON poems.p_id = p_loc.p_id',
-              'LEFT OUTER JOIN locations l ON p_loc.loc_id = l.loc_id',
-              'LEFT OUTER JOIN locations l2 ON l.par_id = l2.loc_id'
+              'LEFT OUTER JOIN p_pl ON poems.p_id = p_pl.p_id',
+              'LEFT OUTER JOIN places pl ON p_pl.pl_id = pl.pl_id',
+              'LEFT OUTER JOIN places pl2 ON pl.par_id = pl2.pl_id'
             ])
         if get_collector:
             query_lst.extend([
@@ -206,15 +206,15 @@ class Poems:
             query_lst.append('LEFT OUTER JOIN p_year ON poems.p_id = p_year.p_id')
         query_lst.append('WHERE poems.nro IN %s')
         # if GROUP_CONCATs present -- return one row per poem
-        if get_location or get_collector:
+        if get_place or get_collector:
             query_lst.append('GROUP BY poems.p_id')
         query_lst.append(';')
         db.execute(' '.join(query_lst), (tuple(self),))
         #print(db._executed)
         results = []
-        for nro, collection, osa, _id, loc, col, year in db.fetchall():
+        for nro, collection, osa, _id, place, col, year in db.fetchall():
             tit = _make_title(nro, osa, _id, collection)
-            self[nro].smd = StructuredMetadata(collection, tit, loc, col, year)
+            self[nro].smd = StructuredMetadata(collection, tit, place, col, year)
 
     def get_text(self, db, clustering_id=0):
         if not self: return    # empty set? -> do nothing

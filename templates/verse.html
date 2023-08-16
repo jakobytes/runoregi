@@ -103,9 +103,9 @@ verse similarity is measured in terms of the number of character bigrams
 <p>
 <span class="glyphicon glyphicon-tag" aria-hidden="true" title="poem ID"></span>
   {{ nro }}<br/>
-{% if data['poems'][nro].smd.location is not none %}
-<span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="location"></span>
-  {{ data['poems'][nro].smd.location }}<br/>
+{% if data['poems'][nro].smd.place is not none %}
+<span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="place"></span>
+  {{ data['poems'][nro].smd.place }}<br/>
 {% endif %}
 {% if data['poems'][nro].smd.year is not none %}
 <span class="glyphicon glyphicon-calendar" aria-hidden="true" title="year"></span>

@@ -40,9 +40,9 @@ function properly.
 <p>
 <span class="glyphicon glyphicon-tag" aria-hidden="true" title="poem ID"></span>
   {{ data['poem'].nro }}<br/>
-{% if data['poem'].smd.location is not none %}
-<span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="location"></span>
-  {{ data['poem'].smd.location }}<br/>
+{% if data['poem'].smd.place is not none %}
+<span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="place"></span>
+  {{ data['poem'].smd.place }}<br/>
 {% endif %}
 {% if data['poem'].smd.collector is not none %}
 <span class="glyphicon glyphicon-user" aria-hidden="true" title="collector"></span>
@@ -380,7 +380,7 @@ on sequences of verses.</p>
              <td>{{ (s*100) | int }}%</td>
              <td><div class="progress" style="width: 100px; display: inline-block"> <div class="progress-bar" role="progressbar" aria-valuenow="{{ (s*100) | int }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ (s*100) | int }}%;"></div></div></td>
              <td>{{ data['related'][nro].smd.year }}</td>
-             <td>{{ data['related'][nro].smd.location }}</td>
+             <td>{{ data['related'][nro].smd.place }}</td>
              <td>{{ data['related'][nro].smd.collector }}</td>
            </tr>
            {% endfor %}

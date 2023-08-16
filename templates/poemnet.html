@@ -69,7 +69,7 @@ function properly.
       var nodes = new vis.DataSet([
         {% for nro, p in data['poemnet']['nodes'].items() %}
           { id: {{ p.nro | tojson }}, label: {{ p.smd.title | tojson }},
-            title: "{{ p.smd.location }}\n{{ p.smd.year }} {{ p.smd.collector }}\n"
+            title: "{{ p.smd.place }}\n{{ p.smd.year }} {{ p.smd.collector }}\n"
                    {% for line in p.type_tree %}
 				   + "\n{{ line.prefix | join('\u2003') }} {% if line['is_minor']%}*{% endif %}{{ data['types'][line.type_id].name }}"
                    {% endfor %},

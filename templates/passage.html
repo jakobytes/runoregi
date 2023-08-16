@@ -126,9 +126,9 @@ function properly.
 <p>
 <span class="glyphicon glyphicon-tag" aria-hidden="true" title="poem ID"></span>
   {{ pas['nro'] }}<br/>
-{% if data['poems'][pas['nro']].smd.location is not none %}
-<span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="location"></span>
-  {{ data['poems'][pas['nro']].smd.location }}<br/>
+{% if data['poems'][pas['nro']].smd.place is not none %}
+<span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="place"></span>
+  {{ data['poems'][pas['nro']].smd.place }}<br/>
 {% endif %}
 {% if data['poems'][pas['nro']].smd.year is not none %}
 <span class="glyphicon glyphicon-calendar" aria-hidden="true" title="year"></span>
