@@ -16,7 +16,7 @@ from utils import link
 DEFAULTS = {
   'source': None,
   'nro': [],
-  'theme_id': None,
+  'type_id': None,
   'dist': 'al',
   'nb': 1.0,
   'method': 'complete',
@@ -37,14 +37,14 @@ def generate_page_links(args):
         result['nb'][nb_fmt] = pagelink(nb=nb)
     for method in ['complete', 'average', 'single', 'centroid', 'ward']:
         result['method'][method] = pagelink(method=method)
-    if args['source'] == 'theme' and args['nb'] == 1:
+    if args['source'] == 'type' and args['nb'] == 1:
         result['map'] = config.VISUALIZATIONS_URL \
             + '?vis=map_type&' \
-            + urlencode({'theme_id': args['theme_id']}) \
+            + urlencode({'type_id': args['type_id']}) \
             if config.VISUALIZATIONS_URL else None
         result['types'] = config.VISUALIZATIONS_URL \
             + '?vis=tree_type_cooc&' \
-            + urlencode({'theme_id': args['theme_id'], 'incl_erab_orig': False}) \
+            + urlencode({'type_id': args['type_id'], 'incl_erab_orig': False}) \
             if config.VISUALIZATIONS_URL else None
     elif args['source'] == 'cluster' and args['nb'] == 1:
         result['map'] = config.VISUALIZATIONS_URL \
@@ -90,8 +90,8 @@ def transform_vert(dd, n, nros):
 def render(**args):
     poems, types, target_type, inner = None, None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
-        if args['source'] == 'theme':
-            target_type = Types(ids=[args['theme_id']])
+        if args['source'] == 'type':
+            target_type = Types(ids=[args['type_id']])
             target_type.get_descriptions(db)
             nros, minor_nros = target_type.get_poem_ids(db, minor=True)
             poems = Poems(nros=nros+minor_nros)

@@ -48,14 +48,14 @@ class Types:
     def get_ancestors(self, db, add=False):
         if not self: return    # empty set? -> do nothing
         # ignore if the table is not available
-        if not config.TABLES['themes']: return
+        if not config.TABLES['types']: return
         db.execute(
-            'SELECT t1.theme_id, t2.theme_id, t3.theme_id, t4.theme_id '
-            'FROM themes t1'
-            '  LEFT OUTER JOIN themes t2 ON t1.par_id = t2.t_id '
-            '  LEFT OUTER JOIN themes t3 ON t2.par_id = t3.t_id '
-            '  LEFT OUTER JOIN themes t4 ON t3.par_id = t4.t_id '
-            'WHERE t1.theme_id IN %s ;', (tuple(self),))
+            'SELECT t1.type_orig_id, t2.type_orig_id, t3.type_orig_id, t4.type_orig_id '
+            'FROM types t1'
+            '  LEFT OUTER JOIN types t2 ON t1.par_id = t2.t_id '
+            '  LEFT OUTER JOIN types t3 ON t2.par_id = t3.t_id '
+            '  LEFT OUTER JOIN types t4 ON t3.par_id = t4.t_id '
+            'WHERE t1.type_orig_id IN %s ;', (tuple(self),))
         for t_id in self:
             self[t_id].ancestors = []
         for t1_id, t2_id, t3_id, t4_id in db.fetchall():
@@ -70,14 +70,14 @@ class Types:
     def get_descendents(self, db, add=False):
         if not self: return    # empty set? -> do nothing
         # ignore if the table is not available
-        if not config.TABLES['themes']: return
+        if not config.TABLES['types']: return
         db.execute(
-            'SELECT t1.theme_id, t2.theme_id, t3.theme_id, t4.theme_id '
-            'FROM themes t1'
-            '  LEFT OUTER JOIN themes t2 ON t1.t_id = t2.par_id '
-            '  LEFT OUTER JOIN themes t3 ON t2.t_id = t3.par_id '
-            '  LEFT OUTER JOIN themes t4 ON t3.t_id = t4.par_id '
-            'WHERE t1.theme_id IN %s ;', (tuple(self),))
+            'SELECT t1.type_orig_id, t2.type_orig_id, t3.type_orig_id, t4.type_orig_id '
+            'FROM types t1'
+            '  LEFT OUTER JOIN types t2 ON t1.t_id = t2.par_id '
+            '  LEFT OUTER JOIN types t3 ON t2.t_id = t3.par_id '
+            '  LEFT OUTER JOIN types t4 ON t3.t_id = t4.par_id '
+            'WHERE t1.type_orig_id IN %s ;', (tuple(self),))
         for t_id in self:
             if self[t_id].ancestors is None:
                 self[t_id].ancestors = []
@@ -95,34 +95,34 @@ class Types:
     def get_descriptions(self, db):
         if not self: return    # empty set? -> do nothing
         # ignore if the table is not available
-        if not config.TABLES['themes']: return
+        if not config.TABLES['types']: return
         db.execute(
-            'SELECT theme_id, description FROM themes '
-            'WHERE theme_id IN %s', (tuple(self),))
+            'SELECT type_orig_id, description FROM types '
+            'WHERE type_orig_id IN %s', (tuple(self),))
         for type_id, description in db.fetchall():
             self[type_id].description = description
 
     def get_names(self, db):
         if not self: return    # empty set? -> do nothing
         # ignore if the table is not available
-        if not config.TABLES['themes']: return
+        if not config.TABLES['types']: return
         db.execute(
-            'SELECT theme_id, name FROM themes '
-            'WHERE theme_id IN %s', (tuple(self),))
+            'SELECT type_orig_id, name FROM types '
+            'WHERE type_orig_id IN %s', (tuple(self),))
         for type_id, name in db.fetchall():
             self[type_id].name = name
 
     def get_poem_ids(self, db, minor=True):
         if not self: return    # empty set? -> do nothing
         # ignore if the table is not available
-        if not config.TABLES['themes'] or not config.TABLES['poem_theme']:
+        if not config.TABLES['types'] or not config.TABLES['p_typ']:
             return
         query_lst = [
             'SELECT nro, is_minor ',
             'FROM poems ',
-            '  NATURAL JOIN poem_theme ',
-            '  NATURAL JOIN themes ',
-            'WHERE theme_id IN %s']
+            '  NATURAL JOIN p_typ ',
+            '  NATURAL JOIN types ',
+            'WHERE type_orig_id IN %s']
         if not minor:
             query_lst.append(' AND is_minor = 0')
         query_lst.append(';')
@@ -138,28 +138,28 @@ class Types:
 
 def get_root_categories(db):
     # ignore if the table is not available
-    if not config.TABLES['themes']: return Types(ids=[])
+    if not config.TABLES['types']: return Types(ids=[])
     db.execute(\
-        'SELECT theme_id FROM themes'
-        ' WHERE par_id = 0 AND (LENGTH(theme_id) = 8 OR theme_id LIKE "kt_t%");')
+        'SELECT type_orig_id FROM types'
+        ' WHERE par_id = 0 AND (LENGTH(type_orig_id) = 8 OR type_orig_id LIKE "kt_t%");')
     return Types(ids=map(itemgetter(0), db.fetchall()))
 
 
 def get_nonleaf_categories(db):
     types = Types(ids=[])
-    if not config.TABLES['themes']: return types
+    if not config.TABLES['types']: return types
     db.execute(\
         'SELECT '
-        '  t1.theme_id, '
-        '  t2.theme_id, t2.name, '
-        '  t3.theme_id, '
-        '  t4.theme_id '
-        'FROM themes t1 '
-        '  JOIN themes t2 ON t1.par_id = t2.t_id '
-        '  LEFT JOIN themes t3 ON t2.par_id = t3.t_id '
-        '  LEFT JOIN themes t4 ON t3.par_id = t4.t_id '
-        'WHERE t1.theme_id NOT LIKE "kt_%" '
-        '  AND t1.theme_id NOT LIKE "erab_orig%";')
+        '  t1.type_orig_id, '
+        '  t2.type_orig_id, t2.name, '
+        '  t3.type_orig_id, '
+        '  t4.type_orig_id '
+        'FROM types t1 '
+        '  JOIN types t2 ON t1.par_id = t2.t_id '
+        '  LEFT JOIN types t3 ON t2.par_id = t3.t_id '
+        '  LEFT JOIN types t4 ON t3.par_id = t4.t_id '
+        'WHERE t1.type_orig_id NOT LIKE "kt_%" '
+        '  AND t1.type_orig_id NOT LIKE "erab_orig%";')
     for t1_id, t2_id, t2_name, t3_id, t4_id in db.fetchall():
         if t2_id not in types:
             t = Type(id=t2_id)

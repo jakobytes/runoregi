@@ -69,7 +69,7 @@ def render(**args):
              poems[v.nro].smd.collector,
              print_type_list(poems[v.nro], types))
             for v in verses],
-            header=('nro', 'pos', 'text', 'place', 'collector', 'themes'),
+            header=('nro', 'pos', 'text', 'place', 'collector', 'types'),
             delimiter='\t' if args['format'] == 'tsv' else ',')
     else:
         data = {

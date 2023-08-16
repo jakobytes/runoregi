@@ -48,31 +48,31 @@ function properly.
 <div class="col-md-6">
 
 <ul class="nav nav-tabs">
-  <li role="presentation" class="nav-item{% if data['r_themes'] %} active{% else %} disabled{% endif %}">
-    <a class="nav-link"{% if data['r_themes'] %} data-toggle="tab" href="#themes"{% endif %}>Themes</a>
+  <li role="presentation" class="nav-item{% if data['r_types'] %} active{% else %} disabled{% endif %}">
+    <a class="nav-link"{% if data['r_types'] %} data-toggle="tab" href="#types"{% endif %}>Types</a>
   </li>
-  <li class="nav-item{% if data['r_meta'] and not data['r_themes'] %} active{% elif not data['r_meta'] %} disabled{% endif %}">
+  <li class="nav-item{% if data['r_meta'] and not data['r_types'] %} active{% elif not data['r_meta'] %} disabled{% endif %}">
     <a class="nav-link"{% if data['r_meta'] %} data-toggle="tab" href="#metadata"{% endif %}>Metadata</a>
   </li>
-  <li class="nav-item{% if data['r_verses'] and not data['r_meta'] and not data['r_themes'] %} active{% elif not data['r_verses'] %} disabled{% endif %}">
+  <li class="nav-item{% if data['r_verses'] and not data['r_meta'] and not data['r_types'] %} active{% elif not data['r_verses'] %} disabled{% endif %}">
     <a class="nav-link"{% if data['r_verses'] %} data-toggle="tab" href="#verses"{% endif %}>Verses</a>
   </li>
 </ul>
 
 <div class="tab-content">
-<div class="tab-pane container {% if data['r_themes'] %}active{% else %}fade{% endif %}" id="themes">
-{% if data['r_themes'] %}
+<div class="tab-pane container {% if data['r_types'] %}active{% else %}fade{% endif %}" id="types">
+{% if data['r_types'] %}
 <hr/>
-{% for theme_id, name, desc, upper in data['r_themes'] %}
+{% for type_id, name, desc, upper in data['r_types'] %}
 <h4>{{ upper | join(" > ") }} &gt;
-<a href="/theme?id={{ theme_id }}">{{ name }}</a></h4>
+<a href="/type?id={{ type_id }}">{{ name }}</a></h4>
 {{ desc }}
 <hr/>
 {% endfor %}
 {% endif %}
 </div>
 
-<div class="tab-pane container {% if data['r_meta'] and not data['r_themes'] %}active{% else %}fade{% endif %}" id="metadata">
+<div class="tab-pane container {% if data['r_meta'] and not data['r_types'] %}active{% else %}fade{% endif %}" id="metadata">
 {% if data['r_meta'] %}
 <hr/>
 {% for nro, field, value in data['r_meta'] %}
@@ -82,7 +82,7 @@ function properly.
 {% endif %}
 </div>
 
-<div class="tab-pane container {% if data['r_verses'] and not data['r_meta'] and not data['r_themes'] %}active{% else %}fade{% endif %}" id="verses">
+<div class="tab-pane container {% if data['r_verses'] and not data['r_meta'] and not data['r_types'] %}active{% else %}fade{% endif %}" id="verses">
 {% if data['r_verses'] %}
 <hr/>
 {% for nro, pos, text in data['r_verses'] %}

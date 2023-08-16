@@ -12,18 +12,18 @@ def search_verses(db, q):
     return result
 
 
-def search_themes(db, q):
+def search_types(db, q):
     result = []
     # ignore if the table is not available
-    if not config.TABLES['themes']:
+    if not config.TABLES['types']:
         return result
     db.execute(\
-      'SELECT t4.name, t3.name, t2.name, t1.theme_id, t1.name,'
+      'SELECT t4.name, t3.name, t2.name, t1.type_orig_id, t1.name,'
       '       t1.description'
-      ' FROM themes t1'
-      '  LEFT OUTER JOIN themes t2 on t1.par_id = t2.t_id'
-      '  LEFT OUTER JOIN themes t3 on t2.par_id = t3.t_id'
-      '  LEFT OUTER JOIN themes t4 on t3.par_id = t4.t_id'
+      ' FROM types t1'
+      '  LEFT OUTER JOIN types t2 on t1.par_id = t2.t_id'
+      '  LEFT OUTER JOIN types t3 on t2.par_id = t3.t_id'
+      '  LEFT OUTER JOIN types t4 on t3.par_id = t4.t_id'
       '  WHERE MATCH(t1.name, t1.description) AGAINST(%s IN BOOLEAN MODE);', (q,))
     result = [(r[3], r[4], r[5],
                [r[i] for i in range(3) if r[i]]) \

@@ -94,7 +94,7 @@ def get_shared_verses(db, poem, max, thr, order, clustering_id=0):
 def render(**args):
     links = generate_page_links(args)
     p = Poems(nros=[args['nro']])
-    sim_poems, verse_themes, types = None, None, None
+    sim_poems, types = None, None
     verse_poems, linked_poems, poems_sharing_verses = None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS) as db:
         p.get_duplicates_and_parents(db)

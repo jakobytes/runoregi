@@ -45,11 +45,11 @@ def render(**args):
     }
     links = {
       'map': config.VISUALIZATIONS_URL + '/?vis=map_type&' \
-             + urlencode({'theme_id': args['id']}) \
+             + urlencode({'type_orig_id': args['id']}) \
              if config.VISUALIZATIONS_URL else None,
       'cooc-types': config.VISUALIZATIONS_URL + '?vis=tree_types_cooc&' \
-             + urlencode({'theme_id': args['id'], 'include_erab_orig': False}) \
+             + urlencode({'type_orig_id': args['id'], 'include_erab_orig': False}) \
              if config.VISUALIZATIONS_URL else None
     }
-    return render_template('theme.html', args=args, data=data, links=links)
+    return render_template('type.html', args=args, data=data, links=links)
 

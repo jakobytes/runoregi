@@ -10,7 +10,7 @@ import view.poem
 import view.poemdiff
 import view.poemnet
 import view.search
-import view.theme
+import view.type
 import view.verse
 
 
@@ -115,9 +115,10 @@ def show_search():
 
 
 @application.route('/theme')
-def show_theme():
-    args = getargs(request, view.theme.DEFAULTS)
-    result = view.theme.render(**args)
+@application.route('/type')
+def show_type():
+    args = getargs(request, view.type.DEFAULTS)
+    result = view.type.render(**args)
     return _compact(result)
 
 @application.route('/robots.txt')

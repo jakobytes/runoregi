@@ -226,11 +226,11 @@ class Poems:
     def get_types(self, db):
         if not self: return Types(ids=[])    # empty set? -> do nothing
         # ignore if the table is not available
-        if not config.TABLES['poem_theme'] or not config.TABLES['themes']:
+        if not config.TABLES['p_typ'] or not config.TABLES['types']:
             return Types(ids=[])
         db.execute(
-            'SELECT nro, theme_id, is_minor '
-            'FROM poems NATURAL JOIN poem_theme NATURAL JOIN themes '
+            'SELECT nro, type_orig_id, is_minor '
+            'FROM poems NATURAL JOIN p_typ NATURAL JOIN types '
             'WHERE nro IN %s ;', (tuple(self),))
         for nro in self:
             self[nro].type_ids = []

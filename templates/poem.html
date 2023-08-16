@@ -76,11 +76,11 @@ function properly.
 
 {% if data['poem'].type_tree %}
 <div class="panel panel-primary">
-<div class="panel-heading"><h2 class="panel-title">Themes</h2></div>
+<div class="panel-heading"><h2 class="panel-title">Types</h2></div>
 <div class="panel-body">
 <p style="line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
 {% for line in data['poem'].type_tree %}
-{{ line.prefix | join('\u2003') }} {% if line.is_minor %}*{% endif %}<a href="/theme?id={{ line.type_id }}" title="{{ data['types'][line.type_id].name }}">{{ data['types'][line.type_id].name }}</a><br/>
+{{ line.prefix | join('\u2003') }} {% if line.is_minor %}*{% endif %}<a href="/type?id={{ line.type_id }}" title="{{ data['types'][line.type_id].name }}">{{ data['types'][line.type_id].name }}</a><br/>
 {% endfor %}
 </p>
 </div>

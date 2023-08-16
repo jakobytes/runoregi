@@ -69,7 +69,7 @@ used with permission of the authors.</p>
 <h3>SKVR</h3>
 {% for line in data['tree']['skvr'] %}
 {% if loop.index0+1 == data['tree']['skvr'] | length %}
-<span style="margin-left: {{ 20 * (line.prefix | length)+18 }}px;"><a href="/theme?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span>
+<span style="margin-left: {{ 20 * (line.prefix | length)+18 }}px;"><a href="/type?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span>
 {% for i in range(line.prefix | length) %}
 </details>
 {% endfor %}
@@ -80,7 +80,7 @@ used with permission of the authors.</p>
 <a style="cursor: pointer;">{{ data['types'][line.type_id].name }}</a>
 </summary>
   {% else %}
-<span style="margin-left: {{ 20 * (line.prefix | length )+18 }}px;"><a href="/theme?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span><br/>
+<span style="margin-left: {{ 20 * (line.prefix | length )+18 }}px;"><a href="/type?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span><br/>
   {% for i in range((line.prefix | length) - (data['tree']['skvr'][loop.index0+1].prefix | length)) %}
 </details>
   {% endfor %}
@@ -91,7 +91,7 @@ used with permission of the authors.</p>
 <h3>ERAB</h3>
 {% for line in data['tree']['erab'] %}
 {% if loop.index0+1 == data['tree']['erab'] | length %}
-<span style="margin-left: {{ 20 * (line.prefix | length)+18 }}px;"><a href="/theme?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span>
+<span style="margin-left: {{ 20 * (line.prefix | length)+18 }}px;"><a href="/type?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span>
 {% for i in range(line.prefix | length) %}
 </details>
 {% endfor %}
@@ -102,7 +102,7 @@ used with permission of the authors.</p>
 <a style="cursor: pointer;">{{ data['types'][line.type_id].name }}</a>
 </summary>
   {% else %}
-<span style="margin-left: {{ 20 * (line.prefix | length )+18 }}px;"><a href="/theme?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span><br/>
+<span style="margin-left: {{ 20 * (line.prefix | length )+18 }}px;"><a href="/type?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span><br/>
   {% for i in range((line.prefix | length) - (data['tree']['erab'][loop.index0+1].prefix | length)) %}
 </details>
   {% endfor %}
@@ -245,7 +245,7 @@ used with permission of the authors.</p>
 <summary style="display: list-item;"><a style="cursor: pointer;">Kanteletar</a></summary>
 {% for line in data['tree']['kt'] %}
 {% if loop.index0+1 == data['tree']['kt'] | length %}
-<span style="margin-left: {{ 20 * (line.prefix | length + 1)+18 }}px;"><a href="/theme?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span>
+<span style="margin-left: {{ 20 * (line.prefix | length + 1)+18 }}px;"><a href="/type?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span>
 {% for i in range(line.prefix | length) %}
 </details>
 {% endfor %}
@@ -256,7 +256,7 @@ used with permission of the authors.</p>
 <a style="cursor: pointer;">{{ data['types'][line.type_id].name }}</a>
 </summary>
   {% else %}
-<span style="margin-left: {{ 20 * (line.prefix | length + 1)+18 }}px;"><a href="/theme?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span><br/>
+<span style="margin-left: {{ 20 * (line.prefix | length + 1)+18 }}px;"><a href="/type?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a></span><br/>
   {% for i in range((line.prefix | length) - (data['tree']['kt'][loop.index0+1].prefix | length)) %}
 </details>
   {% endfor %}
