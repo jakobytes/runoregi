@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>{% if args['source'] == "type" %}{{ data['target_type'][args['type_orig_id']].name }}{% else %}Denrogram{% endif %} — Runoregi</title>
+<title>{% if args['source'] == "type" %}{{ data['target_type'][args['type_id']].name }}{% else %}Denrogram{% endif %} — Runoregi</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="./static/css/bootstrap.min.css">
 <link rel="stylesheet" href="./static/css/style.css">
@@ -29,7 +29,7 @@ function properly.
    Back to poem
   </a></li>
   {% elif args['source'] == "type" %}
-    {% for type_id in data['target_type'][args['type_orig_id']].ancestors | reverse %}
+    {% for type_id in data['target_type'][args['type_id']].ancestors | reverse %}
   <li role="presentation"><a role="button" href="/type?id={{ type_id }}">
    <span class="glyphicon glyphicon-chevron-right"></span>
    {{ data['target_type'][type_id].name }}
