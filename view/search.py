@@ -21,7 +21,7 @@ DEFAULTS = {
 def render(**args):
     maintenance = config.check_maintenance()
     if args['q'] is None:
-        with pymysql.connect(**config.MYSQL_PARAMS) as db:
+        with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
             types = get_nonleaf_categories(db)
             # FIXME hardcoding Kanteletar's table of contents for now,
             # should be handled more flexibly later
@@ -41,7 +41,7 @@ def render(**args):
         return render_template('search_idx.html', data = data)
     else:
         r_verses, r_types, r_meta = [], [], []
-        with pymysql.connect(**config.MYSQL_PARAMS) as db:
+        with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
             r_types = search_types(db, args['q'])
             r_meta = search_meta(db, args['q'])
             r_verses = search_verses(db, args['q'])

@@ -17,7 +17,7 @@ DEFAULTS = { 'id': None }
 def render(**args):
     upper = Types(ids=[args['id']])
     poems = None
-    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
         nros, minor_nros = upper.get_poem_ids(db, minor=True)
         if nros or minor_nros:
             poems = Poems(nros=nros+minor_nros)

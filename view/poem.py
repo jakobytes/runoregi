@@ -96,7 +96,7 @@ def render(**args):
     p = Poems(nros=[args['nro']])
     sim_poems, types = None, None
     verse_poems, linked_poems, poems_sharing_verses = None, None, None
-    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
         p.get_duplicates_and_parents(db)
         p.get_poem_cluster_info(db)
         p.get_raw_meta(db)

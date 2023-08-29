@@ -81,7 +81,7 @@ def merge_alignments(poems, merges, v_sims):
 @profile
 def render(**args):
     poems = Poems(nros=args['nro'])
-    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
         poems.get_raw_meta(db)
         poems.get_structured_metadata(db)
         poems.get_text(db)

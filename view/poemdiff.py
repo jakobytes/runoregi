@@ -62,7 +62,7 @@ def render(**args):
     # - some refactoring
     # - bold for captions
     poems = Poems(nros=[args['nro1'], args['nro2']])
-    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
         poems.get_raw_meta(db)
         poems.get_structured_metadata(db)
         poems.get_text(db)

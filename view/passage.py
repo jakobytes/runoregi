@@ -79,7 +79,7 @@ def render(**args):
                .format(MAX_QUERY_LENGTH)
     if args['end'] < args['start']:
         return '<b>Error:</b> passage end before the start!'
-    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
         clusterings = get_clusterings(db)
         passage = get_verses(db, nro=args['nro'], start_pos=args['start'],
                              end_pos=args['end'], clustering_id=args['clustering'])

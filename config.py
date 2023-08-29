@@ -74,7 +74,7 @@ TABLE_ERRMSG = {
 
 def setup_tables():
     try:
-        with pymysql.connect(**MYSQL_PARAMS) as db:
+        with pymysql.connect(**MYSQL_PARAMS).cursor() as db:
             db.execute('SHOW TABLES;')
             db_tables = set(map(itemgetter(0), db.fetchall()))
             for tbl in TABLES:
@@ -93,7 +93,7 @@ def setup_tables():
                               .format(tbl, TABLE_ERRMSG[tbl]))
 
 def check_maintenance():
-    with pymysql.connect(**MYSQL_PARAMS) as db:
+    with pymysql.connect(**MYSQL_PARAMS).cursor() as db:
         db.execute('SELECT SUM(ready != 1) FROM dbmeta;')
         result = db.fetchall()
         return result[0][0] > 0

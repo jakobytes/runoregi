@@ -40,7 +40,7 @@ def render(**args):
                 seen_clust.add(v2.clust_id)
         return nbclust
 
-    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
         # the target verse (with nro and pos specified in args)
         verse = get_verses(
             db, nro=args['nro'], start_pos=args['pos'],

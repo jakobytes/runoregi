@@ -22,7 +22,7 @@ def create_logging_table(db):
 
 def log(level, msg):
     if config.ENABLE_LOGGING_TO_DB:
-        with pymysql.connect(**config.MYSQL_PARAMS) as db:
+        with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
             db.execute('SHOW TABLES LIKE %s;', (config.LOGGING_TABLE_NAME,))
             if len(list(db.fetchall())) <= 0:
                 create_logging_table(db)

@@ -61,7 +61,7 @@ def get_cluster_network(db, clust_id, clustering_id=0, maxdepth=3, maxnodes=30):
 @profile
 def render(**args):
     clustnet, clusterings, verse = None, None, None
-    with pymysql.connect(**config.MYSQL_PARAMS) as db:
+    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
         verse = get_verses(
             db, nro=args['nro'], start_pos=args['pos'],
             end_pos=args['pos'], clustering_id=args['clustering'])[0]
