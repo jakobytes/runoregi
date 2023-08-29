@@ -27,7 +27,7 @@ not public).
 
 In addition to the database access, the following further environment
 variables can be configured:
-* `ENABLE_LOGGING_TO_DB` -- if set (to any value), Runoregi will write information about the requested pages and their loading times to the table `runoregi_log`,
+* `DB_LOGGING` -- if set (to any value), Runoregi will write information about the requested pages and their loading times to the table `runoregi_log`,
 * `VISUALIZATIONS_URL` -- the base URL of the [visualizations application](https://filter-visualizations.rahtiapp.fi) -- needed for the links to the visualizations (maps, type treemaps)!
 
 ## Running
