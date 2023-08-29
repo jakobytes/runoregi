@@ -22,13 +22,17 @@ def create_logging_table(db):
 
 def log(level, msg):
     if config.ENABLE_LOGGING_TO_DB:
-        with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
-            db.execute('SHOW TABLES LIKE %s;', (config.LOGGING_TABLE_NAME,))
-            if len(list(db.fetchall())) <= 0:
-                create_logging_table(db)
-            db.execute('INSERT INTO {} (level, hostname, msg, user_agent) VALUES (%s, %s, %s, %s)'\
-                       .format(config.LOGGING_TABLE_NAME),
-                       (level, gethostbyname(gethostname()), msg, request.user_agent.string))
+        with pymysql.connect(**config.MYSQL_PARAMS) as db_con:
+            with db_con.cursor() as db:
+                db.execute('SHOW TABLES LIKE %s;', (config.LOGGING_TABLE_NAME,))
+                if len(list(db.fetchall())) <= 0:
+                    create_logging_table(db)
+                db.execute('INSERT INTO {} (level, hostname, msg, user_agent) '
+                           'VALUES (%s, %s, %s, %s)'\
+                           .format(config.LOGGING_TABLE_NAME),
+                           (level, gethostbyname(gethostname()), msg,
+                            request.user_agent.string))
+            db_con.commit()
 
 def profile(fun):
     def exec_profiled_fun(*args, **kwargs):
