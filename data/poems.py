@@ -165,6 +165,8 @@ class Poems:
                 return 'JR {}'.format(_id)
             elif nro.startswith('kt'):
                 return 'Kanteletar {}:{}'.format(int(nro[2:4]), int(nro[4:]))
+            elif nro.startswith('kr'):
+                return 'KR {}:{}'.format(int(nro[2:7]), int(nro[7:]))
             elif collection == 'literary' and osa and _id:
                 return '{} {}'.format(osa, _id)
             else:
