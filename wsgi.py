@@ -87,7 +87,12 @@ def show_multidiff():
 def show_poem():
     args = getargs(request, view.poem.DEFAULTS)
     result = view.poem.render(**args)
-    return _compact(result)
+    if args['format'] == 'txt':
+        return Response(result, mimetype='text/plain')
+    elif args['format'] == 'xml':
+        return Response(result, mimetype='text/xml')
+    else:
+        return _compact(result)
 
 @application.route('/poemnet')
 def show_poemnet():

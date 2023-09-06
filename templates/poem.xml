@@ -1,0 +1,11 @@
+<ITEM nro="{{ data['poem'].nro }}">
+<META>{% for key, val in data['poem'].meta.items() %}
+<{{ key }}>{{ val | safe }}</{{ key }}>{% endfor %}
+</META>
+<TEXT>{% for v in data['poem'].text %}
+<{{ v.v_type }}>{{ v.text | safe }}</{{ v.v_type }}>{% endfor %}
+</TEXT>{% if data['poem'].refs %}
+<REFS>{% for r in data['poem'].refs %}
+<REF nr="{{ r.num }}">{{ r.text | safe }}</REF>{% endfor %}
+</REFS>{% endif %}
+</ITEM>

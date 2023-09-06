@@ -1,0 +1,5 @@
+{% for key, val in data['poem'].meta.items() %}
+{{ key }}: {{ val | safe }}{% endfor %}
+
+{% for v in data['poem'].text %}
+{{ v.text_norm }}{% endfor %}

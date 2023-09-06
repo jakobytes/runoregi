@@ -16,6 +16,7 @@ from utils import link, makecol, render_xml
 
 DEFAULTS = {
   'nro': None,
+  'format': 'html',
   'sim_order': 'consecutive_rare',
   'max_similar': 50,
   'hl': [],
@@ -34,6 +35,8 @@ def generate_page_links(args):
             pagelink(show_shared_verses=True),
         '-show_shared_verses':
             pagelink(show_shared_verses=False),
+        'txt': pagelink(format='txt', show_shared_verses=False),
+        'xml': pagelink(format='xml', show_shared_verses=False),
         'sim_order': {}, 'max_similar': {}
     }
     for val in ['consecutive_rare', 'consecutive', 'rare', 'any']:
@@ -147,5 +150,6 @@ def render(**args):
         'poems_sharing_verses': poems_sharing_verses,
         'maintenance': config.check_maintenance()
     }
-    return render_template('poem.html', args=args, data=data, links=links)
+    return render_template('poem.{}'.format(args['format']),
+                           args=args, data=data, links=links)
 
