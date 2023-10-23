@@ -5,6 +5,6 @@ Disallow: /multidiff
 Disallow: /passage
 Disallow: /poemdiff
 Disallow: /poemnet
-Disallow: /poem*show_shared_verses=true*
+Disallow: /poem?*show_shared_verses=true*
 Disallow: /search
 Disallow: /verse
