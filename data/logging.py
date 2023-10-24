@@ -34,10 +34,17 @@ def log(level, msg):
                             request.user_agent.string))
             db_con.commit()
 
+# FIXME this function does more than just profiling -- consider
+# changing name to sth like serve_request()
 def profile(fun):
     def exec_profiled_fun(*args, **kwargs):
         t1 = time.time()
-        result = fun(*args, **kwargs)
+        # do not serve banned crawlers
+        if config.BANNED_CRAWLERS \
+                and config.BANNED_CRAWLERS.search(request.user_agent.string):
+            result = config.BANNED_CRAWLER_RESPONSE
+        else:
+            result = fun(*args, **kwargs)
         t2 = time.time()
         log('INFO', '{} {}.{} took {}s'.format(
                         '{}?{}'.format(request.path, request.query_string.decode()),

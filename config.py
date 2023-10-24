@@ -1,6 +1,7 @@
 import os
 from operator import itemgetter
 import pymysql
+import re
 import warnings
 
 
@@ -17,6 +18,12 @@ VISUALIZATIONS_URL = os.getenv('VISUALIZATIONS_URL')
 SEARCH_LIMIT = 1000
 ENABLE_LOGGING_TO_DB = not not os.getenv('DB_LOGGING')
 LOGGING_TABLE_NAME = 'runoregi_log'
+
+BANNED_CRAWLERS = re.compile('Bytespider')
+BANNED_CRAWLER_RESPONSE = '''
+This site is currently not serving requests from your crawler.
+Please consult robots.txt and conform to it.
+'''
 
 # Info on whether the tables were found in the DB. Set on startup.
 TABLES = {
