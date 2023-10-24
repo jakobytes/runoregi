@@ -8,3 +8,6 @@ Disallow: /poemnet
 Disallow: /poem?*show_shared_verses=true*
 Disallow: /search
 Disallow: /verse
+
+User-agent: Bytespider
+Disallow: /
