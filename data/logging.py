@@ -14,10 +14,12 @@ def create_logging_table(db):
         '  hostname VARCHAR(100) DEFAULT NULL,'
         '  msg VARCHAR(2000) DEFAULT NULL,'
         '  user_agent VARCHAR(1000) DEFAULT NULL,'
+        '  crawler varchar(50) DEFAULT NULL,
         '  PRIMARY KEY(log_id), '
         '  INDEX (level), '
         '  INDEX (timestamp), '
-        '  INDEX (hostname) '
+        '  INDEX (hostname), '
+        '  INDEX (crawler) '
         ');'.format(config.LOGGING_TABLE_NAME))
 
 def log(level, msg):
