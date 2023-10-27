@@ -43,7 +43,7 @@ def generate_page_links(args):
             + urlencode({'type_id': args['type_id']}) \
             if config.VISUALIZATIONS_URL else None
         result['types'] = config.VISUALIZATIONS_URL \
-            + '?vis=tree_type_cooc&' \
+            + '?vis=tree_types_cooc&' \
             + urlencode({'type_id': args['type_id'], 'incl_erab_orig': False}) \
             if config.VISUALIZATIONS_URL else None
     elif args['source'] == 'cluster' and args['nb'] == 1:
