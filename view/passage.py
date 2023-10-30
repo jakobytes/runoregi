@@ -6,6 +6,7 @@ import config
 from data.logging import profile
 from data.poems import Poems
 from data.verses import get_clusterings, get_verses
+from view.dendrogram import DEFAULTS as DENDROGRAM_DEFAULTS
 from utils import link, print_type_list, render_csv
 
 MAX_QUERY_LENGTH = None
@@ -122,6 +123,9 @@ def render(**args):
             delimiter='\t' if args['format'] == 'tsv' else ',')
     else:
         links = generate_page_links(args, clusterings)
+        links['dendrogram'] = link('dendrogram',
+            { 'source': 'nros', 'nro': ','.join(pas['nro'] for pas in passages) },
+            DENDROGRAM_DEFAULTS)
         data = { 'passages': passages, 'poems': poems, 'types': types,
                  'clusterings': clusterings,
                  'maintenance': config.check_maintenance() }
