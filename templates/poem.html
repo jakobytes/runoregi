@@ -135,6 +135,16 @@ function properly.
     <li role="presentation"><a href="{{ links['txt'] }}">Text</a></li>
     <li role="presentation"><a href="{{ links['xml'] }}">XML</a></li>
     </ul>
+    <li role="presentation" class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+        Clustering: {{ data['clusterings'][args['clustering']][1] }} <span class="caret"></span>
+      </a>
+      <ul class="dropdown-menu">
+      {% for c in data['clusterings'] %}
+      <li role="presentation"><a href="{{ links['clustering'][c[0]] }}" title="{{ c[2] }}">{{ c[1] }}</a></li>
+      {% endfor %}
+      </ul>
+    </li>
   {% if args['show_shared_verses'] %}
   <li role="presentation"><a role="button" href="{{ links['-show_shared_verses'] }}" title="to index">
    <span class="glyphicon glyphicon-cog"></span>
@@ -176,7 +186,7 @@ function properly.
   <tr>
     {% if v.v_type == "V" %}
       <td{%if args['show_shared_verses'] %} class="poem-view-freqbar"{% endif %} bgcolor="{{ data['colors'][v.clust_freq] }}">
-        <a name="{{ v.pos }}" href="/verse?nro={{ data['poem'].nro }}&pos={{ v.pos }}" title="{{ v.clust_freq }}" class="cn">&nbsp;&nbsp;&nbsp;
+        <a name="{{ v.pos }}" href="/verse?nro={{ data['poem'].nro }}&pos={{ v.pos }}{% if args['clustering'] > 0 %}&clustering={{ args['clustering'] }}{% endif %}" title="{{ v.clust_freq }}" class="cn">&nbsp;&nbsp;&nbsp;
         </a>
       </td>
       <td align="right" class="verse_id{%if args['show_shared_verses'] %} poem-view-linenumber{% endif %}" id="{{ v.pos }}">&ensp;<sup><small>{{ v.pos }}&ensp;</small></sup></td>
@@ -438,7 +448,7 @@ on sequences of verses.</p>
     for (const el of selected) {
       getTableCell(el).classList.remove('selected')
     }
-    window.open('/passage?nro={{ data['poem'].nro }}&start=' + selected[0].id + '&end=' + selected[selected.length - 1].id,'_self')
+    window.open('/passage?nro={{ data['poem'].nro }}&start=' + selected[0].id + '&end=' + selected[selected.length - 1].id{% if args['clustering'] > 0 %}+ '&clustering={{ args['clustering'] }}'{% endif %},'_self')
   })
 
 $('#clear-selection').on('click', (e) => {

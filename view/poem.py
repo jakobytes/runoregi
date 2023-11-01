@@ -10,7 +10,7 @@ from collections import Counter, defaultdict
 import config
 from data.logging import profile
 from data.poems import Poems
-from data.verses import get_verses
+from data.verses import get_clusterings, get_verses
 from utils import link, makecol, render_xml
 
 
@@ -19,12 +19,13 @@ DEFAULTS = {
   'format': 'html',
   'sim_order': 'consecutive_rare',
   'max_similar': 50,
+  'clustering': 0,
   'hl': [],
   'sim_thr': 1,
   'show_shared_verses': False
 }
 
-def generate_page_links(args):
+def generate_page_links(args, clusterings):
     global DEFAULTS
 
     def pagelink(**kwargs):
@@ -37,12 +38,14 @@ def generate_page_links(args):
             pagelink(show_shared_verses=False),
         'txt': pagelink(format='txt', show_shared_verses=False),
         'xml': pagelink(format='xml', show_shared_verses=False),
-        'sim_order': {}, 'max_similar': {}
+        'sim_order': {}, 'max_similar': {}, 'clustering': {}
     }
     for val in ['consecutive_rare', 'consecutive', 'rare', 'any']:
         result['sim_order'][val] = pagelink(sim_order=val)
     for val in [10, 20, 30, 40, 50, 75, 100, 150, 200]:
         result['max_similar'][val] = pagelink(max_similar=val)
+    for c in clusterings:
+        result['clustering'][c[0]] = pagelink(clustering=c[0])
     return result
 
 
@@ -95,18 +98,19 @@ def get_shared_verses(db, poem, max, thr, order, clustering_id=0):
 
 @profile
 def render(**args):
-    links = generate_page_links(args)
     p = Poems(nros=[args['nro']])
+    clusterings = None
     sim_poems, types = None, None
     verse_poems, linked_poems, poems_sharing_verses = None, None, None
     with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
+        clusterings = get_clusterings(db)
         p.get_duplicates_and_parents(db)
         p.get_poem_cluster_info(db)
         p.get_raw_meta(db)
         p.get_refs(db)
         p.get_similar_poems(db, sim_thr=0.1, sim_onesided_thr=0.5)
         p.get_structured_metadata(db)
-        p.get_text(db)
+        p.get_text(db, clustering_id=args['clustering'])
         # poem types
         types = p.get_types(db)
         types.get_names(db)
@@ -120,7 +124,8 @@ def render(**args):
         if args['show_shared_verses']:
             verse_poems, linked_poems, poems_sharing_verses = \
                 get_shared_verses(db, p[args['nro']], args['max_similar'],
-                                  args['sim_thr'], args['sim_order'])
+                                  args['sim_thr'], args['sim_order'],
+                                  args['clustering'])
 
     # render the XML-containing text
     poem = p[args['nro']]
@@ -148,8 +153,10 @@ def render(**args):
         'verse_poems': verse_poems,
         'linked_poems': linked_poems,
         'poems_sharing_verses': poems_sharing_verses,
+        'clusterings': clusterings,
         'maintenance': config.check_maintenance()
     }
+    links = generate_page_links(args, clusterings)
     return render_template('poem.{}'.format(args['format']),
                            args=args, data=data, links=links)
 

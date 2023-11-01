@@ -222,7 +222,7 @@ class Poems:
         if not self: return    # empty set? -> do nothing
         for nro in self:
             self[nro].text = []
-        for v in get_verses(db, nro=tuple(self)):
+        for v in get_verses(db, nro=tuple(self), clustering_id=clustering_id):
             self[v.nro].text.append(v)
 
     def get_types(self, db):
