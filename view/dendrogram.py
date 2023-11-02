@@ -112,6 +112,8 @@ def render(**args):
                 for s in poems[nro].sim_poems:
                     new_nros.add(s.nro)
             poems = Poems(nros=new_nros)
+            if args['source'] == 'cluster':
+                poems.get_poem_cluster_info(db)
         poems.get_structured_metadata(db)
         poems.get_similar_poems(db, within=True)
         types = poems.get_types(db)
