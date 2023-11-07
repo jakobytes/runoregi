@@ -57,6 +57,9 @@ function properly.
   <li class="nav-item{% if data['r_verses'] and not data['r_meta'] and not data['r_types'] %} active{% elif not data['r_verses'] %} disabled{% endif %}">
     <a class="nav-link"{% if data['r_verses'] %} data-toggle="tab" href="#verses"{% endif %}>Verses ({{ data['r_verses'] | length }})</a>
   </li>
+  <li class="nav-item{% if data['r_inline'] and not data['r_meta'] and not data['r_types'] and not data['r_verses'] %} active{% elif not data['r_inline'] %} disabled{% endif %}">
+    <a class="nav-link"{% if data['r_inline'] %} data-toggle="tab" href="#inline"{% endif %}>Inline text ({{ data['r_inline'] | length }})</a>
+  </li>
 </ul>
 
 <div class="tab-content">
@@ -86,6 +89,16 @@ function properly.
 {% if data['r_verses'] %}
 <hr/>
 {% for nro, pos, text in data['r_verses'] %}
+<a href="/poem?nro={{ nro }}&hl={{ pos }}#{{ pos }}">{{ nro }}</a>
+<sup><small>{{ pos }}</small></sup> {{ text | safe }}<br/>
+{% endfor %}
+{% endif %}
+</div>
+
+<div class="tab-pane container {% if data['r_inline'] and not data['r_meta'] and not data['r_types'] and not data['r_verses'] %}active{% else %}fade{% endif %}" id="inline">
+{% if data['r_inline'] %}
+<hr/>
+{% for nro, pos, text in data['r_inline'] %}
 <a href="/poem?nro={{ nro }}&hl={{ pos }}#{{ pos }}">{{ nro }}</a>
 <sup><small>{{ pos }}</small></sup> {{ text | safe }}<br/>
 {% endfor %}

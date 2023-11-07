@@ -34,13 +34,13 @@ def highlight(pattern, text):
 def search_verses(db, q):
     result = []
     db.execute(\
-        'SELECT nro, pos, text FROM verses'
+        'SELECT nro, pos, type, text FROM verses'
         ' NATURAL JOIN verse_poem'
         ' NATURAL JOIN poems'
         ' WHERE MATCH(text) AGAINST(%s IN BOOLEAN MODE);', (q,))
     kwd = extract_keywords(q)
-    result = [(nro, pos, highlight(kwd, render_xml(text))) \
-              for (nro, pos, text) in db.fetchall()]
+    result = [(nro, pos, vtype, highlight(kwd, render_xml(text))) \
+              for (nro, pos, vtype, text) in db.fetchall()]
     return result
 
 

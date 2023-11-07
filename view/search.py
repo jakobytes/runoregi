@@ -44,8 +44,15 @@ def render(**args):
         with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
             r_types = search_types(db, args['q'])
             r_meta = search_meta(db, args['q'])
-            r_verses = search_verses(db, args['q'])
-        data = { 'r_verses': r_verses, 'r_types': r_types, 'r_meta': r_meta,
+            r_verses_and_inline = search_verses(db, args['q'])
+            r_verses = [(nro, pos, text) \
+                        for (nro, pos, vtype, text) in r_verses_and_inline \
+                        if vtype == 'V']
+            r_inline = [(nro, pos, text) \
+                        for (nro, pos, vtype, text) in r_verses_and_inline \
+                        if vtype != 'V']
+        data = { 'r_verses': r_verses, 'r_types': r_types,
+                 'r_meta': r_meta, 'r_inline': r_inline,
                  'limit': config.SEARCH_LIMIT, 'maintenance': maintenance }
         return render_template('search_results.html', args=args, data=data, links={})
 
