@@ -36,6 +36,11 @@ def render_csv(rows, header=None, delimiter=','):
     return stream.getvalue()
 
 
+def render_type_links(text):
+    return re.sub('\[([^|\]]*)\|([^\]]*)\]',
+                  '<a href="/type?id=\\1">\\2</a>', text)
+
+
 def render_xml(string, refs=None, tag='ROOT'):
 
     def render_xml_node(node, ref_dict):

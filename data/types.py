@@ -2,6 +2,7 @@ from collections import namedtuple, OrderedDict
 from operator import itemgetter
 
 import config
+from utils import render_type_links
 
 
 TypeTreeLine = \
@@ -100,7 +101,7 @@ class Types:
             'SELECT type_orig_id, description FROM types '
             'WHERE type_orig_id IN %s', (tuple(self),))
         for type_id, description in db.fetchall():
-            self[type_id].description = description
+            self[type_id].description = render_type_links(description)
 
     def get_names(self, db):
         if not self: return    # empty set? -> do nothing

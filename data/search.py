@@ -1,7 +1,7 @@
 import re
 
 import config
-from utils import render_xml
+from utils import render_type_links, render_xml
 
 
 def extract_keywords(q):
@@ -58,7 +58,7 @@ def search_types(db, q):
       '  LEFT OUTER JOIN types t4 on t3.par_id = t4.t_id'
       '  WHERE MATCH(t1.name, t1.description) AGAINST(%s IN BOOLEAN MODE);', (q,))
     kwd = extract_keywords(q)
-    result = [(r[3], highlight(kwd, r[4]), highlight(kwd, render_xml(r[5])),
+    result = [(r[3], highlight(kwd, r[4]), highlight(kwd, render_type_links(render_xml(r[5]))),
                [r[i] for i in range(3) if r[i]]) \
               for r in db.fetchall()]
     return result

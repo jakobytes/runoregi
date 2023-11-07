@@ -38,7 +38,7 @@ function properly.
 <div class="col-md-8">
 
 <div class="lead">
-<p style="margin-left: 20px;">{{ data['types'][args['id']].description }}</p>
+<p style="margin-left: 20px;">{{ data['types'][args['id']].description | safe }}</p>
 </div>
 
 {% if data['tree'] %}
