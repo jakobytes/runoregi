@@ -89,14 +89,14 @@ function properly.
 <h2>Dendrogram ({{ data['poems'] | length }})</h2>
 
 <svg id="dendrogram" version="1.1"
-     width="100%" height="{{ 70 * data['n'] + 35 }}"
+     width="100%" height="{{ 75 * data['n'] + 35 }}"
      xmlns="http://www.w3.org/2000/svg">
 </svg>
 
 </div>
 </div>
 
-<script lang="javascript">
+<script>
 var dd = [
 {% for x1, y1, x2, y2, x, y, nros in data['dd'] %}
 { x1: {{ x1 }}, y1: {{ y1 }}, x2: {{ x2 }}, y2: {{ y2 }},
@@ -121,6 +121,29 @@ function get_leaf_x() {
   return Math.max(Math.min(1000, window.innerWidth-300), 100);
 }
 
+function focus_t_sq(node) {
+  var d = document.getElementById("dendrogram");
+  var label = node.firstElementChild.textContent;
+  if (node.classList.contains("focused")) {
+    d.querySelectorAll(".dendrogram-type-square-text")
+      .forEach(c => {
+        c.classList.remove("focused");
+        c.previousElementSibling.classList.remove("g1");
+      });
+  } else {
+    d.querySelectorAll(".dendrogram-type-square-text")
+      .forEach(c => {
+        if (c.firstElementChild.textContent === label) {
+          c.classList.add("focused")
+          c.previousElementSibling.classList.remove("g1")
+        } else {
+          c.classList.remove("focused");
+          c.previousElementSibling.classList.add("g1")
+        }
+      });
+  }
+}
+
 // TODO refactor!
 // - class Dendrogram(svgid, dd, leaves)
 // - drawing methods: line(), box(), text() - optionally with href
@@ -137,7 +160,7 @@ function draw_dendrogram() {
       "/poem?nro=" + leaves[i].nro);
     var title = document.createElementNS("http://www.w3.org/2000/svg", "text");
     title.setAttribute("x", leaf_x);
-    title.setAttribute("y", i*70 + 15);
+    title.setAttribute("y", i*75 + 15);
     title.setAttribute("font-size", 16);
     title.setAttribute("text-anchor", "left");
     title.setAttribute("class", "dendrogram-leaf");
@@ -149,7 +172,7 @@ function draw_dendrogram() {
     d.appendChild(title_link);
     var place = document.createElementNS("http://www.w3.org/2000/svg", "text");
     place.setAttribute("x", leaf_x);
-    place.setAttribute("y", i*70 + 30);
+    place.setAttribute("y", i*75 + 30);
     place.setAttribute("font-size", 14);
     place.setAttribute("text-anchor", "left");
     place.setAttribute("class", "dendrogram-leaf");
@@ -157,7 +180,7 @@ function draw_dendrogram() {
     d.appendChild(place);
     var col_year = document.createElementNS("http://www.w3.org/2000/svg", "text");
     col_year.setAttribute("x", leaf_x);
-    col_year.setAttribute("y", i*70 + 45);
+    col_year.setAttribute("y", i*75 + 45);
     col_year.setAttribute("font-size", 14);
     col_year.setAttribute("text-anchor", "left");
     col_year.setAttribute("class", "dendrogram-leaf");
@@ -165,18 +188,28 @@ function draw_dendrogram() {
     d.appendChild(col_year);
     for (j = 0; j < leaves[i].types.length; j++) {
       var t_sq = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      t_sq.setAttribute("x", leaf_x + j*15);
-      t_sq.setAttribute("y", i*70+50);
+      t_sq.setAttribute("x", leaf_x + j*20);
+      t_sq.setAttribute("y", i*75+50);
       t_sq.setAttribute("data-pos", j);
-      t_sq.setAttribute("width", 10);
-      t_sq.setAttribute("height", 10);
+      t_sq.setAttribute("width", 15);
+      t_sq.setAttribute("height", 15);
       t_sq.setAttribute("title", leaves[i].types[j]);
       t_sq.classList.add("dendrogram-type-square");
       t_sq.classList.add("c"+leaves[i].type_styles[j]);
       var t_sq_tit = document.createElementNS("http://www.w3.org/2000/svg", "title");
       t_sq_tit.appendChild(document.createTextNode(leaves[i].types[j]));
-	  t_sq.appendChild(t_sq_tit);
+      var t_sq_text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      t_sq_text.setAttribute("x", parseInt(t_sq.getAttribute("x"))+2);
+      t_sq_text.setAttribute("y", parseInt(t_sq.getAttribute("y"))+12);
+      t_sq_text.setAttribute("data-pos", j);
+      t_sq_text.setAttribute("font-size", 14);
+      t_sq_text.classList.add("dendrogram-type-square-text");
+      t_sq_text.setAttribute("style", "fill: white; font-family: courier; font-weight: bold; cursor: default;");
+      t_sq_text.appendChild(document.createTextNode(leaves[i].types[j].substr(0, 1)));
+      t_sq_text.appendChild(t_sq_tit);
+      t_sq_text.addEventListener("click", function(e) { focus_t_sq(e.target); });
       d.appendChild(t_sq);
+      d.appendChild(t_sq_text);
     }
   }
   for (i = 0; i < dd.length; i++) {
@@ -249,7 +282,9 @@ function resize_dendrogram() {
     }
   }
   d.querySelectorAll(".dendrogram-type-square")
-    .forEach(c => c.setAttribute("x", leaf_x + c.getAttribute("data-pos")*15));
+    .forEach(c => c.setAttribute("x", leaf_x + c.getAttribute("data-pos")*20));
+  d.querySelectorAll(".dendrogram-type-square-text")
+    .forEach(c => c.setAttribute("x", leaf_x + c.getAttribute("data-pos")*20 + 2));
 }
 
 window.addEventListener('load', draw_dendrogram);

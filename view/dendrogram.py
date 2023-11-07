@@ -65,7 +65,7 @@ def transform_vert(dd, n, nros):
         return int(400*(1-x)+20)
 
     def ty(y):
-        return int(70*y+35)
+        return int(75*y+7)
 
     result = []
     ill = np.zeros(n, dtype=np.uint16)   # inverse leaves list -- positions of leaf nodes
