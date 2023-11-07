@@ -40,9 +40,7 @@ function properly.
 {% if args['source'] == "type" %}
 </ul>
 <h1 style="margin-left: 20px;">{{ data['target_type'][args['type_id']].name }}</h1>
-<div class="lead">
 <p style="margin-left: 20px;">{{ data['target_type'][args['type_id']].description | safe }}</p>
-</div>
 <ul class="nav nav-pills">
 {% elif args['source'] == "cluster" %}
 </ul>
