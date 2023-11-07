@@ -49,13 +49,13 @@ function properly.
 
 <ul class="nav nav-tabs">
   <li role="presentation" class="nav-item{% if data['r_types'] %} active{% else %} disabled{% endif %}">
-    <a class="nav-link"{% if data['r_types'] %} data-toggle="tab" href="#types"{% endif %}>Types</a>
+    <a class="nav-link"{% if data['r_types'] %} data-toggle="tab" href="#types"{% endif %}>Types ({{ data['r_types'] | length }})</a>
   </li>
   <li class="nav-item{% if data['r_meta'] and not data['r_types'] %} active{% elif not data['r_meta'] %} disabled{% endif %}">
-    <a class="nav-link"{% if data['r_meta'] %} data-toggle="tab" href="#metadata"{% endif %}>Metadata</a>
+    <a class="nav-link"{% if data['r_meta'] %} data-toggle="tab" href="#metadata"{% endif %}>Metadata ({{ data['r_meta'] | length }})</a>
   </li>
   <li class="nav-item{% if data['r_verses'] and not data['r_meta'] and not data['r_types'] %} active{% elif not data['r_verses'] %} disabled{% endif %}">
-    <a class="nav-link"{% if data['r_verses'] %} data-toggle="tab" href="#verses"{% endif %}>Verses</a>
+    <a class="nav-link"{% if data['r_verses'] %} data-toggle="tab" href="#verses"{% endif %}>Verses ({{ data['r_verses'] | length }})</a>
   </li>
 </ul>
 
