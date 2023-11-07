@@ -305,3 +305,7 @@ class Poems:
         nros = list(map(itemgetter(0), db.fetchall()))
         return Poems(nros=nros)
 
+def is_poem_id(db, nro):
+    db.execute('SELECT nro FROM poems WHERE nro = %s', (nro,))
+    return len(list(db.fetchall())) > 0
+
