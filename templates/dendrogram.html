@@ -167,10 +167,12 @@ function draw_dendrogram() {
       var t_sq = document.createElementNS("http://www.w3.org/2000/svg", "rect");
       t_sq.setAttribute("x", leaf_x + j*15);
       t_sq.setAttribute("y", i*70+50);
+      t_sq.setAttribute("data-pos", j);
       t_sq.setAttribute("width", 10);
       t_sq.setAttribute("height", 10);
       t_sq.setAttribute("title", leaves[i].types[j]);
-      t_sq.setAttribute("class", "c"+leaves[i].type_styles[j]);
+      t_sq.classList.add("dendrogram-type-square");
+      t_sq.classList.add("c"+leaves[i].type_styles[j]);
       var t_sq_tit = document.createElementNS("http://www.w3.org/2000/svg", "title");
       t_sq_tit.appendChild(document.createTextNode(leaves[i].types[j]));
 	  t_sq.appendChild(t_sq_tit);
@@ -246,6 +248,8 @@ function resize_dendrogram() {
       j++;
     }
   }
+  d.querySelectorAll(".dendrogram-type-square")
+    .forEach(c => c.setAttribute("x", leaf_x + c.getAttribute("data-pos")*15));
 }
 
 window.addEventListener('load', draw_dendrogram);
