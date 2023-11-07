@@ -60,6 +60,8 @@ def render_xml(string, refs=None, tag='ROOT'):
                                         '<div class="tooltip-text" style="width: 200">{}</div>'
                                         '</a>'\
                                         .format(refnr, tooltip))
+                    else:
+                        reflinks.append('<sup>{}</sup>'.format(refnr))
                 text.append('<sup>,</sup>'.join(reflinks))
             elif c.tag == 'REFR':
                 text.append('<span class="refrain">{}</span>'.format(c.text))
