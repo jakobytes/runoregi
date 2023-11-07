@@ -271,3 +271,37 @@ class Poems:
         nros = list(map(itemgetter(0), db.fetchall()))
         return Poems(nros=nros)
 
+    @staticmethod
+    def get_by_collector(db, collector_id):
+        # ignore if the table is not available
+        if not config.TABLES['collectors'] or not config.TABLES['p_col']:
+            warnings.warn('Collectors table not available. This function '
+                          'should not have been called.')
+            return Poems(nros=[])
+        db.execute(
+            'SELECT p.nro '
+            'FROM collectors c '
+            '  JOIN p_col ON c.col_id = p_col.col_id '
+            '  JOIN poems p ON p_col.p_id = p.p_id '
+            'WHERE c.col_orig_id = %s ;',
+            (collector_id,))
+        nros = list(map(itemgetter(0), db.fetchall()))
+        return Poems(nros=nros)
+
+    @staticmethod
+    def get_by_place(db, place_id):
+        # ignore if the table is not available
+        if not config.TABLES['places'] or not config.TABLES['p_pl']:
+            warnings.warn('Places table not available. This function '
+                          'should not have been called.')
+            return Poems(nros=[])
+        db.execute(
+            'SELECT p.nro '
+            'FROM places pl '
+            '  JOIN p_pl ON pl.pl_id = p_pl.pl_id '
+            '  JOIN poems p ON p_pl.p_id = p.p_id '
+            'WHERE pl.place_orig_id = %s ;',
+            (place_id,))
+        nros = list(map(itemgetter(0), db.fetchall()))
+        return Poems(nros=nros)
+

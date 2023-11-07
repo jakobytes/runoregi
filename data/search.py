@@ -78,3 +78,22 @@ def search_meta(db, q):
               for (nro, field, value) in db.fetchall()]
     return result
 
+
+def search_smd(db, q):
+    result = []
+    # ignore if the table is not available
+    if not config.TABLES['collectors']:
+        return result
+    kwd = extract_keywords(q)
+    db.execute(\
+        'SELECT col_orig_id, name FROM collectors'
+        ' WHERE MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
+    result.extend([('collector', col_id, highlight(kwd, name)) \
+                   for (col_id, name) in db.fetchall()])
+    db.execute(\
+        'SELECT place_orig_id, name FROM places'
+        ' WHERE type = "parish" AND MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
+    result.extend([('place', place_id, highlight(kwd, name)) \
+                   for (place_id, name) in db.fetchall()])
+    return result
+

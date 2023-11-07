@@ -38,7 +38,9 @@ def get_by_type(db, type_id):
     return { 'poems': poems,
              'types': types,
              'minor': set(minor_nros), 
-             'tree': tree
+             'tree': tree,
+             'title': types[type_id].name,
+             'description': types[type_id].description
            }
 
 
@@ -48,6 +50,16 @@ def render(**args):
     with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
         if args['source'] == 'type':
             data = get_by_type(db, args['id'])
+        elif args['source'] == 'collector':
+            poems = Poems.get_by_collector(db, args['id'])
+            poems.get_structured_metadata(db)
+            title = poems[list(poems)[0]].smd.collector
+            data = { 'poems': poems, 'title': title }
+        elif args['source'] == 'place':
+            poems = Poems.get_by_place(db, args['id'])
+            poems.get_structured_metadata(db)
+            title = poems[list(poems)[0]].smd.place
+            data = { 'poems': poems, 'title': title }
 
     data['maintenance'] = config.check_maintenance()
 

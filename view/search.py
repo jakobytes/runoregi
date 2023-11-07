@@ -4,7 +4,7 @@ import pymysql
 
 import config
 from data.logging import profile
-from data.search import search_meta, search_types, search_verses
+from data.search import search_meta, search_types, search_verses, search_smd
 from data.types import get_nonleaf_categories, render_type_tree, Types
 
 
@@ -44,6 +44,7 @@ def render(**args):
         with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
             r_types = search_types(db, args['q'])
             r_meta = search_meta(db, args['q'])
+            r_smd = search_smd(db, args['q'])
             r_verses_and_inline = search_verses(db, args['q'])
             r_verses = [(nro, pos, text) \
                         for (nro, pos, vtype, text) in r_verses_and_inline \
@@ -53,6 +54,6 @@ def render(**args):
                         if vtype != 'V']
         data = { 'r_verses': r_verses, 'r_types': r_types,
                  'r_meta': r_meta, 'r_inline': r_inline,
+                 'r_smd': r_smd,
                  'limit': config.SEARCH_LIMIT, 'maintenance': maintenance }
         return render_template('search_results.html', args=args, data=data, links={})
-
