@@ -20,7 +20,7 @@ function properly.
  <span class="glyphicon glyphicon-home"></span>
 </a></li>
 {% for t in data['types'][args['id']].ancestors | reverse %}
-<li role="presentation"><a role="button" href="/type?id={{ t }}">
+<li role="presentation"><a role="button" href="/poemlist?source=type&id={{ t }}">
  <span class="glyphicon glyphicon-chevron-right"></span>
 {{ data['types'][t].name }}
 </a></li>
@@ -40,14 +40,13 @@ function properly.
 <div class="panel panel-primary">
 <div class="panel-body">
 <p style="margin-left: 20px;">{{ data['types'][args['id']].description | safe }}</p>
-
 </div>
 </div>
 
 {% if data['tree'] %}
 <h2>Subcategories</h2>
 {% for line in data['tree'] %}
-{{ line.prefix | join('\u2003') }} <a href="/type?id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a><br/>
+{{ line.prefix | join('\u2003') }} <a href="/poemlist?source=type&id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a><br/>
 {% endfor %}
 {% endif %}
 {% if data['poems'] %}

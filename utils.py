@@ -38,7 +38,7 @@ def render_csv(rows, header=None, delimiter=','):
 
 def render_type_links(text):
     return re.sub('\[([^|\]]*)\|([^\]]*)\]',
-                  '<a href="/type?id=\\1">\\2</a>', text)
+                  '<a href="/poemlist?source=type&id=\\1">\\2</a>', text)
 
 
 def render_xml(string, refs=None, tag='ROOT'):

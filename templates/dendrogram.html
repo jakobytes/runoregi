@@ -30,7 +30,7 @@ function properly.
   </a></li>
   {% elif args['source'] == "type" %}
     {% for type_id in data['target_type'][args['type_id']].ancestors | reverse %}
-  <li role="presentation"><a role="button" href="/type?id={{ type_id }}">
+  <li role="presentation"><a role="button" href="/poemlist?source=type&id={{ type_id }}">
    <span class="glyphicon glyphicon-chevron-right"></span>
    {{ data['target_type'][type_id].name }}
   </a></li>

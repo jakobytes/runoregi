@@ -68,7 +68,7 @@ function properly.
 <hr/>
 {% for type_id, name, desc, upper in data['r_types'] %}
 <h4>{{ upper | join(" > ") }} &gt;
-<a href="/type?id={{ type_id }}">{{ name | safe }}</a></h4>
+<a href="/poemlist?source=type&id={{ type_id }}">{{ name | safe }}</a></h4>
 {{ desc | safe }}
 <hr/>
 {% endfor %}

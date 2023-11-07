@@ -1,4 +1,4 @@
-from flask import Flask, Response, request
+from flask import Flask, Response, redirect, request
 import re
 
 import config
@@ -8,9 +8,9 @@ import view.multidiff
 import view.passage
 import view.poem
 import view.poemdiff
+import view.poemlist
 import view.poemnet
 import view.search
-import view.type
 import view.verse
 
 
@@ -94,6 +94,12 @@ def show_poem():
     else:
         return _compact(result)
 
+@application.route('/poemlist')
+def show_poemlist():
+    args = getargs(request, view.poemlist.DEFAULTS)
+    result = view.poemlist.render(**args)
+    return _compact(result)
+
 @application.route('/poemnet')
 def show_poemnet():
     args = getargs(request, view.poemnet.DEFAULTS)
@@ -122,9 +128,8 @@ def show_search():
 @application.route('/theme')
 @application.route('/type')
 def show_type():
-    args = getargs(request, view.type.DEFAULTS)
-    result = view.type.render(**args)
-    return _compact(result)
+    type_id = request.args.get('id', None, str)
+    return redirect('/poemlist?source=type&id={}'.format(type_id))
 
 @application.route('/robots.txt')
 def show_robots_txt():
