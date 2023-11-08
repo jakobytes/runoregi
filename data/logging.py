@@ -29,6 +29,8 @@ def log(level, msg):
                 db.execute('SHOW TABLES LIKE %s;', (config.LOGGING_TABLE_NAME,))
                 if len(list(db.fetchall())) <= 0:
                     create_logging_table(db)
+                if len(msg) > 2000:
+                    msg = msg[:1997] + '...'
                 db.execute('INSERT INTO {} (level, hostname, msg, user_agent) '
                            'VALUES (%s, %s, %s, %s)'\
                            .format(config.LOGGING_TABLE_NAME),
