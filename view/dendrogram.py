@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 import config
 from data.logging import profile
 from data.poems import Poems
-from data.types import Types
+from data.types import Types, render_type_tree
 from methods.hclust import cluster, make_sim_mtx, sim_to_dist
 from utils import link
 
@@ -132,6 +132,7 @@ def render(**args):
         'poems': poems,
         'nros': list(poems),
         'types': types,
+        'typetree': render_type_tree(types),
         'target_type': target_type,
         'type_styles': type_styles,
         'max_type_styles': MAX_TYPE_STYLES,
