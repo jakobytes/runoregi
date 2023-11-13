@@ -205,6 +205,10 @@ function properly.
       <td></td><td></td><td{%if args['show_shared_verses'] %} class="poem-view-text"{% endif %} align="center">
         <h3>{{ v.text_rendered | safe }}</h3>
       </td>
+      {% else %}
+      <td></td><td></td><td{%if args['show_shared_verses'] %} class="poem-view-text"{% endif %}>
+        <small style="color: gray;">{{ v.text_rendered | safe }}</small>
+      </td>
       {% endif %}
     {% endif %}
     <td style="white-space: nowrap">
