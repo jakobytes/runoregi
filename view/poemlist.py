@@ -64,13 +64,11 @@ def render(**args):
     data['maintenance'] = config.check_maintenance()
 
     links = {}
-    if args['source'] == 'type':
+    if args['source'] == 'type' and config.VISUALIZATIONS_URL is not None:
         links['map'] = config.VISUALIZATIONS_URL + '/?vis=map_type&' \
-            + urlencode({'type_id': args['id']}) \
-            if config.VISUALIZATIONS_URL else None,
+            + urlencode({'type_id': args['id']})
         links['cooc-types'] = config.VISUALIZATIONS_URL + '?vis=tree_types_cooc&' \
-            + urlencode({'type_id': args['id'], 'include_erab_orig': False}) \
-            if config.VISUALIZATIONS_URL else None
+            + urlencode({'type_id': args['id'], 'include_erab_orig': False})
 
     return render_template('poemlist.html', args=args, data=data, links=links)
 
