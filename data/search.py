@@ -56,7 +56,15 @@ def search_types(db, q):
       '  LEFT OUTER JOIN types t2 on t1.par_id = t2.t_id'
       '  LEFT OUTER JOIN types t3 on t2.par_id = t3.t_id'
       '  LEFT OUTER JOIN types t4 on t3.par_id = t4.t_id'
-      '  WHERE MATCH(t1.name, t1.description) AGAINST(%s IN BOOLEAN MODE);', (q,))
+      '  WHERE MATCH(t1.name) AGAINST(%s IN BOOLEAN MODE)'
+      'UNION '
+      'SELECT t4.name, t3.name, t2.name, t1.type_orig_id, t1.name,'
+      '       t1.description'
+      ' FROM types t1'
+      '  LEFT OUTER JOIN types t2 on t1.par_id = t2.t_id'
+      '  LEFT OUTER JOIN types t3 on t2.par_id = t3.t_id'
+      '  LEFT OUTER JOIN types t4 on t3.par_id = t4.t_id'
+      '  WHERE MATCH(t1.description) AGAINST(%s IN BOOLEAN MODE);', (q, q))
     kwd = extract_keywords(q)
     result = [(r[3], highlight(kwd, r[4]), highlight(kwd, render_type_links(render_xml(r[5]))),
                [r[i] for i in range(3) if r[i]]) \
