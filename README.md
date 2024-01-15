@@ -70,9 +70,7 @@ in the future if needed.
 
 ## License
 
-Right now this is a private repository and the code is not meant to be
-used outside of the FILTER project. An open-source release is planned
-as soon as possible.
+MIT (see [LICENSE](./LICENSE))
 
 ## Publications
 
