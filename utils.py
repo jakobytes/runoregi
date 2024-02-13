@@ -41,10 +41,14 @@ def render_type_links(text):
                   '<a href="/poemlist?source=type&id=\\1">\\2</a>', text)
 
 
+def escape_xml(string):
+    return string.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+
 def render_xml(string, refs=None, tag='ROOT'):
 
     def render_xml_node(node, ref_dict):
-        text = [node.text] if node.text is not None else []
+        text = [escape_xml(node.text)] if node.text is not None else []
         for c in node:
             if c.tag in ('I', 'U', 'SUP', 'SUB'):
                 text.append('<{}>{}</{}>'.format(c.tag, render_xml_node(c, ref_dict), c.tag))
