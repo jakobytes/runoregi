@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 
 import config
 from data.logging import profile
+from data.misc import get_parishes
 from data.poems import Poems
 from data.types import Types, render_type_tree
 
@@ -56,10 +57,11 @@ def render(**args):
             title = poems[list(poems)[0]].smd.collector
             data = { 'poems': poems, 'title': title }
         elif args['source'] == 'place':
+            parishes = get_parishes(db, args['id'])
             poems = Poems.get_by_place(db, args['id'])
             poems.get_structured_metadata(db)
             title = poems[list(poems)[0]].smd.place
-            data = { 'poems': poems, 'title': title }
+            data = { 'poems': poems, 'title': title, 'parishes': parishes }
 
     data['maintenance'] = config.check_maintenance()
 

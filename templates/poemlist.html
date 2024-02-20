@@ -48,13 +48,27 @@ function properly.
 {% endif %}
 
 {% if args['source'] == "type" and data['tree'] %}
-<h2>Subcategories</h2>
+<div class="panel panel-primary">
+<div class="panel-heading"><h2 class="panel-title">Poems ({{ data['poems'] | length }})</h2></div>
+<div class="panel-body">
 {% for line in data['tree'] %}
 {{ line.prefix | join('\u2003') }} <a href="/poemlist?source=type&id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a><br/>
 {% endfor %}
-{% endif %}
-{% if data['poems'] %}
 
+{% elif args['source'] == "place" and data['parishes'] %}
+<div class="panel panel-primary">
+<div class="panel-heading"><h2 class="panel-title">Parishes ({{ data['parishes'] | length }})</h2></div>
+<div class="panel-body">
+<ul>
+{% for place_id, place_name, npoems in data['parishes'] %}
+<a href="/poemlist?source=place&id={{ place_id }}">{{ place_name }}</a>&nbsp;({{ npoems }}){% if loop.index0 < data['parishes'] | length %}, {% endif %}
+{% endfor %}
+</ul>
+</div>
+</div>
+{% endif %}
+
+{% if data['poems'] %}
 <div class="panel panel-primary">
 <div class="panel-heading"><h2 class="panel-title">Poems ({{ data['poems'] | length }})</h2></div>
 <div class="panel-body">
