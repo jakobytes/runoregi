@@ -1,4 +1,4 @@
-<ITEM nro="{{ data['poem'].nro }}">
+<ITEM nro="{{ data['poem'].nro }}"{% if data['poem'].smd.place_lst %} p="{% for pl in data['poem'].smd.place_lst %}{% if pl.parish_id is not none %}{{ pl.parish_id }}{% else %}{{ pl.county_id }}{% endif %}{% if loop.index0 < data['poem'].smd.place_lst | length - 1 %};{% endif %}{% endfor %}"{% endif %}{% if data['poem'].smd.collector_lst %} k="{% for col in data['poem'].smd.collector_lst %}{{ col.id }}{% if loop.index0 < data['poem'].smd.collector_lst | length - 1%};{% endif %}{% endfor %}"{% endif %}{% if data['poem'].smd.year is not none %} y="{{ data['poem'].smd.year }}"{% endif %}>
 <META>{% for key, val in data['poem'].meta.items() %}
 <{{ key }}>{{ val | safe }}</{{ key }}>{% endfor %}
 </META>
