@@ -238,8 +238,10 @@ class Poems:
             place = '; '.join([
                 '{} \u2014 {}'.format(p.county_name, p.parish_name) \
                 if p.parish_name is not None else '{}'.format(p.county_name) \
-                for p in place_lst])
-            collector = '; '.join(c.name for c in collector_lst)
+                for p in place_lst]) \
+                if place_lst else None
+            collector = '; '.join(c.name for c in collector_lst) \
+                        if collector_lst else None
             self[nro].smd = StructuredMetadata(
                 collection, title, place, collector, place_lst, collector_lst, year)
 

@@ -46,7 +46,7 @@ function properly.
   <a href="/poemlist?source=place&id={{ pl.county_id }}">{{ pl.county_name }}</a>{% if pl.parish_name is not none %} — <a href="/poemlist?source=place&id={{ pl.parish_id }}">{{ pl.parish_name }}</a>{% endif %}{% if loop.index0 < data['poem'].smd.place_lst | length - 1 %}; {% endif %}
   {% endfor %}<br/>
 {% endif %}
-{% if data['poem'].smd.collector_lst is not none %}
+{% if data['poem'].smd.collector_lst %}
 <span class="glyphicon glyphicon-user" aria-hidden="true" title="collector"></span>
   {% for col in data['poem'].smd.collector_lst %}
   <a href="/poemlist?source=collector&id={{ col.id }}">{{ col.name }}</a>{% if loop.index0 < data['poem'].smd.collector_lst | length - 1 %}; {% endif %}
