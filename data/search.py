@@ -89,19 +89,18 @@ def search_meta(db, q):
 
 def search_smd(db, q):
     result = []
-    # ignore if the table is not available
-    if not config.TABLES['collectors']:
-        return result
     kwd = extract_keywords(q)
-    db.execute(\
-        'SELECT col_orig_id, name FROM collectors'
-        ' WHERE MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
-    result.extend([('collector', col_id, highlight(kwd, name)) \
-                   for (col_id, name) in db.fetchall()])
-    db.execute(\
-        'SELECT place_orig_id, name FROM places'
-        ' WHERE MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
-    result.extend([('place', place_id, highlight(kwd, name)) \
-                   for (place_id, name) in db.fetchall()])
+    if config.TABLES['collectors'] and config.TABLES['p_col']:
+        db.execute(\
+            'SELECT col_orig_id, name FROM collectors'
+            ' WHERE MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
+        result.extend([('collector', col_id, highlight(kwd, name)) \
+                       for (col_id, name) in db.fetchall()])
+    if config.TABLES['places'] and config.TABLES['p_pl']:
+        db.execute(\
+            'SELECT place_orig_id, name FROM places'
+            ' WHERE MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
+        result.extend([('place', place_id, highlight(kwd, name)) \
+                       for (place_id, name) in db.fetchall()])
     return result
 
