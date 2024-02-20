@@ -15,19 +15,19 @@ function properly.
 </div>
 {% endif %}
 
-{% if args['source'] == "type" %}
 <ul class="nav nav-pills">
 <li role="presentation"><a role="button" href="/" title="to index">
  <span class="glyphicon glyphicon-home"></span>
 </a></li>
+{% if args['source'] == "type" %}
 {% for t in data['types'][args['id']].ancestors | reverse %}
 <li role="presentation"><a role="button" href="/poemlist?source=type&id={{ t }}">
  <span class="glyphicon glyphicon-chevron-right"></span>
 {{ data['types'][t].name }}
 </a></li>
 {% endfor %}
-</ul>
 {% endif %}
+</ul>
 
 <div class="page-header">
 <h1 style="margin-left: 20px;">{{ data['title'] }}</h1>
@@ -49,7 +49,7 @@ function properly.
 
 {% if args['source'] == "type" and data['tree'] %}
 <div class="panel panel-primary">
-<div class="panel-heading"><h2 class="panel-title">Poems ({{ data['poems'] | length }})</h2></div>
+<div class="panel-heading"><h2 class="panel-title">Subcategories</h2></div>
 <div class="panel-body">
 {% for line in data['tree'] %}
 {{ line.prefix | join('\u2003') }} <a href="/poemlist?source=type&id={{ line.type_id }}">{{ data['types'][line.type_id].name }}</a><br/>
