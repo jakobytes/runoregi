@@ -40,13 +40,17 @@ function properly.
 <p>
 <span class="glyphicon glyphicon-tag" aria-hidden="true" title="poem ID"></span>
   {{ data['poem'].nro }}<br/>
-{% if data['poem'].smd.place is not none %}
+{% if data['poem'].smd.place_lst %}
 <span class="glyphicon glyphicon-map-marker" aria-hidden="true" title="place"></span>
-  {{ data['poem'].smd.place }}<br/>
+  {% for pl in data['poem'].smd.place_lst %}
+  <a href="/poemlist?source=place&id={{ pl.county_id }}">{{ pl.county_name }}</a>{% if pl.parish_name is not none %} — <a href="/poemlist?source=place&id={{ pl.parish_id }}">{{ pl.parish_name }}</a>{% endif %}{% if loop.index0 < data['poem'].smd.place_lst | length - 1 %}; {% endif %}
+  {% endfor %}<br/>
 {% endif %}
-{% if data['poem'].smd.collector is not none %}
+{% if data['poem'].smd.collector_lst is not none %}
 <span class="glyphicon glyphicon-user" aria-hidden="true" title="collector"></span>
-  {{ data['poem'].smd.collector }}<br/>
+  {% for col in data['poem'].smd.collector_lst %}
+  <a href="/poemlist?source=collector&id={{ col.id }}">{{ col.name }}</a>{% if loop.index0 < data['poem'].smd.collector_lst | length - 1 %}; {% endif %}
+  {% endfor %}<br/>
 {% endif %}
 {% if data['poem'].smd.year is not none %}
 <span class="glyphicon glyphicon-calendar" aria-hidden="true" title="year"></span>

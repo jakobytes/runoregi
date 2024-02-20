@@ -12,7 +12,10 @@ SimilarPoemLink = \
     namedtuple('SimilarPoemLink', ['nro', 'sim_al', 'sim_al_l', 'sim_al_r'])
 StructuredMetadata = \
     namedtuple('StructuredMetadata',
-               ['collection', 'title', 'place', 'collector', 'year'])
+               ['collection', 'title', 'place', 'collector',
+                'place_lst', 'collector_lst', 'year'])
+CollectorData = namedtuple('CollectorData', ['id', 'name'])
+PlaceData = namedtuple('PlaceData', ['county_id', 'county_name', 'parish_id', 'parish_name'])
 
 
 class Poem:
@@ -179,10 +182,13 @@ class Poems:
             'SELECT poems.nro, collection,',
             ('rm_osa.value as osa, rm_id.value as id,' \
              if config.TABLES['raw_meta'] else 'NULL, NULL,'),
-            ('GROUP_CONCAT(DISTINCT IFNULL(CONCAT(pl2.name, " — ", pl.name), pl.name)'
-             ' SEPARATOR "; "),'\
+            ('GROUP_CONCAT(DISTINCT IFNULL('
+             '    CONCAT(pl2.place_orig_id, ":", pl2.name, "|",'
+             '           pl.place_orig_id, ":", pl.name),'
+             '    CONCAT(pl.place_orig_id, ":", pl.name)'
+             ') SEPARATOR ";;;"),'\
              if get_place else 'NULL,'),
-            ('GROUP_CONCAT(DISTINCT c.name SEPARATOR "; "),'\
+            ('GROUP_CONCAT(DISTINCT CONCAT(c.col_orig_id, ":", c.name) SEPARATOR ";;;"),'\
              if get_collector else 'NULL,'),
             ('year' if config.TABLES['p_year'] else 'NULL'),
             'FROM poems']
@@ -214,9 +220,28 @@ class Poems:
         db.execute(' '.join(query_lst), (tuple(self),))
         #print(db._executed)
         results = []
-        for nro, collection, osa, _id, place, col, year in db.fetchall():
-            tit = _make_title(nro, osa, _id, collection)
-            self[nro].smd = StructuredMetadata(collection, tit, place, col, year)
+        for nro, collection, osa, _id, pl, col, year in db.fetchall():
+            title = _make_title(nro, osa, _id, collection)
+            # TODO refactor the parsing of the results
+            place_lst = []
+            if pl is not None:
+                for x in pl.split(';;;'):
+                    m = re.match('([^:|]+):([^:|]+)(\|([^:|]+):([^:|]+))?', x)
+                    if m is not None:
+                        place_lst.append(PlaceData(m.group(1), m.group(2), m.group(4), m.group(5)))
+            collector_lst = []
+            if col is not None:
+                for x in col.split(';;;'):
+                    m = re.match('([^:|]+):([^:|]+)', x)
+                    if m is not None:
+                        collector_lst.append(CollectorData(m.group(1), m.group(2)))
+            place = '; '.join([
+                '{} \u2014 {}'.format(p.county_name, p.parish_name) \
+                if p.parish_name is not None else '{}'.format(p.county_name) \
+                for p in place_lst])
+            collector = '; '.join(c.name for c in collector_lst)
+            self[nro].smd = StructuredMetadata(
+                collection, title, place, collector, place_lst, collector_lst, year)
 
     def get_text(self, db, clustering_id=0):
         if not self: return    # empty set? -> do nothing
