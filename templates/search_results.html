@@ -44,9 +44,8 @@ function properly.
 
 <div class="container-fluid"> 
 <div class="row">
-<div class="col-md-3"></div>
-<div class="col-md-6">
-
+<div class="col-md-1"></div>
+<div class="col-md-2">
 {% if data['r_smd'] %}
 {% for source, col_id, name in data['r_smd'] %}
 <h4>
@@ -59,6 +58,8 @@ function properly.
 </h4>
 {% endfor %}
 {% endif %}
+</div>
+<div class="col-md-6">
 
 <ul class="nav nav-tabs">
   <li role="presentation" class="nav-item{% if data['r_types'] %} active{% else %} disabled{% endif %}">
