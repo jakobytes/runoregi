@@ -61,7 +61,7 @@ function properly.
 <div class="panel-body">
 <ul>
 {% for place_id, place_name, npoems in data['parishes'] %}
-<a href="/poemlist?source=place&id={{ place_id }}">{{ place_name }}</a>&nbsp;({{ npoems }}){% if loop.index0 < data['parishes'] | length %}, {% endif %}
+<a href="/poemlist?source=place&id={{ place_id }}">{{ place_name }}</a>&nbsp;({{ npoems }}){% if loop.index0 < data['parishes'] | length - 1 %}, {% endif %}
 {% endfor %}
 </ul>
 </div>
