@@ -100,7 +100,7 @@ def search_smd(db, q):
                    for (col_id, name) in db.fetchall()])
     db.execute(\
         'SELECT place_orig_id, name FROM places'
-        ' WHERE type = "parish" AND MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
+        ' WHERE MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
     result.extend([('place', place_id, highlight(kwd, name)) \
                    for (place_id, name) in db.fetchall()])
     return result
