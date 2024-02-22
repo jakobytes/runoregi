@@ -35,19 +35,23 @@ function properly.
    {{ data['target_type'][type_id].name }}
   </a></li>
     {% endfor %}
+  {% elif args['source'] in ("place", "collector") %}
+  <li role="presentation"><a role="button" href="/poemlist?source={{ args['source'] }}&id={{ args['id'] }}">
+   <span class="glyphicon glyphicon-chevron-left"></span>
+   Back to list
+  </a></li>
   {% endif %}
+</ul>
 
+{% if data['title'] %}
+<h1 style="margin-left: 20px;">{{ data['title'] }}</h1>
+{% endif %}
 {% if args['source'] == "type" %}
-</ul>
-<h1 style="margin-left: 20px;">{{ data['target_type'][args['type_id']].name }}</h1>
 <p style="margin-left: 20px;">{{ data['target_type'][args['type_id']].description | safe }}</p>
-<ul class="nav nav-pills">
-{% elif args['source'] == "cluster" %}
-</ul>
-<h1 style="margin-left: 20px;">Poem cluster #{{ data['poems'][args['nro'][0]].p_clust_id }}</h1>
 <ul class="nav nav-pills">
 {% endif %}
 
+<ul class="nav nav-pills">
   <li role="presentation" class="dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
       <span class="glyphicon glyphicon-cog"></span>

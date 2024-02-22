@@ -66,11 +66,27 @@ def render(**args):
     data['maintenance'] = config.check_maintenance()
 
     links = {}
-    if args['source'] == 'type' and config.VISUALIZATIONS_URL is not None:
-        links['map'] = config.VISUALIZATIONS_URL + '/?vis=map_type&' \
-            + urlencode({'type_id': args['id']})
-        links['cooc-types'] = config.VISUALIZATIONS_URL + '?vis=tree_types_cooc&' \
-            + urlencode({'type_id': args['id'], 'include_erab_orig': False})
+    if args['source'] == 'type':
+        links['dendrogram'] = '/dendrogram?source=type&type_id={}'.format(args['id'])
+    else:
+        links['dendrogram'] = '/dendrogram?source={}&id={}'.format(args['source'], args['id'])
+    if config.VISUALIZATIONS_URL is not None:
+        if args['source'] == 'type':
+            links['map'] = config.VISUALIZATIONS_URL + '/?vis=map_type&' \
+                + urlencode({'type_id': args['id']})
+            links['types'] = config.VISUALIZATIONS_URL \
+                + '?vis=tree_types_cooc&' \
+                + urlencode({'type_id': args['id'], 'include_erab_orig': False})
+        elif args['source'] == 'collector':
+            links['map'] = config.VISUALIZATIONS_URL + '/?vis=map_collector&' \
+                + urlencode({'collector': title})
+            links['types'] = config.VISUALIZATIONS_URL \
+                + '?vis=tree_types_col&' \
+                + urlencode({'collector': title, 'include_erab_orig': False})
+        elif args['source'] == 'place':
+            links['types'] = config.VISUALIZATIONS_URL \
+                + '?vis=tree_types_parish&' \
+                + urlencode({'parish_name': title })
 
     return render_template('poemlist.html', args=args, data=data, links=links)
 

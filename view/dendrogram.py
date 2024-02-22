@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 
 import config
 from data.logging import profile
+from data.misc import get_collector_name, get_place_name
 from data.poems import Poems
 from data.types import Types, render_type_tree
 from methods.hclust import cluster, make_sim_mtx, sim_to_dist
@@ -17,6 +18,7 @@ DEFAULTS = {
   'source': None,
   'nro': [],
   'type_id': None,
+  'id': None,
   'dist': 'al',
   'nb': 1.0,
   'method': 'complete',
@@ -104,6 +106,11 @@ def render(**args):
             poems.get_poem_cluster_info(db)
         elif args['source'] == 'nros':
             poems = Poems(nros=args['nro'])
+        elif args['source'] == 'collector':
+            poems = Poems.get_by_collector(db, args['id'])
+        elif args['source'] == 'place':
+            poems = Poems.get_by_place(db, args['id'])
+
         inner = set(poems)
         if args['nb'] is not None and args['nb'] < 1:
             poems.get_similar_poems(db, sim_thr=args['nb'])
@@ -119,6 +126,16 @@ def render(**args):
         types = poems.get_types(db)
         types.get_names(db)
 
+        title = None
+        if args['source'] == 'type':
+            title = target_type[args['type_id']].name
+        elif args['source'] == 'cluster':
+            title = 'Poem cluster #{}'.format(poems[args['nro'][0]].p_clust_id)
+        elif args['source'] == 'place':
+            title = get_place_name(db, args['id'])
+        elif args['source'] == 'collector':
+            title = get_collector_name(db, args['id'])
+
     d = sim_to_dist(make_sim_mtx(poems))
     clust = cluster(d, args['method'])
     ll = scipy.cluster.hierarchy.leaves_list(clust)
@@ -131,6 +148,7 @@ def render(**args):
     data = {
         'poems': poems,
         'nros': list(poems),
+        'title': title,
         'types': types,
         'typetree': render_type_tree(types),
         'target_type': target_type,

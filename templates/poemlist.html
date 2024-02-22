@@ -74,8 +74,8 @@ function properly.
 <div class="panel-body">
 
 <ul class="nav nav-pills">
-  {% if args['source'] == "type" %}
-  <li role="presentation"><a role="button" href="/dendrogram?source=type&type_id={{ args['id'] }}">
+  {% if links['dendrogram'] %}
+  <li role="presentation"><a role="button" target="_blank" href="{{ links['dendrogram'] }}">
    <span class="glyphicon glyphicon-tree-conifer"></span> Dendrogram
   </a></li>
   {% endif %}
@@ -84,9 +84,9 @@ function properly.
    <span class="glyphicon glyphicon-picture"></span> Map
   </a></li>
   {% endif %}
-  {% if links['cooc-types'] %}
-  <li role="presentation"><a role="button" target="_blank" href="{{ links['cooc-types'] }}">
-   <span class="glyphicon glyphicon-th"></span> Co-occurring types
+  {% if links['types'] %}
+  <li role="presentation"><a role="button" target="_blank" href="{{ links['types'] }}">
+   <span class="glyphicon glyphicon-th"></span> {% if args['rouces'] == "type" %}Co-occurring types{% else %}Type distribution{% endif %}
   </a></li>
   {% endif %}
 </ul>
