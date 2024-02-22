@@ -88,9 +88,10 @@ def render(**args):
                 + '?vis=tree_types_col&' \
                 + urlencode({'collector': title, 'include_erab_orig': False})
         elif args['source'] == 'place':
-            links['types'] = config.VISUALIZATIONS_URL \
-                + '?vis=tree_types_parish&' \
-                + urlencode({'parish_name': title })
+            if place_data.parish_name is not None:
+                links['types'] = config.VISUALIZATIONS_URL \
+                    + '?vis=tree_types_parish&' \
+                    + urlencode({'parish_name': place_data.parish_name })
 
     return render_template('poemlist.html', args=args, data=data, links=links)
 
