@@ -65,11 +65,17 @@ def render(**args):
 
     if args['format'] in ('csv', 'tsv'):
         return render_csv([
-            (v.nro, v.pos, v.text_norm, poems[v.nro].smd.place,
+            (v.nro, v.pos, v.text_norm,
+             ';'.join(p.parish_id if p.parish_id is not None else p.county_id \
+                      for p in poems[v.nro].smd.place_lst),
+             poems[v.nro].smd.place,
+             ';'.join(c.id for c in poems[v.nro].smd.collector_lst),
              poems[v.nro].smd.collector,
+             ';'.join(poems[v.nro].type_ids),
              print_type_list(poems[v.nro], types))
             for v in verses],
-            header=('nro', 'pos', 'text', 'place', 'collector', 'types'),
+            header=('nro', 'pos', 'text', 'place_id', 'place',
+                    'collector_id', 'collector', 'type_id', 'types'),
             delimiter='\t' if args['format'] == 'tsv' else ',')
     else:
         data = {

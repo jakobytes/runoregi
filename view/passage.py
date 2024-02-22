@@ -116,10 +116,16 @@ def render(**args):
         return render_csv([
             (pas['nro'], pas['verses'][0].pos,
              '\n'.join([v.text_norm for v in pas['verses']]),
-             poems[pas['nro']].smd.place, poems[pas['nro']].smd.collector,
-            print_type_list(poems[pas['nro']], types)) \
+             ';'.join(p.parish_id if p.parish_id is not None else p.county_id \
+                      for p in poems[pas['nro']].smd.place_lst),
+             poems[pas['nro']].smd.place,
+             ';'.join(c.id for c in poems[pas['nro']].smd.collector_lst),
+             poems[pas['nro']].smd.collector,
+             ';'.join(poems[pas['nro']].type_ids),
+             print_type_list(poems[pas['nro']], types)) \
             for pas in passages],
-            header=('nro', 'pos', 'snippet', 'place', 'collector', 'types'),
+            header=('nro', 'pos', 'snippet', 'place_id', 'place',
+                    'collector_id', 'collector', 'type_id', 'types'),
             delimiter='\t' if args['format'] == 'tsv' else ',')
     else:
         links = generate_page_links(args, clusterings)
