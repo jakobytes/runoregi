@@ -3,6 +3,7 @@ from operator import itemgetter
 import re
 
 import config
+from .misc import CollectorData, PlaceData
 from .types import Types, render_type_tree
 from .verses import get_verses
 
@@ -14,8 +15,6 @@ StructuredMetadata = \
     namedtuple('StructuredMetadata',
                ['collection', 'title', 'place', 'collector',
                 'place_lst', 'collector_lst', 'year'])
-CollectorData = namedtuple('CollectorData', ['id', 'name'])
-PlaceData = namedtuple('PlaceData', ['county_id', 'county_name', 'parish_id', 'parish_name'])
 
 
 class Poem:

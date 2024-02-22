@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 
 import config
 from data.logging import profile
-from data.misc import get_collector_name, get_place_name
+from data.misc import get_collector_data, get_place_data
 from data.poems import Poems
 from data.types import Types, render_type_tree
 from methods.hclust import cluster, make_sim_mtx, sim_to_dist
@@ -132,9 +132,11 @@ def render(**args):
         elif args['source'] == 'cluster':
             title = 'Poem cluster #{}'.format(poems[args['nro'][0]].p_clust_id)
         elif args['source'] == 'place':
-            title = get_place_name(db, args['id'])
+            place_data = get_place_data(db, args['id'])
+            title = '{} \u2014 {}'.format(place_data.county_name, place_data.parish_name) \
+                if place_data.parish_name is not None else place_data.county_name
         elif args['source'] == 'collector':
-            title = get_collector_name(db, args['id'])
+            title = get_collector_data(db, args['id']).name
 
     d = sim_to_dist(make_sim_mtx(poems))
     clust = cluster(d, args['method'])
