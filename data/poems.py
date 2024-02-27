@@ -157,30 +157,11 @@ class Poems:
                 SimilarPoemLink(nro_2, sim_al, sim_al_l, sim_al_r))
 
     def get_structured_metadata(self, db):
-
-        def _make_title(nro, osa, _id, collection):
-            if collection == 'skvr' and osa and _id:
-                return 'SKVR {} {}'.format(osa, _id)
-            elif collection == 'erab' and _id:
-                return _id
-            elif collection == 'jr' and _id:
-                return 'JR {}'.format(_id)
-            elif nro.startswith('kt'):
-                return 'Kanteletar {}:{}'.format(int(nro[2:4]), int(nro[4:]))
-            elif nro.startswith('kr'):
-                return 'KR {}:{}'.format(int(nro[2:7]), int(nro[7:]))
-            elif collection == 'literary' and osa and _id:
-                return '{} {}'.format(osa, _id)
-            else:
-                return nro
-
         if not self: return    # empty set? -> do nothing
         get_collector = config.TABLES['collectors'] and config.TABLES['p_col']
         get_place = config.TABLES['places'] and config.TABLES['p_pl']
         query_lst = [
-            'SELECT poems.nro, collection,',
-            ('rm_osa.value as osa, rm_id.value as id,' \
-             if config.TABLES['raw_meta'] else 'NULL, NULL,'),
+            'SELECT poems.nro, collection, title,',
             ('GROUP_CONCAT(DISTINCT IFNULL('
              '    CONCAT(pl2.place_orig_id, ":", pl2.name, "|",'
              '           pl.place_orig_id, ":", pl.name),'
@@ -191,13 +172,6 @@ class Poems:
              if get_collector else 'NULL,'),
             ('year' if config.TABLES['p_year'] else 'NULL'),
             'FROM poems']
-        if config.TABLES['raw_meta']:
-            query_lst.extend([
-              'LEFT OUTER JOIN raw_meta rm_osa'
-              '  ON poems.p_id = rm_osa.p_id AND rm_osa.field = "OSA"',
-              'LEFT OUTER JOIN raw_meta rm_id'
-              '  ON poems.p_id = rm_id.p_id AND rm_id.field = "ID"',
-            ])
         if get_place:
             query_lst.extend([
               'LEFT OUTER JOIN p_pl ON poems.p_id = p_pl.p_id',
@@ -219,8 +193,7 @@ class Poems:
         db.execute(' '.join(query_lst), (tuple(self),))
         #print(db._executed)
         results = []
-        for nro, collection, osa, _id, pl, col, year in db.fetchall():
-            title = _make_title(nro, osa, _id, collection)
+        for nro, collection, title, pl, col, year in db.fetchall():
             # TODO refactor the parsing of the results
             place_lst = []
             if pl is not None:
