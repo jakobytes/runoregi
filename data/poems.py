@@ -304,7 +304,10 @@ class Poems:
         nros = list(map(itemgetter(0), db.fetchall()))
         return Poems(nros=nros)
 
-def is_poem_id(db, nro):
-    db.execute('SELECT nro FROM poems WHERE nro = %s', (nro,))
-    return len(list(db.fetchall())) > 0
+def get_poem_by_id_or_title(db, q):
+    db.execute('SELECT nro FROM poems '
+        'WHERE nro = %s OR title = %s OR title = %s',
+        (q, q, q + '.'))
+    results = db.fetchall()
+    return results[0][0] if results else None
 
