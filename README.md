@@ -1,6 +1,6 @@
 # Runoregi
 
-[Runoregi](https://runoregi.rahtiapp.fi) is the Web front-end for verse
+[Runoregi](https://runoregi.fi) is the Web front-end for verse
 and poem similarity calculations on Finnic oral folk poetry.
 
 ## Setup
