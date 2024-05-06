@@ -37,7 +37,7 @@ def log(level, msg):
                            .format(config.LOGGING_TABLE_NAME),
                            (level, gethostbyname(gethostname()), msg,
                             request.user_agent.string,
-                            request.environ.get('REMOTE_ADDR', None)))
+                            request.remote_addr))
             db_con.commit()
 
 # FIXME this function does more than just profiling -- consider
