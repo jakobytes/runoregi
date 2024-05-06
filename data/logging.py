@@ -14,6 +14,7 @@ def create_logging_table(db):
         '  hostname VARCHAR(100) DEFAULT NULL,'
         '  msg VARCHAR(2000) DEFAULT NULL,'
         '  user_agent VARCHAR(1000) DEFAULT NULL,'
+        '  remote_addr VARCHAR(100) DEFAULT NULL,'
         '  crawler varchar(50) DEFAULT NULL,'
         '  PRIMARY KEY(log_id), '
         '  INDEX (level), '
@@ -31,11 +32,12 @@ def log(level, msg):
                     create_logging_table(db)
                 if len(msg) > 2000:
                     msg = msg[:1997] + '...'
-                db.execute('INSERT INTO {} (level, hostname, msg, user_agent) '
-                           'VALUES (%s, %s, %s, %s)'\
+                db.execute('INSERT INTO {} (level, hostname, msg, user_agent, remote_addr) '
+                           'VALUES (%s, %s, %s, %s, %s)'\
                            .format(config.LOGGING_TABLE_NAME),
                            (level, gethostbyname(gethostname()), msg,
-                            request.user_agent.string))
+                            request.user_agent.string,
+                            request.environ.get('REMOTE_ADDR', None)))
             db_con.commit()
 
 # FIXME this function does more than just profiling -- consider
