@@ -17,6 +17,7 @@ VISUALIZATIONS_URL = os.getenv('VISUALIZATIONS_URL')
 
 SEARCH_LIMIT = 1000
 ENABLE_LOGGING_TO_DB = not not os.getenv('DB_LOGGING')
+ENABLE_PROXY = not not os.getenv('PROXY')
 LOGGING_TABLE_NAME = 'runoregi_log'
 
 BANNED_CRAWLERS = re.compile('Bytespider')

@@ -5,6 +5,12 @@ import time
 
 import config
 
+def get_remote_addr():
+    if config.ENABLE_PROXY and request.headers.getlist('X-Forwarded-For'):
+        return request.headers.getlist('X-Forwarded-For')[0]
+    else:
+        return request.remote_addr
+
 def create_logging_table(db):
     db.execute(
         'CREATE TABLE {}('
@@ -37,7 +43,7 @@ def log(level, msg):
                            .format(config.LOGGING_TABLE_NAME),
                            (level, gethostbyname(gethostname()), msg,
                             request.user_agent.string,
-                            request.remote_addr))
+                            get_remote_addr()))
             db_con.commit()
 
 # FIXME this function does more than just profiling -- consider

@@ -1,4 +1,5 @@
 from flask import Flask, Response, redirect, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 import pymysql
 import re
 
@@ -17,6 +18,8 @@ import view.verse
 
 
 application = Flask(__name__)
+if config.ENABLE_PROXY:
+    application.wsgi_app = ProxyFix(application.wsgi_app)
 config.setup_tables()
 
 
