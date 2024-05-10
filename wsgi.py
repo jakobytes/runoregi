@@ -19,6 +19,8 @@ import view.verse
 
 application = Flask(__name__)
 if config.ENABLE_PROXY:
+    # Used only to get the client's IP address, which is not used now.
+    # The environment variable "PROXY" thus shouldn't be set.
     application.wsgi_app = ProxyFix(application.wsgi_app)
 config.setup_tables()
 
