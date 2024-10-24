@@ -137,39 +137,6 @@ class Types:
         return (nros, minor_nros) if minor else nros
 
 
-def get_root_categories(db):
-    # ignore if the table is not available
-    if not config.TABLES['types']: return Types(ids=[])
-    db.execute(\
-        'SELECT type_orig_id FROM types'
-        ' WHERE par_id = 0 AND (LENGTH(type_orig_id) = 8 OR type_orig_id LIKE "kt_t%");')
-    return Types(ids=map(itemgetter(0), db.fetchall()))
-
-
-def get_nonleaf_categories(db):
-    types = Types(ids=[])
-    if not config.TABLES['types']: return types
-    db.execute(\
-        'SELECT '
-        '  t1.type_orig_id, '
-        '  t2.type_orig_id, t2.name, '
-        '  t3.type_orig_id, '
-        '  t4.type_orig_id '
-        'FROM types t1 '
-        '  JOIN types t2 ON t1.par_id = t2.t_id '
-        '  LEFT JOIN types t3 ON t2.par_id = t3.t_id '
-        '  LEFT JOIN types t4 ON t3.par_id = t4.t_id '
-        'WHERE t1.type_orig_id NOT LIKE "kt_%" '
-        '  AND t1.type_orig_id NOT LIKE "erab_orig%";')
-    for t1_id, t2_id, t2_name, t3_id, t4_id in db.fetchall():
-        if t2_id not in types:
-            t = Type(id=t2_id)
-            t.name = t2_name
-            t.ancestors = [t_id for t_id in [t3_id, t4_id] if t_id is not None]
-            types.c[t2_id] = t
-    return types
-
-
 def render_type_tree(types, minor_type_ids=None):
 
     def _arrange_type_list(types):
