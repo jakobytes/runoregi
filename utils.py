@@ -55,11 +55,11 @@ def render_xml(string, refs=None, tag='ROOT'):
             elif c.tag == 'KA':
                 content = render_xml_node(c, ref_dict)
                 text.append(content[0] + '\u035c' + content[1:])
-            elif c.tag == 'SMALLCAPS':
+            elif c.tag == 'SMALLCAPS' and c.text is not None:
                 text.append('<SMALL>{}</SMALL>'.format(c.text.upper()))
-            elif c.tag in ('H', 'FR'):
+            elif c.tag in ('H', 'FR') and c.text is not None:
                 text.append(c.text)
-            elif c.tag == 'REFNR':
+            elif c.tag == 'REFNR' and c.text is not None:
                 reflinks = []
                 for refnr in c.text.split(','):
                     if int(refnr) in ref_dict:
