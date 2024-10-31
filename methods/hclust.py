@@ -20,17 +20,3 @@ def sim_to_dist(m):
     d[d < 0] = 0
     return squareform(d)
 
-
-# a wrapper around the hierarchical clustering with different linking methods
-def cluster(x, method):
-    if method == 'average':
-        return scipy.cluster.hierarchy.average(x)
-    elif method == 'centroid':
-        return scipy.cluster.hierarchy.centroid(x)
-    elif method == 'complete':
-        return scipy.cluster.hierarchy.complete(x)
-    elif method == 'single':
-        return scipy.cluster.hierarchy.single(x)
-    elif method == 'ward':
-        return scipy.cluster.hierarchy.ward(x)
-

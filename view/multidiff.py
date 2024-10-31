@@ -10,7 +10,7 @@ import config
 from data.logging import profile
 from data.poems import Poems
 from methods.verse_sim import compute_verse_similarity
-from methods.hclust import cluster, make_sim_mtx, sim_to_dist
+from methods.hclust import make_sim_mtx, sim_to_dist
 from utils import link, render_csv, remove_xml
 
 
@@ -103,7 +103,7 @@ def render(**args):
         ids = list(range(len(poems)))
     else:
         # arrange the poems using hierarchical clustering
-        clust = cluster(d, args['method'])
+        clust = scipy.cluster.hierarchy.linkage(d, method=args['method'])
         ids = scipy.cluster.hierarchy.leaves_list(clust) 
 
     als = merge_alignments(poems, clust[:,:2], v_sims)

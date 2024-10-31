@@ -10,7 +10,7 @@ from data.logging import profile
 from data.misc import get_collector_data, get_place_data
 from data.poems import Poems
 from data.types import Types, render_type_tree
-from methods.hclust import cluster, make_sim_mtx, sim_to_dist
+from methods.hclust import make_sim_mtx, sim_to_dist
 from utils import link
 
 
@@ -139,7 +139,7 @@ def render(**args):
             title = get_collector_data(db, args['id']).name
 
     d = sim_to_dist(make_sim_mtx(poems))
-    clust = cluster(d, args['method'])
+    clust = scipy.cluster.hierarchy.linkage(d, method=args['method'])
     ll = scipy.cluster.hierarchy.leaves_list(clust)
     dd = transform_vert(clust, len(poems), list(poems))
     type_styles = {}
