@@ -11,3 +11,6 @@ Disallow: /verse
 
 User-agent: Bytespider
 Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
