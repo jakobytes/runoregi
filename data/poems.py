@@ -161,7 +161,7 @@ class Poems:
         get_collector = config.TABLES['collectors'] and config.TABLES['p_col']
         get_place = config.TABLES['places'] and config.TABLES['p_pl']
         query_lst = [
-            'SELECT poems.nro, collection, title,',
+            'SELECT poems.nro, collection, display_name,',
             ('GROUP_CONCAT(DISTINCT IFNULL('
              '    CONCAT(pl2.place_orig_id, ":", pl2.name, "|",'
              '           pl.place_orig_id, ":", pl.name),'
@@ -306,7 +306,7 @@ class Poems:
 
 def get_poem_by_id_or_title(db, q):
     db.execute('SELECT nro FROM poems '
-        'WHERE nro = %s OR title = %s OR title = %s',
+        'WHERE nro = %s OR display_name = %s OR display_name = %s',
         (q, q, q + '.'))
     results = db.fetchall()
     return results[0][0] if results else None
