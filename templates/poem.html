@@ -205,13 +205,10 @@ function properly.
       {% else %}
       <td></td>
       {% endif %}
-      {% if loop.first %}
-      <td rowspan="{{ data['poem'].text | length }}" style="vertical-align: top; padding-left: 1em;">
-        {% if data['poem'].word_analysis %}
-        <small>{% for group in data['poem'].word_analysis %}{% for orig, trans in group %}<b>{{ orig }}</b>:{{ trans }}{% if not loop.last %}, {% endif %}{% endfor %}<br/>{% endfor %}</small>
-        {% endif %}
+      <td style="padding-left: 1em;">
+        {% set wa = data['poem'].verse_word_analysis.get(v.pos, []) %}
+        {% if wa %}<span style="color: #888;">{% for orig, trans in wa %}<b>{{ orig }}</b>:{{ trans }}{% if not loop.last %}, {% endif %}{% endfor %}</span>{% endif %}
       </td>
-      {% endif %}
     {% else %}
       {% if v.v_type == "L" %}
       <td></td><td></td><td{%if args['show_shared_verses'] %} class="poem-view-text"{% endif %}><small><i>{{ v.text_rendered | safe }}</i></small></td>
@@ -226,14 +223,7 @@ function properly.
         <small style="color: gray;">{{ v.text_rendered | safe }}</small>
       </td>
       {% endif %}
-      <td></td>
-      {% if loop.first %}
-      <td rowspan="{{ data['poem'].text | length }}" style="vertical-align: top; padding-left: 1em;">
-        {% if data['poem'].word_analysis %}
-        <small>{% for group in data['poem'].word_analysis %}{% for orig, trans in group %}<b>{{ orig }}</b>:{{ trans }}{% if not loop.last %}, {% endif %}{% endfor %}<br/>{% endfor %}</small>
-        {% endif %}
-      </td>
-      {% endif %}
+      <td></td><td></td>
     {% endif %}
     <td style="white-space: nowrap">
     {% if args['show_shared_verses'] %}

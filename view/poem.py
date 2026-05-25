@@ -134,6 +134,25 @@ def render(**args):
     for v in poem.text:
         v.render_text(poem.refs)
 
+    # group word analysis entries by verse using cumulative word-position boundaries
+    if poem.word_analysis_flat:
+        cumulative = 0
+        wa_iter = iter(poem.word_analysis_flat)
+        wa_cur = next(wa_iter, None)
+        for v in poem.text:
+            wc = sum(1 for t in v.text_norm.split() if any(c.isalpha() for c in t)) if v.v_type == 'V' and v.text_norm else 0
+            v_end = cumulative + wc
+            if v.v_type == 'V':
+                entries = []
+                while wa_cur and wa_cur[0] <= v_end:
+                    entries.append((wa_cur[1], wa_cur[2]))
+                    wa_cur = next(wa_iter, None)
+                poem.verse_word_analysis[v.pos] = entries
+            else:
+                while wa_cur and wa_cur[0] <= v_end:
+                    wa_cur = next(wa_iter, None)
+            cumulative = v_end
+
     # render the XML in the raw metadata
     for key, val in p[args['nro']].meta.items():
         p[args['nro']].meta[key] = render_xml(val, poem.refs, tag=key)

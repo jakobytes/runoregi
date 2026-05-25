@@ -33,8 +33,8 @@ class Poem:
         self.duplicates = []
         self.parents = []
         self.translations = {}
-        self.word_analysis = []
         self.word_analysis_flat = []
+        self.verse_word_analysis = {}
 
 
 class Poems:
@@ -228,18 +228,17 @@ class Poems:
         if not table: return
         words_per_poem = {}
         db.execute(
-            'SELECT wa.poem_id, wa.original_form, wa.english_translation '
+            'SELECT wa.poem_id, wa.word_position, wa.original_form, wa.english_translation '
             'FROM `{}` wa '
             'WHERE wa.poem_id IN %s '
             '  AND wa.english_translation IS NOT NULL AND wa.english_translation != "" '
             'ORDER BY wa.poem_id, wa.word_position;'.format(table),
             (tuple(self),))
-        for poem_id, original_form, english_translation in db.fetchall():
+        for poem_id, word_position, original_form, english_translation in db.fetchall():
             words_per_poem.setdefault(poem_id, []).append(
-                (original_form, english_translation))
+                (word_position, original_form, english_translation))
         for nro in self:
             words = words_per_poem.get(nro, [])
-            self[nro].word_analysis = [words[i:i+4] for i in range(0, len(words), 4)]
             self[nro].word_analysis_flat = words
 
     def get_translations(self, db):
