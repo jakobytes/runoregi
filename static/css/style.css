@@ -9,6 +9,11 @@
   font-weight: 400;
 }
 
+.verse-original {
+  min-width: 300px;
+  max-width: 400px;
+}
+
 .poem-view-text {
   position: sticky;
   background-color: white;
@@ -31,6 +36,24 @@
   z-index: 2;
   min-width: 15;
   max-width: 15;
+}
+
+.verse-translation {
+  min-width: 300px;
+  max-width: 500px;
+  padding-left: 1em;
+}
+
+.verse-translation-comment {
+  min-width: 200px;
+  padding-left: 0.5em;
+  color: gray;
+}
+
+.verse-word-analysis {
+  min-width: 200px;
+  padding-left: 0.5em;
+  color: gray;
 }
 
 .refrain {

@@ -72,18 +72,19 @@ def search_types(db, q):
     return result
 
 
-def search_meta(db, q):
+
+def search_translated(db, q):
     result = []
-    # ignore if the table is not available
-    if not config.TABLES['raw_meta']:
+    if not config.TABLES['verses_translated']:
         return result
-    db.execute(\
-        'SELECT nro, field, value FROM raw_meta'
-        ' NATURAL JOIN poems'
-        ' WHERE MATCH(value) AGAINST(%s IN BOOLEAN MODE);', (q,))
+    db.execute(
+        'SELECT p.nro, vt.pos, vt.verse_in_english, vt.translation_comments'
+        ' FROM verses_translated vt'
+        ' JOIN poems p ON vt.p_id = p.p_id'
+        ' WHERE MATCH(vt.verse_in_english) AGAINST(%s IN BOOLEAN MODE);', (q,))
     kwd = extract_keywords(q)
-    result = [(nro, field, highlight(kwd, render_xml(value))) \
-              for (nro, field, value) in db.fetchall()]
+    result = [(nro, pos, highlight(kwd, verse), comments)
+              for (nro, pos, verse, comments) in db.fetchall()]
     return result
 
 

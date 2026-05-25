@@ -102,7 +102,7 @@ def render(**args):
     clusterings = None
     sim_poems, types = None, None
     verse_poems, linked_poems, poems_sharing_verses = None, None, None
-    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
+    with config.get_db() as db:
         clusterings = get_clusterings(db)
         p.get_duplicates_and_parents(db)
         p.get_poem_cluster_info(db)
@@ -111,6 +111,8 @@ def render(**args):
         p.get_similar_poems(db, sim_thr=0.1, sim_onesided_thr=0.5)
         p.get_structured_metadata(db)
         p.get_text(db, clustering_id=args['clustering'])
+        p.get_translations(db)
+        p.get_word_analysis(db)
         # poem types
         types = p.get_types(db)
         types.get_names(db)

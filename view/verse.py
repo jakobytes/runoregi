@@ -22,9 +22,6 @@ DEFAULTS = {
 
 @profile
 def render(**args):
-    # Validate required parameters
-    if not args.get('nro'):
-        return "Error: Missing required parameter 'nro'"
 
     def _group_by_source(verses):
         results = OrderedDict()
@@ -43,7 +40,7 @@ def render(**args):
                 seen_clust.add(v2.clust_id)
         return nbclust
 
-    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
+    with config.get_db() as db:
         # the target verse (with nro and pos specified in args)
         verse = get_verses(
             db, nro=args['nro'], start_pos=args['pos'],

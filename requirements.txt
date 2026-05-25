@@ -4,4 +4,5 @@ lxml
 numpy
 scipy
 pymysql
+dbutils
 git+https://github.com/hsci-r/shortsim

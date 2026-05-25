@@ -1,17 +1,31 @@
 import os
+from contextlib import contextmanager
 from operator import itemgetter
 import pymysql
 import re
 import warnings
 
 
+# Build MySQL connection parameters
 MYSQL_PARAMS = {
-    'host' : os.getenv('DB_HOST'),
-    'port' : int(os.getenv('DB_PORT')),
-    'user' : os.getenv('DB_USER'),
+    'host'     : os.getenv('DB_HOST'),
+    'port'     : int(os.getenv('DB_PORT', 3306)),
+    'user'     : os.getenv('DB_USER'),
     'password' : os.getenv('DB_PASS'),
-    'database' : os.getenv('DB_NAME')
+    'database' : os.getenv('DB_NAME'),
 }
+
+# Add socket if DB_SOCKET is set (for non-standard setups)
+if os.getenv('DB_SOCKET'):
+    MYSQL_PARAMS['unix_socket'] = os.getenv('DB_SOCKET')
+
+# Add SSL if DB_SSL is set
+if os.getenv('DB_SSL'):
+    # Disable SSL verification if DB_SSL_VERIFY is set to '0'
+    if os.getenv('DB_SSL_VERIFY') == '0':
+        MYSQL_PARAMS['ssl'] = {'verify_server_cert': False}
+    else:
+        MYSQL_PARAMS['ssl'] = {'ca': os.getenv('DB_SSL_CA', '/etc/ssl/certs/ca-certificates.crt')}
 
 VISUALIZATIONS_URL = os.getenv('VISUALIZATIONS_URL')
 
@@ -50,6 +64,9 @@ TABLES = {
   'verse_poem'     : False,
   'verses'         : False,
   'verses_cl'      : False,
+  'verses_translated': False,
+  'word_analysis'    : False,
+  'word_analysis_1'  : False,
 }
 
 # Tables without which Runoregi can't work.
@@ -80,10 +97,36 @@ TABLE_ERRMSG = {
   'verse_poem'     : 'Terminating.',
   'verses'         : 'Terminating.',
   'verses_cl'      : 'The side-by-side comparisons will not be available.',
+  'verses_translated': 'The English translations will not be available.',
+  'word_analysis'    : 'The word analysis will not be available.',
+  'word_analysis_1'  : 'The word analysis will not be available.',
 }
 
 
+pool = None
+
+
+@contextmanager
+def get_db():
+    conn = pool.connection()
+    try:
+        yield conn.cursor()
+    finally:
+        conn.close()
+
+
+@contextmanager
+def get_conn():
+    conn = pool.connection()
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
 def setup_tables():
+    from dbutils.pooled_db import PooledDB
+    global pool
     try:
         with pymysql.connect(**MYSQL_PARAMS).cursor() as db:
             db.execute('SHOW TABLES;')
@@ -92,6 +135,9 @@ def setup_tables():
                 TABLES[tbl] = tbl in db_tables
     except pymysql.err.OperationalError:
         raise RuntimeError('Cannot connect to the database. Terminating.')
+
+    pool = PooledDB(pymysql, mincached=2, maxcached=5, maxconnections=20,
+                    **MYSQL_PARAMS)
 
     # print warnings or throw errors about non-existing tables
     for tbl in TABLES:

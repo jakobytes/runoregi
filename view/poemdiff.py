@@ -43,9 +43,6 @@ def generate_page_links(args):
 
 @profile
 def render(**args):
-    # Validate required parameters
-    if not args.get('nro1') or not args.get('nro2'):
-        return "Error: Missing required parameters 'nro1' and 'nro2'"
 
     # FIXME code duplication with poem.py!
     def _makecolcomp(value):
@@ -65,7 +62,7 @@ def render(**args):
     # - some refactoring
     # - bold for captions
     poems = Poems(nros=[args['nro1'], args['nro2']])
-    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
+    with config.get_db() as db:
         poems.get_raw_meta(db)
         poems.get_structured_metadata(db)
         poems.get_text(db)

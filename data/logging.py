@@ -31,7 +31,7 @@ def create_logging_table(db):
 
 def log(level, msg):
     if config.ENABLE_LOGGING_TO_DB:
-        with pymysql.connect(**config.MYSQL_PARAMS) as db_con:
+        with config.get_conn() as db_con:
             with db_con.cursor() as db:
                 db.execute('SHOW TABLES LIKE %s;', (config.LOGGING_TABLE_NAME,))
                 if len(list(db.fetchall())) <= 0:

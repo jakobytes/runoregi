@@ -16,11 +16,6 @@ DEFAULTS = { 'source': None, 'id': None }
 
 def get_by_type(db, type_id):
     upper = Types(ids=[type_id])
-    nros, minor_nros = upper.get_poem_ids(db, minor=True)
-    poems = None
-    if nros or minor_nros:
-        poems = Poems(nros=nros+minor_nros)
-        poems.get_structured_metadata(db)
     upper.get_descriptions(db)
     upper.get_ancestors(db, add=True)
     upper.get_names(db)
@@ -28,18 +23,44 @@ def get_by_type(db, type_id):
     subcat.get_descriptions(db)
     subcat.get_descendents(db, add=True)
     subcat.get_names(db)
-
+    
+    # Get poem counts for each subcategory type
+    type_poem_counts = {}
+    for type_id in subcat.c:
+        t = Types(ids=[type_id])
+        nros, minor_nros = t.get_poem_ids(db, minor=True)
+        count = len(nros) + len(minor_nros)
+        if count > 0:
+            type_poem_counts[type_id] = count
+    
     tree = render_type_tree(subcat)
+    
+    # Get poems for all types (upper + descendants)
+    all_types = Types(ids=[type_id])
+    all_types.c.update(subcat.c)
+    nros, minor_nros = all_types.get_poem_ids(db, minor=True)
+    
+    poems = None
+    if nros or minor_nros:
+        poems = Poems(nros=nros+minor_nros)
+        poems.get_structured_metadata(db)
     # remove the top hierarchy level from the tree
     tree.pop(0)
     for line in tree:
         line.prefix.pop(0)
     types = Types(types=[upper[t] for t in upper] + \
-                        [subcat[t] for t in subcat if t != type_id])
+                        [subcat[t] for t in subcat if t in subcat.c])
+    # Make sure type_id is included in types for accessing name/description
+    if type_id not in types.c:
+        if type_id in subcat.c:
+            types.c[type_id] = subcat.c[type_id]
+        elif type_id in upper.c:
+            types.c[type_id] = upper.c[type_id]
     return { 'poems': poems,
              'types': types,
              'minor': set(minor_nros), 
              'tree': tree,
+             'type_poem_counts': type_poem_counts,
              'title': types[type_id].name,
              'description': types[type_id].description
            }
@@ -48,7 +69,7 @@ def get_by_type(db, type_id):
 @profile
 def render(**args):
     data = {}
-    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
+    with config.get_db() as db:
         if args['source'] == 'type':
             data = get_by_type(db, args['id'])
         elif args['source'] == 'collector':

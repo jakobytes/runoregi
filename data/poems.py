@@ -32,6 +32,9 @@ class Poem:
         self.p_clust_size = None
         self.duplicates = []
         self.parents = []
+        self.translations = {}
+        self.word_analysis = []
+        self.word_analysis_flat = []
 
 
 class Poems:
@@ -216,6 +219,42 @@ class Poems:
                         if collector_lst else None
             self[nro].smd = StructuredMetadata(
                 collection, title, place, collector, place_lst, collector_lst, year)
+
+    def get_word_analysis(self, db):
+        if not self: return
+        table = 'word_analysis_1' if config.TABLES['word_analysis_1'] \
+                else 'word_analysis' if config.TABLES['word_analysis'] \
+                else None
+        if not table: return
+        words_per_poem = {}
+        db.execute(
+            'SELECT wa.poem_id, wa.original_form, wa.english_translation '
+            'FROM `{}` wa '
+            'WHERE wa.poem_id IN %s '
+            '  AND wa.english_translation IS NOT NULL AND wa.english_translation != "" '
+            'ORDER BY wa.poem_id, wa.word_position;'.format(table),
+            (tuple(self),))
+        for poem_id, original_form, english_translation in db.fetchall():
+            words_per_poem.setdefault(poem_id, []).append(
+                (original_form, english_translation))
+        for nro in self:
+            words = words_per_poem.get(nro, [])
+            self[nro].word_analysis = [words[i:i+4] for i in range(0, len(words), 4)]
+            self[nro].word_analysis_flat = words
+
+    def get_translations(self, db):
+        if not self: return
+        if not config.TABLES['verses_translated']: return
+        for nro in self:
+            self[nro].translations = {}
+        db.execute(
+            'SELECT p.nro, vt.pos, vt.verse_in_english '
+            'FROM verses_translated vt '
+            'JOIN poems p ON vt.p_id = p.p_id '
+            'WHERE p.nro IN %s;',
+            (tuple(self),))
+        for nro, pos, verse_in_english in db.fetchall():
+            self[nro].translations[pos] = verse_in_english
 
     def get_text(self, db, clustering_id=0):
         if not self: return    # empty set? -> do nothing

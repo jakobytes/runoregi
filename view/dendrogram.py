@@ -68,12 +68,10 @@ def transform_vert(dd, n, nros):
         return int(400*(1-x)+20)
 
     def ty(y):
-        # Clamp value to prevent overflow
-        y = max(0, min(y, 10000))
         return int(75*y+7)
 
     result = []
-    ill = np.zeros(n, dtype=np.uint32)   # inverse leaves list -- positions of leaf nodes
+    ill = np.zeros(n, dtype=np.uint16)   # inverse leaves list -- positions of leaf nodes
     ll = scipy.cluster.hierarchy.leaves_list(dd)
     for i in range(dd.shape[0]+1):
         ill[ll[i]] = i
@@ -94,7 +92,7 @@ def transform_vert(dd, n, nros):
 @profile
 def render(**args):
     poems, types, target_type, inner = None, None, None, None
-    with pymysql.connect(**config.MYSQL_PARAMS).cursor() as db:
+    with config.get_db() as db:
         if args['source'] == 'type':
             target_type = Types(ids=[args['type_id']])
             target_type.get_descriptions(db)
