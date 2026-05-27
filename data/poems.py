@@ -246,14 +246,35 @@ class Poems:
         if not config.TABLES['verses_translated']: return
         for nro in self:
             self[nro].translations = {}
+        from collections import defaultdict
+        # Translations are stored in correct sequence order but at unreliable pos values.
+        # Match the n-th translation to the n-th V-type verse in the poem.
         db.execute(
-            'SELECT p.nro, vt.pos, vt.verse_in_english '
+            'SELECT p.nro, vt.verse_in_english '
             'FROM verses_translated vt '
             'JOIN poems p ON vt.p_id = p.p_id '
-            'WHERE p.nro IN %s;',
+            'WHERE p.nro IN %s '
+            'ORDER BY p.nro, vt.pos;',
             (tuple(self),))
-        for nro, pos, verse_in_english in db.fetchall():
-            self[nro].translations[pos] = verse_in_english
+        translations_by_poem = defaultdict(list)
+        for nro, verse_in_english in db.fetchall():
+            translations_by_poem[nro].append(verse_in_english)
+        db.execute(
+            'SELECT p.nro, vp.pos '
+            'FROM verse_poem vp '
+            'JOIN verses v ON vp.v_id = v.v_id '
+            'JOIN poems p ON vp.p_id = p.p_id '
+            'WHERE p.nro IN %s AND v.type = "V" '
+            'ORDER BY p.nro, vp.pos;',
+            (tuple(self),))
+        verses_by_poem = defaultdict(list)
+        for nro, pos in db.fetchall():
+            verses_by_poem[nro].append(pos)
+        for nro in self:
+            for i, trans in enumerate(translations_by_poem[nro]):
+                positions = verses_by_poem[nro]
+                if i < len(positions):
+                    self[nro].translations[positions[i]] = trans
 
     def get_text(self, db, clustering_id=0):
         if not self: return    # empty set? -> do nothing
