@@ -247,32 +247,34 @@ class Poems:
         for nro in self:
             self[nro].translations = {}
         from collections import defaultdict
-        # Build per-poem, per-v_id queues of translations ordered by vt.pos.
-        # Each occurrence of a v_id in verse_poem consumes the next queued translation.
+        # vt.pos is unreliable as a verse position but gives the correct sequence order.
+        # Match the n-th translation (ordered by vt.pos) to the n-th V-type verse (ordered by vp.pos).
         db.execute(
-            'SELECT p.nro, vt.v_id, vt.verse_in_english '
+            'SELECT p.nro, vt.verse_in_english '
             'FROM verses_translated vt '
             'JOIN poems p ON vt.p_id = p.p_id '
             'WHERE p.nro IN %s '
             'ORDER BY p.nro, vt.pos;',
             (tuple(self),))
-        vt_queues = defaultdict(lambda: defaultdict(list))
-        for nro, v_id, verse_in_english in db.fetchall():
-            vt_queues[nro][v_id].append(verse_in_english)
+        translations_by_poem = defaultdict(list)
+        for nro, verse_in_english in db.fetchall():
+            translations_by_poem[nro].append(verse_in_english)
         db.execute(
-            'SELECT p.nro, vp.v_id, vp.pos '
+            'SELECT p.nro, vp.pos '
             'FROM verse_poem vp '
+            'JOIN verses v ON vp.v_id = v.v_id '
             'JOIN poems p ON vp.p_id = p.p_id '
-            'WHERE p.nro IN %s '
+            'WHERE p.nro IN %s AND v.type = "V" '
             'ORDER BY p.nro, vp.pos;',
             (tuple(self),))
-        vt_counters = defaultdict(lambda: defaultdict(int))
-        for nro, v_id, pos in db.fetchall():
-            queue = vt_queues[nro][v_id]
-            idx = vt_counters[nro][v_id]
-            if idx < len(queue):
-                self[nro].translations[pos] = queue[idx]
-                vt_counters[nro][v_id] += 1
+        verses_by_poem = defaultdict(list)
+        for nro, pos in db.fetchall():
+            verses_by_poem[nro].append(pos)
+        for nro in self:
+            for i, trans in enumerate(translations_by_poem[nro]):
+                positions = verses_by_poem[nro]
+                if i < len(positions):
+                    self[nro].translations[positions[i]] = trans
 
     def get_text(self, db, clustering_id=0):
         if not self: return    # empty set? -> do nothing
