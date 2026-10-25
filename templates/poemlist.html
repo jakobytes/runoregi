@@ -101,7 +101,7 @@ function properly.
 <table class="table">
 {% for nro in data['poems'] %}
 <tr>
-<td><b>{% if nro in data['minor'] %}*{% endif %}<a href="/poem?nro={{ nro }}">{{ data['poems'][nro].smd.title }}</a></b></td>
+<td><b>{% if nro in data['minor'] %}*{% endif %}<a href="/poem?nro={{ nro }}">{{ data['poems'][nro].smd.title or nro }}</a></b></td>
 <td><small>{{ data['poems'][nro].smd.year }}</small></td>
 <td><small>{{ data['poems'][nro].smd.place }}</small></td>
 <td><small>{{ data['poems'][nro].smd.collector }}</small></td>

@@ -66,7 +66,6 @@ TABLES = {
   'verses_cl'      : False,
   'verses_translated': False,
   'word_analysis'    : False,
-  'word_analysis_1'  : False,
 }
 
 # Tables without which Runoregi can't work.
@@ -99,7 +98,6 @@ TABLE_ERRMSG = {
   'verses_cl'      : 'The side-by-side comparisons will not be available.',
   'verses_translated': 'The English translations will not be available.',
   'word_analysis'    : 'The word analysis will not be available.',
-  'word_analysis_1'  : 'The word analysis will not be available.',
 }
 
 

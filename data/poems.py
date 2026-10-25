@@ -33,7 +33,6 @@ class Poem:
         self.duplicates = []
         self.parents = []
         self.translations = {}
-        self.word_analysis_flat = []
         self.verse_word_analysis = {}
 
 
@@ -222,59 +221,30 @@ class Poems:
 
     def get_word_analysis(self, db):
         if not self: return
-        table = 'word_analysis_1' if config.TABLES['word_analysis_1'] \
-                else 'word_analysis' if config.TABLES['word_analysis'] \
-                else None
-        if not table: return
-        words_per_poem = {}
+        if not config.TABLES['word_analysis']: return
         db.execute(
-            'SELECT wa.poem_id, wa.word_position, wa.original_form, wa.english_translation '
-            'FROM `{}` wa '
-            'WHERE wa.poem_id IN %s '
+            'SELECT p.nro, wa.v_pos, wa.normalized_orthography, wa.english_translation '
+            'FROM word_analysis wa '
+            'JOIN poems p ON wa.p_id = p.p_id '
+            'WHERE p.nro IN %s '
             '  AND wa.english_translation IS NOT NULL AND wa.english_translation != "" '
-            'ORDER BY wa.poem_id, wa.word_position;'.format(table),
+            'ORDER BY p.nro, wa.v_pos, wa.w_pos;',
             (tuple(self),))
-        for poem_id, word_position, original_form, english_translation in db.fetchall():
-            words_per_poem.setdefault(poem_id, []).append(
-                (word_position, original_form, english_translation))
-        for nro in self:
-            words = words_per_poem.get(nro, [])
-            self[nro].word_analysis_flat = words
+        for nro, v_pos, word, english_translation in db.fetchall():
+            self[nro].verse_word_analysis.setdefault(v_pos, []).append(
+                (word, english_translation))
 
     def get_translations(self, db):
         if not self: return
         if not config.TABLES['verses_translated']: return
-        for nro in self:
-            self[nro].translations = {}
-        from collections import defaultdict
-        # vt.pos is unreliable as a verse position but gives the correct sequence order.
-        # Match the n-th translation (ordered by vt.pos) to the n-th V-type verse (ordered by vp.pos).
         db.execute(
-            'SELECT p.nro, vt.verse_in_english '
+            'SELECT p.nro, vt.pos, vt.verse_in_english '
             'FROM verses_translated vt '
             'JOIN poems p ON vt.p_id = p.p_id '
-            'WHERE p.nro IN %s '
-            'ORDER BY p.nro, vt.pos;',
+            'WHERE p.nro IN %s;',
             (tuple(self),))
-        translations_by_poem = defaultdict(list)
-        for nro, verse_in_english in db.fetchall():
-            translations_by_poem[nro].append(verse_in_english)
-        db.execute(
-            'SELECT p.nro, vp.pos '
-            'FROM verse_poem vp '
-            'JOIN verses v ON vp.v_id = v.v_id '
-            'JOIN poems p ON vp.p_id = p.p_id '
-            'WHERE p.nro IN %s AND v.type = "V" '
-            'ORDER BY p.nro, vp.pos;',
-            (tuple(self),))
-        verses_by_poem = defaultdict(list)
-        for nro, pos in db.fetchall():
-            verses_by_poem[nro].append(pos)
-        for nro in self:
-            for i, trans in enumerate(translations_by_poem[nro]):
-                positions = verses_by_poem[nro]
-                if i < len(positions):
-                    self[nro].translations[positions[i]] = trans
+        for nro, pos, verse_in_english in db.fetchall():
+            self[nro].translations[pos] = verse_in_english
 
     def get_text(self, db, clustering_id=0):
         if not self: return    # empty set? -> do nothing
@@ -360,6 +330,14 @@ class Poems:
             '  JOIN poems p ON p_pl.p_id = p.p_id '
             'WHERE pl.place_orig_id = %s ;',
             (place_id,))
+        nros = list(map(itemgetter(0), db.fetchall()))
+        return Poems(nros=nros)
+
+    @staticmethod
+    def get_by_collection(db, collection):
+        db.execute(
+            'SELECT nro FROM poems WHERE collection = %s ORDER BY nro;',
+            (collection,))
         nros = list(map(itemgetter(0), db.fetchall()))
         return Poems(nros=nros)
 
