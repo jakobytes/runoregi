@@ -1,6 +1,5 @@
 from collections import defaultdict
 from flask import render_template
-import pymysql
 
 import config
 from data.logging import profile

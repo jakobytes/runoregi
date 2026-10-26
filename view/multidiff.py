@@ -1,7 +1,6 @@
 from flask import render_template
 import numpy as np
 from operator import itemgetter
-import pymysql
 import scipy.cluster.hierarchy
 
 from shortsim.align import align

@@ -3,6 +3,5 @@ gunicorn
 lxml
 numpy
 scipy
-pymysql
-dbutils
+duckdb==1.3.2
 git+https://github.com/hsci-r/shortsim

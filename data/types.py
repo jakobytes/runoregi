@@ -126,7 +126,7 @@ class Types:
             'WHERE type_orig_id IN %s']
         if not minor:
             query_lst.append(' AND is_minor = 0')
-        query_lst.append(';')
+        query_lst.append(' ORDER BY p_id;')
         db.execute(' '.join(query_lst), (tuple(self),))
         nros, minor_nros = [], []
         for nro, is_minor in db.fetchall():

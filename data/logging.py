@@ -1,6 +1,5 @@
 from flask import request
 from socket import gethostbyname, gethostname
-import pymysql
 import time
 
 import config

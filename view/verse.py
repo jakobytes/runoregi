@@ -1,6 +1,5 @@
 from collections import defaultdict, OrderedDict
 from flask import render_template
-import pymysql
 from urllib.parse import urlencode
 
 import config

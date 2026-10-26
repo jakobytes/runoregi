@@ -1,7 +1,6 @@
 from flask import render_template
 from operator import itemgetter
 import numpy as np
-import pymysql
 import scipy.cluster.hierarchy
 from urllib.parse import urlencode
 

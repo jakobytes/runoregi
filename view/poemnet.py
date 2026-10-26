@@ -1,6 +1,5 @@
 from flask import render_template
 from operator import itemgetter
-import pymysql
 
 import config
 from data.logging import profile

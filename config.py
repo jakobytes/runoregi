@@ -1,36 +1,25 @@
 import os
 from contextlib import contextmanager
-from operator import itemgetter
-import pymysql
+import duckdb
 import re
+import threading
 import warnings
 
 
-# Build MySQL connection parameters
-MYSQL_PARAMS = {
-    'host'     : os.getenv('DB_HOST'),
-    'port'     : int(os.getenv('DB_PORT', 3306)),
-    'user'     : os.getenv('DB_USER'),
-    'password' : os.getenv('DB_PASS'),
-    'database' : os.getenv('DB_NAME'),
-}
-
-# Add socket if DB_SOCKET is set (for non-standard setups)
-if os.getenv('DB_SOCKET'):
-    MYSQL_PARAMS['unix_socket'] = os.getenv('DB_SOCKET')
-
-# Add SSL if DB_SSL is set
-if os.getenv('DB_SSL'):
-    # Disable SSL verification if DB_SSL_VERIFY is set to '0'
-    if os.getenv('DB_SSL_VERIFY') == '0':
-        MYSQL_PARAMS['ssl'] = {'verify_server_cert': False}
-    else:
-        MYSQL_PARAMS['ssl'] = {'ca': os.getenv('DB_SSL_CA', '/etc/ssl/certs/ca-certificates.crt')}
+# Location of the parquet files: an HTTP(S) URL or a local directory.
+# Each table is read from <PARQUET_BASE>/<table>.parquet
+PARQUET_BASE = os.getenv('PARQUET_BASE', 'https://a3s.fi/filter-data/')
+# Where DuckDB looks for extensions (httpfs is preinstalled there in the image)
+DUCKDB_EXTENSION_DIRECTORY = os.getenv('DUCKDB_EXTENSION_DIRECTORY')
+# DuckDB sizes memory and threads by the host, not the container: cap them
+DUCKDB_MEMORY_LIMIT = os.getenv('DUCKDB_MEMORY_LIMIT')
+DUCKDB_THREADS = os.getenv('DUCKDB_THREADS')
 
 VISUALIZATIONS_URL = os.getenv('VISUALIZATIONS_URL')
 
 SEARCH_LIMIT = 1000
-ENABLE_LOGGING_TO_DB = not not os.getenv('DB_LOGGING')
+# Logging writes to the database; not available with parquet.
+ENABLE_LOGGING_TO_DB = False
 ENABLE_PROXY = not not os.getenv('PROXY')
 LOGGING_TABLE_NAME = 'runoregi_log'
 
@@ -101,41 +90,85 @@ TABLE_ERRMSG = {
 }
 
 
-pool = None
+# Tables read by queries but not checked in TABLES
+EXTRA_TABLES = ['dbmeta', 'place_stats']
+
+con = None
+_local = threading.local()
+
+
+class Cursor:
+    '''DB-API-like cursor on DuckDB accepting the pymysql query style:
+       `%s` placeholders, with tuple/list arguments expanded for `IN %s`.'''
+
+    def __init__(self, cur):
+        self._cur = cur
+
+    @staticmethod
+    def _translate(query, args):
+        if args is None:
+            return query, []
+        parts = query.split('%s')
+        if len(parts) - 1 != len(args):
+            raise ValueError('Expected {} query arguments, got {}'\
+                             .format(len(parts) - 1, len(args)))
+        sql, params = [parts[0]], []
+        for arg, part in zip(args, parts[1:]):
+            if isinstance(arg, (tuple, list)):
+                sql.append('(' + ', '.join(['?'] * len(arg)) + ')')
+                params.extend(arg)
+            else:
+                sql.append('?')
+                params.append(arg)
+            sql.append(part)
+        return ''.join(sql), params
+
+    def execute(self, query, args=None):
+        sql, params = self._translate(query, args)
+        self._cur.execute(sql, params)
+
+    def fetchall(self):
+        return self._cur.fetchall()
+
+    def fetchone(self):
+        return self._cur.fetchone()
+
+
+def _cursor():
+    # DuckDB connections are not thread-safe: one cursor per thread
+    if getattr(_local, 'cur', None) is None:
+        _local.cur = Cursor(con.cursor())
+    return _local.cur
 
 
 @contextmanager
 def get_db():
-    conn = pool.connection()
-    try:
-        yield conn.cursor()
-    finally:
-        conn.close()
+    yield _cursor()
 
 
-@contextmanager
-def get_conn():
-    conn = pool.connection()
-    try:
-        yield conn
-    finally:
-        conn.close()
+def _parquet_path(tbl):
+    return '{}/{}.parquet'.format(PARQUET_BASE.rstrip('/'), tbl)
 
 
 def setup_tables():
-    from dbutils.pooled_db import PooledDB
-    global pool
-    try:
-        with pymysql.connect(**MYSQL_PARAMS).cursor() as db:
-            db.execute('SHOW TABLES;')
-            db_tables = set(map(itemgetter(0), db.fetchall()))
-            for tbl in TABLES:
-                TABLES[tbl] = tbl in db_tables
-    except pymysql.err.OperationalError:
-        raise RuntimeError('Cannot connect to the database. Terminating.')
-
-    pool = PooledDB(pymysql, mincached=2, maxcached=5, maxconnections=20,
-                    **MYSQL_PARAMS)
+    global con
+    con = duckdb.connect()
+    if DUCKDB_EXTENSION_DIRECTORY:
+        con.execute("SET extension_directory = '{}'".format(DUCKDB_EXTENSION_DIRECTORY))
+    if DUCKDB_MEMORY_LIMIT:
+        con.execute("SET memory_limit = '{}'".format(DUCKDB_MEMORY_LIMIT))
+    if DUCKDB_THREADS:
+        con.execute('SET threads = {:d}'.format(int(DUCKDB_THREADS)))
+    if PARQUET_BASE.startswith(('http://', 'https://')):
+        con.execute('INSTALL httpfs; LOAD httpfs;')
+    for tbl in list(TABLES) + EXTRA_TABLES:
+        try:
+            con.execute('CREATE VIEW "{}" AS SELECT * FROM read_parquet(\'{}\')'\
+                        .format(tbl, _parquet_path(tbl)))
+            if tbl in TABLES:
+                TABLES[tbl] = True
+        except duckdb.Error:
+            pass
 
     # print warnings or throw errors about non-existing tables
     for tbl in TABLES:
@@ -148,8 +181,11 @@ def setup_tables():
                               .format(tbl, TABLE_ERRMSG[tbl]))
 
 def check_maintenance():
-    with pymysql.connect(**MYSQL_PARAMS).cursor() as db:
-        db.execute('SELECT SUM(ready != 1) FROM dbmeta;')
+    with get_db() as db:
+        try:
+            db.execute('SELECT SUM(ready != 1) FROM dbmeta;')
+        except duckdb.Error:
+            return False
         result = db.fetchall()
-        return result[0][0] > 0
+        return bool(result[0][0])
 

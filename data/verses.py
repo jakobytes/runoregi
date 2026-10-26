@@ -110,10 +110,12 @@ def get_verse_cluster_neighbors(
     if by_cluster:
         query_lst = [
             'SELECT ',
-            '   p1.nro, vp1.pos, v1.v_id, v1.type, v1.text, v1_cl.text,',
-            '   vc1.clust_id, vcf1.freq, ',
-            '   p2.nro, vp2.pos, v2.v_id, v2.type, v2.text, v2_cl.text,',
-            '   vc2.clust_id, vcf2.freq, ',
+            '   ANY_VALUE(p1.nro), ANY_VALUE(vp1.pos), ANY_VALUE(v1.v_id),',
+            '   ANY_VALUE(v1.type), ANY_VALUE(v1.text), ANY_VALUE(v1_cl.text),',
+            '   vc1.clust_id, ANY_VALUE(vcf1.freq), ',
+            '   ANY_VALUE(p2.nro), ANY_VALUE(vp2.pos), ANY_VALUE(v2.v_id),',
+            '   ANY_VALUE(v2.type), ANY_VALUE(v2.text), ANY_VALUE(v2_cl.text),',
+            '   vc2.clust_id, ANY_VALUE(vcf2.freq), ',
             '   SUM(s.sim_cos) AS sim ',
             'FROM v_sim s ',
             '  JOIN verses v1 ON s.v1_id = v1.v_id',

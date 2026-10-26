@@ -1,6 +1,5 @@
 from collections import defaultdict
 from flask import render_template
-import pymysql
 import re
 from subprocess import Popen, PIPE
 

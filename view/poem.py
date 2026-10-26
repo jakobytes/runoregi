@@ -2,7 +2,6 @@ from flask import render_template
 import lxml.etree as ET
 from operator import itemgetter
 import math
-import pymysql
 import re
 
 from collections import Counter, defaultdict

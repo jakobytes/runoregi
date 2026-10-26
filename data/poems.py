@@ -164,13 +164,17 @@ class Poems:
         get_place = config.TABLES['places'] and config.TABLES['p_pl']
         query_lst = [
             'SELECT poems.nro, collection, display_name,',
-            ('GROUP_CONCAT(DISTINCT IFNULL('
-             '    CONCAT(pl2.place_orig_id, ":", pl2.name, "|",'
-             '           pl.place_orig_id, ":", pl.name),'
-             '    CONCAT(pl.place_orig_id, ":", pl.name)'
-             ') SEPARATOR ";;;"),'\
+            ('STRING_AGG(DISTINCT IFNULL('
+             '    pl2.place_orig_id || \':\' || pl2.name || \'|\' ||'
+             '    pl.place_orig_id || \':\' || pl.name,'
+             '    pl.place_orig_id || \':\' || pl.name'
+             '), \';;;\' ORDER BY IFNULL('
+             '    pl2.place_orig_id || \':\' || pl2.name || \'|\' ||'
+             '    pl.place_orig_id || \':\' || pl.name,'
+             '    pl.place_orig_id || \':\' || pl.name)),'\
              if get_place else 'NULL,'),
-            ('GROUP_CONCAT(DISTINCT CONCAT(c.col_orig_id, ":", c.name) SEPARATOR ";;;"),'\
+            ('STRING_AGG(DISTINCT c.col_orig_id || \':\' || c.name, \';;;\''
+             ' ORDER BY c.col_orig_id || \':\' || c.name),'\
              if get_collector else 'NULL,'),
             ('year' if config.TABLES['p_year'] else 'NULL'),
             'FROM poems']
@@ -190,7 +194,8 @@ class Poems:
         query_lst.append('WHERE poems.nro IN %s')
         # if GROUP_CONCATs present -- return one row per poem
         if get_place or get_collector:
-            query_lst.append('GROUP BY poems.p_id')
+            query_lst.append('GROUP BY poems.p_id, poems.nro, collection, display_name'
+                             + (', year' if config.TABLES['p_year'] else ''))
         query_lst.append(';')
         db.execute(' '.join(query_lst), (tuple(self),))
         #print(db._executed)
@@ -227,7 +232,7 @@ class Poems:
             'FROM word_analysis wa '
             'JOIN poems p ON wa.p_id = p.p_id '
             'WHERE p.nro IN %s '
-            '  AND wa.english_translation IS NOT NULL AND wa.english_translation != "" '
+            '  AND wa.english_translation IS NOT NULL AND wa.english_translation != \'\' '
             'ORDER BY p.nro, wa.v_pos, wa.w_pos;',
             (tuple(self),))
         for nro, v_pos, word, english_translation in db.fetchall():
@@ -311,7 +316,7 @@ class Poems:
             'FROM collectors c '
             '  JOIN p_col ON c.col_id = p_col.col_id '
             '  JOIN poems p ON p_col.p_id = p.p_id '
-            'WHERE c.col_orig_id = %s ;',
+            'WHERE c.col_orig_id = %s ORDER BY p.p_id;',
             (collector_id,))
         nros = list(map(itemgetter(0), db.fetchall()))
         return Poems(nros=nros)
@@ -328,7 +333,7 @@ class Poems:
             'FROM places pl '
             '  JOIN p_pl ON pl.pl_id = p_pl.pl_id '
             '  JOIN poems p ON p_pl.p_id = p.p_id '
-            'WHERE pl.place_orig_id = %s ;',
+            'WHERE pl.place_orig_id = %s ORDER BY p.p_id;',
             (place_id,))
         nros = list(map(itemgetter(0), db.fetchall()))
         return Poems(nros=nros)

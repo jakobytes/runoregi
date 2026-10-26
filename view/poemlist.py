@@ -1,7 +1,6 @@
 from collections import defaultdict
 from flask import render_template
 from operator import itemgetter
-import pymysql
 import re
 from urllib.parse import urlencode
 

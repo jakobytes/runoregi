@@ -4,6 +4,59 @@ import config
 from utils import render_type_links, render_xml
 
 
+# Emulation of MariaDB's full-text search (MATCH ... AGAINST ... IN BOOLEAN
+# MODE) by scanning the text column with regular expressions in DuckDB.
+# Like the MariaDB setup, matching ignores case (but not accents) and words
+# shorter than FT_MIN_WORD_LEN; there is no relevance ranking.
+
+FT_MIN_WORD_LEN = 3
+_NONWORD = r'[^\pL\pN_]'
+
+
+def _term_regex(words, prefix):
+    body = (_NONWORD + '+').join(re.escape(w.lower()) for w in words)
+    end = '' if prefix else '($|{})'.format(_NONWORD)
+    return '(^|{}){}{}'.format(_NONWORD, body, end)
+
+
+def parse_boolean_query(q):
+    'Split a boolean-mode query into (required, optional, excluded) regexes.'
+    required, optional, excluded = [], [], []
+    for op, phrase, word in re.findall(r'([+-]?)(?:"([^"]*)"|([^\s"]+))', q):
+        if phrase:
+            words, prefix = re.findall(r'\w+', phrase), False
+        else:
+            words, prefix = re.findall(r'\w+', word), word.endswith('*')
+        if not words or (len(words) == 1 and not prefix
+                         and len(words[0]) < FT_MIN_WORD_LEN):
+            continue
+        {'+': required, '-': excluded, '': optional}[op].append(
+            _term_regex(words, prefix))
+    return required, optional, excluded
+
+
+def match_condition(column, q):
+    'SQL condition (with %s placeholders) and arguments for MATCH(column) AGAINST(q).'
+    required, optional, excluded = parse_boolean_query(q)
+    col = 'lower({})'.format(column)
+    match = 'regexp_matches({}, %s)'.format(col)
+    conds, args = [], []
+    for regex in required:
+        conds.append(match)
+        args.append(regex)
+    if optional and not required:
+        conds.append('(' + ' OR '.join([match] * len(optional)) + ')')
+        args.extend(optional)
+    if not conds:
+        # MariaDB returns nothing for a query with only excluded words
+        return 'FALSE', []
+    for regex in excluded:
+        conds.append('NOT ' + match)
+        args.append(regex)
+    return ' AND '.join(conds), args
+
+
+
 def extract_keywords(q):
     'Extract keywords from a search query.'
     keywords = [w.replace('*', '\w*') \
@@ -33,11 +86,13 @@ def highlight(pattern, text):
 
 def search_verses(db, q):
     result = []
+    cond, args = match_condition('text', q)
     db.execute(\
         'SELECT nro, pos, type, text FROM verses'
         ' NATURAL JOIN verse_poem'
         ' NATURAL JOIN poems'
-        ' WHERE MATCH(text) AGAINST(%s IN BOOLEAN MODE);', (q,))
+        ' WHERE ' + cond + ' ORDER BY nro, pos LIMIT %s;',
+        (*args, config.SEARCH_LIMIT))
     kwd = extract_keywords(q)
     result = [(nro, pos, vtype, highlight(kwd, render_xml(text))) \
               for (nro, pos, vtype, text) in db.fetchall()]
@@ -49,6 +104,8 @@ def search_types(db, q):
     # ignore if the table is not available
     if not config.TABLES['types']:
         return result
+    name_cond, name_args = match_condition('t1.name', q)
+    descr_cond, descr_args = match_condition('t1.description', q)
     db.execute(\
       'SELECT t4.name, t3.name, t2.name, t1.type_orig_id, t1.name,'
       '       t1.description'
@@ -56,15 +113,15 @@ def search_types(db, q):
       '  LEFT OUTER JOIN types t2 on t1.par_id = t2.t_id'
       '  LEFT OUTER JOIN types t3 on t2.par_id = t3.t_id'
       '  LEFT OUTER JOIN types t4 on t3.par_id = t4.t_id'
-      '  WHERE MATCH(t1.name) AGAINST(%s IN BOOLEAN MODE)'
-      'UNION '
+      '  WHERE ' + name_cond +
+      ' UNION '
       'SELECT t4.name, t3.name, t2.name, t1.type_orig_id, t1.name,'
       '       t1.description'
       ' FROM types t1'
       '  LEFT OUTER JOIN types t2 on t1.par_id = t2.t_id'
       '  LEFT OUTER JOIN types t3 on t2.par_id = t3.t_id'
       '  LEFT OUTER JOIN types t4 on t3.par_id = t4.t_id'
-      '  WHERE MATCH(t1.description) AGAINST(%s IN BOOLEAN MODE);', (q, q))
+      '  WHERE ' + descr_cond + ';', (*name_args, *descr_args))
     kwd = extract_keywords(q)
     result = [(r[3], highlight(kwd, r[4]), highlight(kwd, render_type_links(render_xml(r[5]))),
                [r[i] for i in range(3) if r[i]]) \
@@ -77,11 +134,13 @@ def search_translated(db, q):
     result = []
     if not config.TABLES['verses_translated']:
         return result
+    cond, args = match_condition('vt.verse_in_english', q)
     db.execute(
         'SELECT p.nro, vt.pos, vt.verse_in_english, vt.translation_comments'
         ' FROM verses_translated vt'
         ' JOIN poems p ON vt.p_id = p.p_id'
-        ' WHERE MATCH(vt.verse_in_english) AGAINST(%s IN BOOLEAN MODE);', (q,))
+        ' WHERE ' + cond + ' ORDER BY p.nro, vt.pos LIMIT %s;',
+        (*args, config.SEARCH_LIMIT))
     kwd = extract_keywords(q)
     result = [(nro, pos, highlight(kwd, verse), comments)
               for (nro, pos, verse, comments) in db.fetchall()]
@@ -92,15 +151,17 @@ def search_smd(db, q):
     result = []
     kwd = extract_keywords(q)
     if config.TABLES['collectors'] and config.TABLES['p_col']:
+        cond, args = match_condition('name', q)
         db.execute(\
             'SELECT col_orig_id, name FROM collectors'
-            ' WHERE MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
+            ' WHERE ' + cond + ' ORDER BY name;', args)
         result.extend([('collector', col_id, highlight(kwd, name)) \
                        for (col_id, name) in db.fetchall()])
     if config.TABLES['places'] and config.TABLES['p_pl']:
+        cond, args = match_condition('name', q)
         db.execute(\
             'SELECT place_orig_id, name FROM places'
-            ' WHERE MATCH(name) AGAINST(%s IN BOOLEAN MODE);', (q,))
+            ' WHERE ' + cond + ' ORDER BY name;', args)
         result.extend([('place', place_id, highlight(kwd, name)) \
                        for (place_id, name) in db.fetchall()])
     return result
