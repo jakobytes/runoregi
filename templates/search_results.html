@@ -70,7 +70,7 @@ function properly.
     <a class="nav-link"{% if data['r_verses'] %} data-toggle="tab" href="#verses"{% endif %}>Verses ({{ data['r_verses'] | length }})</a>
   </li>
   <li class="nav-item{% if first_tab == 'translations' %} active{% endif %}{% if not data['r_translated'] %} disabled{% endif %}">
-    <a class="nav-link"{% if data['r_translated'] %} data-toggle="tab" href="#translations"{% endif %}>Translations ({{ data['r_translated'] | length }})</a>
+    <a class="nav-link"{% if data['r_translated'] %} data-toggle="tab" href="#translations"{% endif %}>Translations ({% if data['r_translated'] | length >= data['limit'] %}first {% endif %}{{ data['r_translated'] | length }})</a>
   </li>
   <li class="nav-item{% if first_tab == 'inline' %} active{% endif %}{% if not data['r_inline'] %} disabled{% endif %}">
     <a class="nav-link"{% if data['r_inline'] %} data-toggle="tab" href="#inline"{% endif %}>Inline text ({{ data['r_inline'] | length }})</a>
