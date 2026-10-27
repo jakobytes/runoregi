@@ -103,10 +103,18 @@ function properly.
 <div class="tab-pane container {% if first_tab == 'translations' %}active{% else %}fade{% endif %}" id="translations">
 {% if data['r_translated'] %}
 <hr/>
-{% for nro, pos, verse, comments in data['r_translated'] %}
-<a href="/poem?nro={{ nro }}#{{ pos }}">{{ nro }}</a>
-<sup><small>{{ pos }}</small></sup> <i>{{ verse | safe }}</i>{% if comments %} <span style="color: gray;"><small>— {{ comments }}</small></span>{% endif %}<br/>
+<table class="table table-sm table-hover">
+<thead><tr><th>Poem</th><th>Original</th><th>English</th></tr></thead>
+<tbody>
+{% for nro, pos, orig, verse in data['r_translated'] %}
+<tr>
+<td style="white-space: nowrap;"><a href="/poem?nro={{ nro }}&hl={{ pos }}#{{ pos }}">{{ nro }}</a><sup><small>{{ pos }}</small></sup></td>
+<td>{{ orig | safe }}</td>
+<td><i>{{ verse | safe }}</i></td>
+</tr>
 {% endfor %}
+</tbody>
+</table>
 {% endif %}
 </div>
 

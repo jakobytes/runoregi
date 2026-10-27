@@ -136,14 +136,18 @@ def search_translated(db, q):
         return result
     cond, args = match_condition('vt.verse_in_english', q)
     db.execute(
-        'SELECT p.nro, vt.pos, vt.verse_in_english, vt.translation_comments'
+        'SELECT p.nro, vt.pos, v.text, vt.verse_in_english'
         ' FROM verses_translated vt'
         ' JOIN poems p ON vt.p_id = p.p_id'
+        # translations are aligned with the poem text by position
+        ' LEFT JOIN verse_poem vp ON vp.p_id = vt.p_id AND vp.pos = vt.pos'
+        ' LEFT JOIN verses v ON v.v_id = vp.v_id'
         ' WHERE ' + cond + ' ORDER BY p.nro, vt.pos LIMIT %s;',
         (*args, config.SEARCH_LIMIT))
     kwd = extract_keywords(q)
-    result = [(nro, pos, highlight(kwd, verse), comments)
-              for (nro, pos, verse, comments) in db.fetchall()]
+    result = [(nro, pos, render_xml(orig) if orig else '',
+               highlight(kwd, verse))
+              for (nro, pos, orig, verse) in db.fetchall()]
     return result
 
 
