@@ -84,7 +84,8 @@ def show_dendrogram():
             nros = args.get('nro')
             if nros is None or not isinstance(nros, list) or len(nros) == 0:
                 return 'Invalid cluster parameter', 400
-            if not isinstance(nros[0], int) or nros[0] > MAX_CLUSTER_ID:
+            # the cluster is given by a poem ID, e.g. 'skvr07102150'
+            if not isinstance(nros[0], str) or not re.fullmatch(r'\w{1,50}', nros[0]):
                 return 'Invalid cluster parameter', 400
         result = view.dendrogram.render(**args)
         return _compact(result)
