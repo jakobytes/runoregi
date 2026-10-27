@@ -3,6 +3,55 @@
 [Runoregi](https://runoregi.fi) is the Web front-end for verse
 and poem similarity calculations on Finnic oral folk poetry.
 
+## Branch `dhh26-regi-parquet`: reading parquet files with DuckDB
+
+This branch (Experimental-Regi, deployed at https://regi.artificial-other.com)
+builds on `translations` and reads the data from parquet files with
+[DuckDB](https://duckdb.org/) instead of querying MariaDB. It is deployed
+together with the `dhh26-regi-parquet` branch of
+[filter-visualizations](https://github.com/jakobytes/filter-visualizations).
+
+Changes:
+- `config.py`: DuckDB views over `<PARQUET_BASE>/<table>.parquet`; a cursor
+  wrapper accepts the pymysql query style; logging to the database is off.
+- MySQL-only SQL rewritten (`STRING_AGG`, `||`, `GROUP BY`, quoting,
+  `ORDER BY`).
+- Search: boolean-mode full-text search emulated with `regexp_matches`
+  (also for translations); results capped at `SEARCH_LIMIT`. Verse and
+  translation results show the original verse next to its English
+  translation.
+- Cluster dendrograms accept poem IDs as the cluster parameter.
+- `fetch_parquet.py`: downloads the parquet files from an HTTP(S) URL or an
+  S3 bucket (Allas) into a directory.
+
+Running locally (parquet files in `./parquet`, filter-visualizations checked
+out next to this repository):
+
+```bash
+docker compose up -d --build
+```
+
+runoregi is then at http://localhost:8000 and the visualizations at
+http://localhost:3838.
+
+| Variable | Description |
+|---|---|
+| `PARQUET_BASE` | URL or directory containing `<table>.parquet` |
+| `VISUALIZATIONS_URL` | Base URL of the visualizations app |
+| `DUCKDB_MEMORY_LIMIT`, `DUCKDB_THREADS` | Cap DuckDB below the container limits |
+
+Rahti (project `elias26`), from `rahti/`: one Deployment `dhh26-regi` with
+both apps and an init container that runs `fetch_parquet.py` to download the
+files from the private bucket `s3://livonia-parquet` into a shared,
+read-only `emptyDir`. The download needs a Secret with Allas S3
+credentials:
+
+```bash
+oc create secret generic livonia-allas-reader \
+  --from-literal=AWS_ACCESS_KEY_ID=... --from-literal=AWS_SECRET_ACCESS_KEY=...
+rahti/deploy.sh --rebuild   # apply manifests, build both images
+```
+
 ## Setup
 
 Python dependencies can be installed with the usual command:

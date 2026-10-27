@@ -1,0 +1,49 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: dhh26-runoregi
+spec:
+  host: dhh26-runoregi-elias26.2.rahtiapp.fi
+  to:
+    kind: Service
+    name: dhh26-runoregi
+  port:
+    targetPort: runoregi
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: dhh26-visualizations
+  annotations:
+    # Shiny keeps a websocket open per session
+    haproxy.router.openshift.io/timeout: 1h
+spec:
+  # Must match VISUALIZATIONS_URL of the runoregi container
+  host: dhh26-visualizations-elias26.2.rahtiapp.fi
+  to:
+    kind: Service
+    name: dhh26-visualizations
+  port:
+    targetPort: shiny
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+# Custom domain (DNS on Cloudflare, proxied to the Rahti router)
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: dhh26-runoregi-custom
+spec:
+  host: regi.artificial-other.com
+  to:
+    kind: Service
+    name: dhh26-runoregi
+  port:
+    targetPort: runoregi
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

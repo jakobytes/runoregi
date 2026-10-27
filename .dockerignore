@@ -1,0 +1,7 @@
+.git
+.gitignore
+.s2i
+rahti
+parquet
+docker-compose.yml
+**/__pycache__

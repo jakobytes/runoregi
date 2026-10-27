@@ -1,0 +1,23 @@
+# Local testing: runoregi on http://localhost:8000, visualizations on
+# http://localhost:3838, both reading the parquet files in ./parquet.
+# The visualizations are built from a checkout of
+# jakobytes/filter-visualizations (branch dhh26-regi-parquet).
+services:
+  runoregi:
+    build: .
+    image: dhh26-runoregi
+    ports: ["8000:8000"]
+    volumes: ["./parquet:/data:ro"]
+    environment:
+      PARQUET_BASE: /data
+      DUCKDB_THREADS: "2"
+      VISUALIZATIONS_URL: http://localhost:3838
+  visualizations:
+    build: ${FILTER_VISUALIZATIONS_DIR:-../filter-visualizations}
+    image: dhh26-visualizations
+    platform: linux/amd64
+    ports: ["3838:3838"]
+    volumes: ["./parquet:/data:ro"]
+    environment:
+      PARQUET_BASE: /data
+      DUCKDB_THREADS: "2"

@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dhh26-regi
+  annotations:
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"dhh26-runoregi:latest"},
+        "fieldPath":"spec.template.spec.containers[?(@.name==\"runoregi\")].image",
+        "pause":"false"},
+       {"from":{"kind":"ImageStreamTag","name":"dhh26-runoregi:latest"},
+        "fieldPath":"spec.template.spec.initContainers[?(@.name==\"fetch-parquet\")].image",
+        "pause":"false"},
+       {"from":{"kind":"ImageStreamTag","name":"dhh26-visualizations:latest"},
+        "fieldPath":"spec.template.spec.containers[?(@.name==\"visualizations\")].image",
+        "pause":"false"}]
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: dhh26-regi
+  template:
+    metadata:
+      labels:
+        app: dhh26-regi
+    spec:
+      # Download the parquet files from the private Allas bucket into the pod
+      # before starting; both apps read the local copy (read-only).
+      initContainers:
+        - name: fetch-parquet
+          image: dhh26-runoregi:latest
+          command: ["python", "/app/fetch_parquet.py", "/data"]
+          env:
+            - name: PARQUET_SOURCE
+              value: s3://livonia-parquet
+          envFrom:
+            # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY with read-only access
+            - secretRef:
+                name: livonia-allas-reader
+          volumeMounts:
+            - name: parquet
+              mountPath: /data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+      containers:
+        - name: runoregi
+          image: dhh26-runoregi:latest
+          ports:
+            - containerPort: 8000
+              name: runoregi
+          env:
+            - name: PARQUET_BASE
+              value: /data
+            - name: VISUALIZATIONS_URL
+              value: https://dhh26-visualizations-elias26.2.rahtiapp.fi
+            - name: DUCKDB_MEMORY_LIMIT
+              value: 1500MB
+            - name: DUCKDB_THREADS
+              value: "2"
+          volumeMounts:
+            - name: parquet
+              mountPath: /data
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "200m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+        - name: visualizations
+          image: dhh26-visualizations:latest
+          ports:
+            - containerPort: 3838
+              name: shiny
+          env:
+            - name: PARQUET_BASE
+              value: /data
+            - name: DUCKDB_MEMORY_LIMIT
+              value: 1500MB
+            - name: DUCKDB_THREADS
+              value: "2"
+          volumeMounts:
+            - name: parquet
+              mountPath: /data
+              readOnly: true
+          readinessProbe:
+            tcpSocket:
+              port: 3838
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "200m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+      volumes:
+        - name: parquet
+          emptyDir:
+            sizeLimit: 3Gi

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dhh26-runoregi
+spec:
+  selector:
+    app: dhh26-regi
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: runoregi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dhh26-visualizations
+spec:
+  selector:
+    app: dhh26-regi
+  ports:
+    - port: 3838
+      targetPort: 3838
+      name: shiny
