@@ -5,7 +5,7 @@ set -e
 #   --rebuild   build both images from the local source before rolling out
 #
 # The visualizations image is built from a checkout of
-# jakobytes/filter-visualizations (branch dhh26-regi-parquet), by default
+# jakobytes/filter-visualizations (branch filter-visualizations-parquet), by default
 # next to this repository; override with FILTER_VISUALIZATIONS_DIR.
 #
 # Needs the Secret livonia-allas-reader (AWS_ACCESS_KEY_ID,

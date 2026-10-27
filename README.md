@@ -3,12 +3,12 @@
 [Runoregi](https://runoregi.fi) is the Web front-end for verse
 and poem similarity calculations on Finnic oral folk poetry.
 
-## Branch `dhh26-regi-parquet`: reading parquet files with DuckDB
+## Branch `runoregi-parquet`: reading parquet files with DuckDB
 
 This branch (Experimental-Regi, deployed at https://regi.artificial-other.com)
 builds on `translations` and reads the data from parquet files with
 [DuckDB](https://duckdb.org/) instead of querying MariaDB. It is deployed
-together with the `dhh26-regi-parquet` branch of
+together with the `filter-visualizations-parquet` branch of
 [filter-visualizations](https://github.com/jakobytes/filter-visualizations).
 
 Changes:

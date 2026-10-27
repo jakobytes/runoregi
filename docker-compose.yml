@@ -1,7 +1,7 @@
 # Local testing: runoregi on http://localhost:8000, visualizations on
 # http://localhost:3838, both reading the parquet files in ./parquet.
 # The visualizations are built from a checkout of
-# jakobytes/filter-visualizations (branch dhh26-regi-parquet).
+# jakobytes/filter-visualizations (branch filter-visualizations-parquet).
 services:
   runoregi:
     build: .
