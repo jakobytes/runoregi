@@ -86,16 +86,23 @@ def highlight(pattern, text):
 
 def search_verses(db, q):
     result = []
-    cond, args = match_condition('text', q)
+    cond, args = match_condition('v.text', q)
+    # the English translation, aligned with the poem text by position
+    if config.TABLES['verses_translated']:
+        tr_col = 'vt.verse_in_english'
+        tr_join = (' LEFT JOIN verses_translated vt'
+                   '  ON vt.p_id = vp.p_id AND vt.pos = vp.pos')
+    else:
+        tr_col, tr_join = 'NULL', ''
     db.execute(\
-        'SELECT nro, pos, type, text FROM verses'
-        ' NATURAL JOIN verse_poem'
-        ' NATURAL JOIN poems'
-        ' WHERE ' + cond + ' ORDER BY nro, pos LIMIT %s;',
+        'SELECT p.nro, vp.pos, v.type, v.text, ' + tr_col + ' FROM verses v'
+        ' JOIN verse_poem vp ON vp.v_id = v.v_id'
+        ' JOIN poems p ON p.p_id = vp.p_id' + tr_join +
+        ' WHERE ' + cond + ' ORDER BY p.nro, vp.pos LIMIT %s;',
         (*args, config.SEARCH_LIMIT))
     kwd = extract_keywords(q)
-    result = [(nro, pos, vtype, highlight(kwd, render_xml(text))) \
-              for (nro, pos, vtype, text) in db.fetchall()]
+    result = [(nro, pos, vtype, highlight(kwd, render_xml(text)), tr or '') \
+              for (nro, pos, vtype, text, tr) in db.fetchall()]
     return result
 
 

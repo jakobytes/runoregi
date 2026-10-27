@@ -62,11 +62,11 @@ def render(**args):
             r_types = search_types(db, args['q'])
             r_smd = search_smd(db, args['q'])
             r_verses_and_inline = search_verses(db, args['q'])
-            r_verses = [(nro, pos, text) \
-                        for (nro, pos, vtype, text) in r_verses_and_inline \
+            r_verses = [(nro, pos, text, tr) \
+                        for (nro, pos, vtype, text, tr) in r_verses_and_inline \
                         if vtype == 'V']
             r_inline = [(nro, pos, text) \
-                        for (nro, pos, vtype, text) in r_verses_and_inline \
+                        for (nro, pos, vtype, text, tr) in r_verses_and_inline \
                         if vtype != 'V']
             r_translated = search_translated(db, args['q'])
         data = { 'r_verses': r_verses, 'r_types': r_types,
