@@ -3,6 +3,7 @@ from flask import render_template, Response
 from operator import itemgetter
 from pydantic import BaseModel, Field
 import pymysql
+import re
 from typing import Literal
 from urllib.parse import urlencode
 
@@ -15,8 +16,26 @@ from utils import compact
 
 
 class Args(BaseModel):
-    source: Literal["type", "collector", "place"]
+    source: Literal["type", "collector", "place", "collection"]
     id: str = Field(max_length=20)
+
+
+# Display names for whole collections listed with source=collection
+COLLECTION_NAMES = {
+    'vldl': 'Volkslieder der Liven',
+}
+
+
+def collection_sort_key(poem):
+    '''Order by song and variant number ("Nr. 48: 1"), taken from the title
+       if present, otherwise from the digits of the poem ID.'''
+    title = poem.smd.title if poem.smd is not None else None
+    m = re.match(r'Nr\.\s*(\d+)(?:\s*:\s*(\d+))?', title or '')
+    if m is None:
+        m = re.match(r'[a-z]+(\d{3})(\d+)?', poem.nro)
+    if m is None:
+        return (float('inf'), 0, poem.nro)
+    return (int(m.group(1)), int(m.group(2) or 0), poem.nro)
 
 
 def get_by_type(db, type_id):
@@ -72,13 +91,19 @@ def render(**kwargs):
                             place_data.parish_name) \
                 if place_data.parish_name is not None else place_data.county_name
             data = { 'poems': poems, 'title': title, 'parishes': parishes }
+        elif args.source == 'collection':
+            poems = Poems.get_by_collection(db, args.id)
+            poems.get_structured_metadata(db)
+            poems = Poems(poems=sorted(poems.values(), key=collection_sort_key))
+            title = COLLECTION_NAMES.get(args.id, args.id)
+            data = { 'poems': poems, 'title': title }
 
     data['maintenance'] = config.check_maintenance()
 
     links = {}
     if args.source == 'type':
         links['dendrogram'] = '/dendrogram?source=type&type_id={}'.format(args.id)
-    else:
+    elif args.source != 'collection':
         links['dendrogram'] = '/dendrogram?source={}&id={}'.format(args.source, args.id)
     if config.VISUALIZATIONS_URL is not None:
         if args.source == 'type':

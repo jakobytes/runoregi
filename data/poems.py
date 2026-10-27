@@ -271,6 +271,14 @@ class Poems:
         return Poems(nros=nros)
 
     @staticmethod
+    def get_by_collection(db, collection):
+        db.execute(
+            'SELECT nro FROM poems WHERE collection = %s ORDER BY nro;',
+            (collection,))
+        nros = list(map(itemgetter(0), db.fetchall()))
+        return Poems(nros=nros)
+
+    @staticmethod
     def get_by_collector(db, collector_id):
         # ignore if the table is not available
         if not config.TABLES['collectors'] or not config.TABLES['p_col']:
